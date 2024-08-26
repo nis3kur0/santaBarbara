@@ -22,6 +22,7 @@ import java.sql.Time;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -33,6 +34,7 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
     private WebcamPanel webcamPanel = null;
 
     public EscanearQR() {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Caracas"));
         setTitle("REGISTRA TU ASISTENCIA");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
         setLayout(new BorderLayout());
@@ -160,9 +162,9 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
     
                     
 
-    String queryVerificar = "SELECT HORA_ENTRADA, HORA_SALIDA FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now')";
-    String queryEntrada = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, ?)";
-    String querySalida = "UPDATE asistencias SET HORA_SALIDA = ? WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
+    String queryVerificar = "SELECT HORA_ENTRADA, HORA_SALIDA FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now', 'localtime')";
+    String queryEntrada = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now', 'localtime'), ?, ?)"; 
+    String querySalida = "UPDATE asistencias SET HORA_SALIDA = ? WHERE ID_EMPLEADO = ? AND FECHA = date('now', 'localtime') AND HORA_SALIDA IS NULL";
 
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"); // Formato de 24h
 
@@ -172,7 +174,7 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
         stmtVerificar.setInt(1, idEmpleado);
         try (ResultSet rs = stmtVerificar.executeQuery()) {
             if (rs.next()) {
-                // Leer como String en lugar de Time
+                
                 String horaEntradaStr = rs.getString("HORA_ENTRADA");
                 String horaSalidaStr = rs.getString("HORA_SALIDA");
 
@@ -196,7 +198,6 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
                     return;
                 }
 
-                // Registrar salida
                 try (PreparedStatement stmtSalida = con.prepareStatement(querySalida)) {
                     stmtSalida.setString(1, horaActual.format(timeFormatter)); // Formatear la hora
                     stmtSalida.setInt(2, idEmpleado);
@@ -217,10 +218,9 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
                         "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                // Registrar entrada
                 try (PreparedStatement stmtEntrada = con.prepareStatement(queryEntrada)) {
                     stmtEntrada.setInt(1, idEmpleado);
-                    stmtEntrada.setString(2, horaActual.format(timeFormatter)); // Formatear la hora
+                    stmtEntrada.setString(2, horaActual.format(timeFormatter)); 
                     stmtEntrada.setString(3, estado);
                     stmtEntrada.executeUpdate();
                     JOptionPane.showMessageDialog(this, "Entrada registrada correctamente para " + nombreCompleto, 
@@ -319,7 +319,6 @@ private LocalTime[] obtenerHorariosConfigurados() {
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(this, "Error obteniendo horarios: " + e.getMessage(), 
             "Error", JOptionPane.ERROR_MESSAGE);
-        // Valores por defecto si hay error
         horarios[0] = LocalTime.of(8, 0);
         horarios[1] = LocalTime.of(17, 0);
     }

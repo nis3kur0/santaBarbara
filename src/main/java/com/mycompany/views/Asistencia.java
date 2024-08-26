@@ -17,6 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.UIManager;
 import com.mycompany.RoundedPanel;
 import com.mycompany.VerAsistencias;
+import java.sql.Statement;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -31,6 +32,7 @@ public class Asistencia extends javax.swing.JPanel {
      */
     public Asistencia() {
         initComponents();
+
         model = (DefaultTableModel) this.jTable1.getModel();
         cargarDatosAsistenciasEnTabla();
         styles();
@@ -40,10 +42,11 @@ public class Asistencia extends javax.swing.JPanel {
         String fechaFormateada = fechaActual.format(formatter);
 
         fechaLabel.setText(fechaFormateada);
-        
+        jTable1.setDefaultEditor(Object.class, null);
         jTable1.getColumnModel().getColumn(5).setMinWidth(0);
         jTable1.getColumnModel().getColumn(5).setMaxWidth(0);
-        jTable1.getColumnModel().getColumn(5).setPreferredWidth(0);        
+        jTable1.getColumnModel().getColumn(5).setPreferredWidth(0);    
+                
 
     }
     DefaultTableModel model;
@@ -55,6 +58,7 @@ public class Asistencia extends javax.swing.JPanel {
     
 
     }
+     
 
     //FUNCIONES PARA CARGAR LOS DATOS
     
@@ -84,6 +88,10 @@ public class Asistencia extends javax.swing.JPanel {
             model.addColumn("Hora de Salida");
             model.addColumn("Estado");
             model.addColumn("Observaciones");
+            
+            jTable1.getColumnModel().getColumn(5).setMinWidth(0);
+            jTable1.getColumnModel().getColumn(5).setMaxWidth(0);
+            jTable1.getColumnModel().getColumn(5).setPreferredWidth(0);
 
     while (rs.next()) {
         Object[] rowData = new Object[columnCount];
