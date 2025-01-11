@@ -5,6 +5,7 @@
 package com.mycompany.santabarbara; 
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
 import java.time.LocalDate;
@@ -314,14 +315,30 @@ Asistencia asistenciaPanel = new Asistencia();
 
             public void run() {
                 
-                new Dashborad().setVisible(true);
-                
-               
-                
-            }
-        });
-    }
+            Login login = new Login();
+            login.setVisible(true);
+            
 
+            if (login.isLoginSuccessful()) {
+                new Dashborad().setVisible(true);
+                login.dispose(); // Cerrar la ventana del login
+            } else {
+                System.exit(0);
+            }
+        }
+    });
+}
+private void setDate() {
+    LocalDate now = LocalDate.now();
+    int year = now.getYear();
+    int day = now.getDayOfMonth();
+    int month = now.getMonthValue();
+    String[] meses = {
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    };
+    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton asistBtn;
