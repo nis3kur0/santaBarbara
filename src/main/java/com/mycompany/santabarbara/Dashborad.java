@@ -10,6 +10,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 
 /**
@@ -25,43 +26,58 @@ public class Dashborad extends javax.swing.JFrame {
         initComponents();
         setDate();
         initContent();
-        styleBtn();
+        Styles();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
            
     }
-    private void styleBtn() {
-           inicioBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-}
-   private void ShowJPanel(JPanel p, String panelName) { 
-    // Añadir el panel al contenedor content con su nombre único
-    content.add(p, panelName);
+    
+ private void Styles() {
+        // Configurar fondo
+        
+        inicioBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        empleBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        asistBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        salirBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        configBtn.putClientProperty( "JButton.buttonType", "roundRect" );
 
-    // Cambiar al panel especificado usando CardLayout
+
+
+        
+
+    }
+  
+   private void ShowJPanel(JPanel p, String panelName) { 
+    content.add(p, panelName);
     CardLayout layout = (CardLayout) content.getLayout();
     layout.show(content, panelName);
-
-    // Revalidar y repintar el contenedor
     content.revalidate();
     content.repaint();
+}
+   
+   private void setDate() {
+    LocalDate now = LocalDate.now();
+    int year = now.getYear();
+    int day = now.getDayOfMonth();
+    int month = now.getMonthValue();
+    String[] meses = {
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    };
+    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
 }
     
     
 public void initContent() {
-    // Crea el panel Inicio
     Inicio p1 = new Inicio();
-
-    // Añade el panel a content con un identificador único (si no está ya añadido)
     content.add(p1, "Inicio");
-
-    // Cambia al panel Inicio usando CardLayout
     CardLayout layout = (CardLayout) content.getLayout();
     layout.show(content, "Inicio");
-
-    // Revalida y repinta el contenedor
     content.revalidate();
     content.repaint();
 }
+
+
 
    
     /**
@@ -77,21 +93,20 @@ public void initContent() {
         jTable1 = new javax.swing.JTable();
         background = new javax.swing.JPanel();
         menu = new javax.swing.JPanel();
-        inicioBtn = new javax.swing.JButton();
-        empleadosBtn = new javax.swing.JButton();
-        reportBtn = new javax.swing.JButton();
-        Salir = new javax.swing.JButton();
-        asistenciaBtn = new javax.swing.JButton();
-        configBtn1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        inicioBtn = new javax.swing.JButton();
+        empleBtn = new javax.swing.JButton();
+        asistBtn = new javax.swing.JButton();
+        salirBtn = new javax.swing.JButton();
+        configBtn = new javax.swing.JButton();
         fecha = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textDate = new javax.swing.JLabel();
-        info = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
         content = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -110,77 +125,11 @@ public void initContent() {
 
         background.setBackground(new java.awt.Color(255, 255, 255));
 
-        menu.setBackground(new java.awt.Color(255, 51, 51));
+        menu.setBackground(java.awt.Color.red);
         menu.setPreferredSize(new java.awt.Dimension(270, 640));
         menu.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        inicioBtn.setBackground(new java.awt.Color(255, 102, 102));
-        inicioBtn.setForeground(new java.awt.Color(255, 255, 255));
-        inicioBtn.setText("Inicio");
-        inicioBtn.setBorder(null);
-        inicioBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                inicioBtnActionPerformed(evt);
-            }
-        });
-        menu.add(inicioBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 220, 270, 53));
-
-        empleadosBtn.setBackground(new java.awt.Color(255, 102, 102));
-        empleadosBtn.setForeground(new java.awt.Color(255, 255, 255));
-        empleadosBtn.setText("Empleados");
-        empleadosBtn.setBorder(null);
-        empleadosBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                empleadosBtnActionPerformed(evt);
-            }
-        });
-        menu.add(empleadosBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 270, 270, 53));
-
-        reportBtn.setBackground(new java.awt.Color(255, 102, 102));
-        reportBtn.setForeground(new java.awt.Color(255, 255, 255));
-        reportBtn.setText("Reportes");
-        reportBtn.setBorder(null);
-        reportBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reportBtnActionPerformed(evt);
-            }
-        });
-        menu.add(reportBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 370, 270, 53));
-
-        Salir.setBackground(new java.awt.Color(255, 102, 102));
-        Salir.setForeground(new java.awt.Color(255, 255, 255));
-        Salir.setText("Salir");
-        Salir.setBorder(null);
-        Salir.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SalirActionPerformed(evt);
-            }
-        });
-        menu.add(Salir, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 470, 270, 53));
-
-        asistenciaBtn.setBackground(new java.awt.Color(255, 102, 102));
-        asistenciaBtn.setForeground(new java.awt.Color(255, 255, 255));
-        asistenciaBtn.setText("Asistencia");
-        asistenciaBtn.setBorder(null);
-        asistenciaBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asistenciaBtnActionPerformed(evt);
-            }
-        });
-        menu.add(asistenciaBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 320, 270, 53));
-
-        configBtn1.setBackground(new java.awt.Color(255, 102, 102));
-        configBtn1.setForeground(new java.awt.Color(255, 255, 255));
-        configBtn1.setText("Configuración");
-        configBtn1.setBorder(null);
-        configBtn1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configBtn1ActionPerformed(evt);
-            }
-        });
-        menu.add(configBtn1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 420, 270, 53));
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/account_circle_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.png"))); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/account.png"))); // NOI18N
         menu.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 50, -1, -1));
 
         jLabel3.setFont(new java.awt.Font("Dubai", 1, 14)); // NOI18N
@@ -190,26 +139,67 @@ public void initContent() {
         menu.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 150, 70, 40));
         menu.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 190, 130, 20));
 
+        inicioBtn.setBackground(new java.awt.Color(255, 102, 102));
+        inicioBtn.setText("Inicio");
+        inicioBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inicioBtnActionPerformed(evt);
+            }
+        });
+        menu.add(inicioBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 220, 270, 50));
+
+        empleBtn.setBackground(new java.awt.Color(255, 102, 102));
+        empleBtn.setText("Nomina");
+        empleBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                empleBtnActionPerformed(evt);
+            }
+        });
+        menu.add(empleBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 280, 270, 50));
+
+        asistBtn.setBackground(new java.awt.Color(255, 102, 102));
+        asistBtn.setText("Asistencia");
+        asistBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asistBtnActionPerformed(evt);
+            }
+        });
+        menu.add(asistBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 340, 270, 50));
+
+        salirBtn.setBackground(new java.awt.Color(255, 102, 102));
+        salirBtn.setText("Salir");
+        salirBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                salirBtnActionPerformed(evt);
+            }
+        });
+        menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 590, 270, 40));
+
+        configBtn.setBackground(new java.awt.Color(255, 102, 102));
+        configBtn.setText("Configuracion");
+        menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
+
         fecha.setBackground(new java.awt.Color(0, 0, 0));
 
         jLabel1.setForeground(new java.awt.Color(242, 242, 242));
         jLabel1.setText("Fecha");
 
         textDate.setForeground(new java.awt.Color(242, 242, 242));
-        textDate.setText("Hoy es {dayname} {day} \nde {month} del {year}");
+        textDate.setText("Hoy es {dayname} {day}  de {month} del {year}");
 
         javax.swing.GroupLayout fechaLayout = new javax.swing.GroupLayout(fecha);
         fecha.setLayout(fechaLayout);
         fechaLayout.setHorizontalGroup(
             fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(fechaLayout.createSequentialGroup()
-                .addGap(150, 150, 150)
-                .addComponent(jLabel1)
+                .addGroup(fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(fechaLayout.createSequentialGroup()
+                        .addGap(150, 150, 150)
+                        .addComponent(jLabel1))
+                    .addGroup(fechaLayout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(textDate, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, fechaLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(textDate, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29))
         );
         fechaLayout.setVerticalGroup(
             fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -218,33 +208,33 @@ public void initContent() {
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(textDate, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(29, Short.MAX_VALUE))
-        );
-
-        info.setBackground(new java.awt.Color(51, 51, 51));
-
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("Aqui habra mas info");
-
-        javax.swing.GroupLayout infoLayout = new javax.swing.GroupLayout(info);
-        info.setLayout(infoLayout);
-        infoLayout.setHorizontalGroup(
-            infoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(infoLayout.createSequentialGroup()
-                .addGap(88, 88, 88)
-                .addComponent(jLabel4)
-                .addContainerGap(403, Short.MAX_VALUE))
-        );
-        infoLayout.setVerticalGroup(
-            infoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(infoLayout.createSequentialGroup()
-                .addGap(44, 44, 44)
-                .addComponent(jLabel4)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         content.setRequestFocusEnabled(false);
         content.setLayout(new java.awt.CardLayout());
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 255, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 267, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout backgroundLayout = new javax.swing.GroupLayout(background);
         background.setLayout(backgroundLayout);
@@ -254,24 +244,25 @@ public void initContent() {
                 .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(backgroundLayout.createSequentialGroup()
-                        .addGap(42, 42, 42)
-                        .addComponent(info, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
-                        .addComponent(fecha, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(29, 29, 29))
+                        .addGap(56, 56, 56)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(36, 36, 36)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31)
+                        .addComponent(fecha, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         backgroundLayout.setVerticalGroup(
             backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, 693, Short.MAX_VALUE)
             .addGroup(backgroundLayout.createSequentialGroup()
-                .addGap(23, 23, 23)
+                .addGap(22, 22, 22)
                 .addGroup(backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(fecha, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(55, 55, 55)
-                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(2, 2, 2))
+                .addGap(90, 90, 90)
+                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -289,40 +280,35 @@ public void initContent() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void inicioBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inicioBtnActionPerformed
-  Inicio inicioPanel = new Inicio();
-    ShowJPanel(inicioPanel, "Inicio");
+ Inicio inicioPanel = new Inicio();
+    ShowJPanel(inicioPanel, "Inicio");        // TODO add your handling code here:
     }//GEN-LAST:event_inicioBtnActionPerformed
 
-    private void empleadosBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_empleadosBtnActionPerformed
+    private void asistBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asistBtnActionPerformed
+Asistencia asistenciaPanel = new Asistencia();
+    ShowJPanel(asistenciaPanel, "Asistencia");        // TODO add your handling code here:
+    }//GEN-LAST:event_asistBtnActionPerformed
 
-     Empleados empleadosPanel = new Empleados();
-    ShowJPanel(empleadosPanel, "Empleados");
-    }//GEN-LAST:event_empleadosBtnActionPerformed
+    private void empleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_empleBtnActionPerformed
+ Empleados empleadosPanel = new Empleados();
+    ShowJPanel(empleadosPanel, "Empleados");        // TODO add your handling code here:
+    }//GEN-LAST:event_empleBtnActionPerformed
 
-    private void reportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportBtnActionPerformed
- Reportes reportesPanel = new Reportes();
-    ShowJPanel(reportesPanel, "Reportes");    }//GEN-LAST:event_reportBtnActionPerformed
-
-    private void SalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SalirActionPerformed
-System.exit(0); 
-    }//GEN-LAST:event_SalirActionPerformed
-
-    private void asistenciaBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asistenciaBtnActionPerformed
-    Asistencia asistenciaPanel = new Asistencia();
-    ShowJPanel(asistenciaPanel, "Asistencia");
-    }//GEN-LAST:event_asistenciaBtnActionPerformed
-
-    private void configBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configBtn1ActionPerformed
+    private void salirBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salirBtnActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_configBtn1ActionPerformed
+    }//GEN-LAST:event_salirBtnActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-       
-        FlatLightLaf.setup();
+     try {
+    UIManager.setLookAndFeel( new FlatLightLaf() );
+} catch( Exception ex ) {
+    System.err.println( "Failed to initialize LaF" );
+}
 
+ 
         java.awt.EventQueue.invokeLater(new Runnable() {
                     @Override
 
@@ -335,37 +321,26 @@ System.exit(0);
             }
         });
     }
-private void setDate() {
-    LocalDate now = LocalDate.now();
-    int year = now.getYear();
-    int day = now.getDayOfMonth();
-    int month = now.getMonthValue();
-    String[] meses = {
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    };
-    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
-}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Salir;
-    private javax.swing.JButton asistenciaBtn;
+    private javax.swing.JButton asistBtn;
     private javax.swing.JPanel background;
-    private javax.swing.JButton configBtn1;
+    private javax.swing.JButton configBtn;
     private javax.swing.JPanel content;
-    private javax.swing.JButton empleadosBtn;
+    private javax.swing.JButton empleBtn;
     private javax.swing.JPanel fecha;
-    private javax.swing.JPanel info;
     private javax.swing.JButton inicioBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel menu;
-    private javax.swing.JButton reportBtn;
+    private javax.swing.JButton salirBtn;
     private javax.swing.JLabel textDate;
     // End of variables declaration//GEN-END:variables
 }
