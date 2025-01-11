@@ -5,6 +5,7 @@
 package com.mycompany.santabarbara; 
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
 import java.time.LocalDate;
@@ -328,13 +329,19 @@ System.exit(0);
 
             public void run() {
                 
+            Login login = new Login();
+            login.setVisible(true);
+            
+
+            if (login.isLoginSuccessful()) {
                 new Dashborad().setVisible(true);
-                
-               
-                
+                login.dispose(); // Cerrar la ventana del login
+            } else {
+                System.exit(0);
             }
-        });
-    }
+        }
+    });
+}
 private void setDate() {
     LocalDate now = LocalDate.now();
     int year = now.getYear();
