@@ -296,7 +296,7 @@ Asistencia asistenciaPanel = new Asistencia();
     }//GEN-LAST:event_empleBtnActionPerformed
 
     private void salirBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salirBtnActionPerformed
-        // TODO add your handling code here:
+System.exit(0);        // TODO add your handling code here:
     }//GEN-LAST:event_salirBtnActionPerformed
 
     /**
@@ -328,17 +328,17 @@ Asistencia asistenciaPanel = new Asistencia();
         }
     });
 }
-private void setDate() {
-    LocalDate now = LocalDate.now();
-    int year = now.getYear();
-    int day = now.getDayOfMonth();
-    int month = now.getMonthValue();
-    String[] meses = {
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    };
-    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
-}
+//private void setDate() {
+//    LocalDate now = LocalDate.now();
+//    int year = now.getYear();
+//    int day = now.getDayOfMonth();
+//    int month = now.getMonthValue();
+//    String[] meses = {
+//        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+//        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+//    };
+//    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
+//}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton asistBtn;

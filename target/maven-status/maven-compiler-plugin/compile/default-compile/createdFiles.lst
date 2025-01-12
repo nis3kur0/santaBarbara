@@ -1,4 +1,5 @@
 com\mycompany\loginandsignup\Login.class
+com\mycompany\form\agregarEmpleado$1.class
 com\mycompany\santabarbara\Dashborad$1.class
 com\mycompany\views\Reportes.class
 com\mycompany\santabarbara\Dashborad$5.class
@@ -8,6 +9,7 @@ com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\views\Configuracion.class
 com\mycompany\santabarbara\Dashborad$3.class
 com\mycompany\loginandsignup\Login$1.class
+com\mycompany\form\agregarEmpleado.class
 com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\santabarbara\Dashborad.class
