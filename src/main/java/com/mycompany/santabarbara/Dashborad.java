@@ -8,7 +8,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
-import java.time.LocalDate;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -25,7 +24,6 @@ public class Dashborad extends javax.swing.JFrame {
      */
     public Dashborad() {
         initComponents();
-        setDate();
         initContent();
         Styles();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -43,9 +41,6 @@ public class Dashborad extends javax.swing.JFrame {
         configBtn.putClientProperty( "JButton.buttonType", "roundRect" );
 
 
-
-        
-
     }
   
    private void ShowJPanel(JPanel p, String panelName) { 
@@ -56,17 +51,7 @@ public class Dashborad extends javax.swing.JFrame {
     content.repaint();
 }
    
-   private void setDate() {
-    LocalDate now = LocalDate.now();
-    int year = now.getYear();
-    int day = now.getDayOfMonth();
-    int month = now.getMonthValue();
-    String[] meses = {
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    };
-    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
-}
+   
     
     
 public void initContent() {
@@ -102,12 +87,7 @@ public void initContent() {
         asistBtn = new javax.swing.JButton();
         salirBtn = new javax.swing.JButton();
         configBtn = new javax.swing.JButton();
-        fecha = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        textDate = new javax.swing.JLabel();
         content = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -180,62 +160,8 @@ public void initContent() {
         configBtn.setText("Configuracion");
         menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
 
-        fecha.setBackground(new java.awt.Color(0, 0, 0));
-
-        jLabel1.setForeground(new java.awt.Color(242, 242, 242));
-        jLabel1.setText("Fecha");
-
-        textDate.setForeground(new java.awt.Color(242, 242, 242));
-        textDate.setText("Hoy es {dayname} {day}  de {month} del {year}");
-
-        javax.swing.GroupLayout fechaLayout = new javax.swing.GroupLayout(fecha);
-        fecha.setLayout(fechaLayout);
-        fechaLayout.setHorizontalGroup(
-            fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(fechaLayout.createSequentialGroup()
-                .addGroup(fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(fechaLayout.createSequentialGroup()
-                        .addGap(150, 150, 150)
-                        .addComponent(jLabel1))
-                    .addGroup(fechaLayout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(textDate, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        fechaLayout.setVerticalGroup(
-            fechaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(fechaLayout.createSequentialGroup()
-                .addGap(22, 22, 22)
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(textDate, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
-
         content.setRequestFocusEnabled(false);
         content.setLayout(new java.awt.CardLayout());
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 255, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 267, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
 
         javax.swing.GroupLayout backgroundLayout = new javax.swing.GroupLayout(background);
         background.setLayout(backgroundLayout);
@@ -243,27 +169,12 @@ public void initContent() {
             backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundLayout.createSequentialGroup()
                 .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(backgroundLayout.createSequentialGroup()
-                        .addGap(56, 56, 56)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(36, 36, 36)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(31, 31, 31)
-                        .addComponent(fecha, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE))
         );
         backgroundLayout.setVerticalGroup(
             backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(backgroundLayout.createSequentialGroup()
-                .addGap(22, 22, 22)
-                .addGroup(backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(fecha, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(90, 90, 90)
-                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+            .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(content, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -346,18 +257,13 @@ System.exit(0);        // TODO add your handling code here:
     private javax.swing.JButton configBtn;
     private javax.swing.JPanel content;
     private javax.swing.JButton empleBtn;
-    private javax.swing.JPanel fecha;
     private javax.swing.JButton inicioBtn;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel menu;
     private javax.swing.JButton salirBtn;
-    private javax.swing.JLabel textDate;
     // End of variables declaration//GEN-END:variables
 }
