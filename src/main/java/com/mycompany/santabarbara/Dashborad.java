@@ -9,6 +9,7 @@ import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -207,7 +208,17 @@ Asistencia asistenciaPanel = new Asistencia();
     }//GEN-LAST:event_empleBtnActionPerformed
 
     private void salirBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salirBtnActionPerformed
-System.exit(0);        // TODO add your handling code here:
+    int respuesta = JOptionPane.showConfirmDialog(
+        null, 
+        "¿Estás seguro de que quieres salir?", 
+        "Confirmar salida", 
+        JOptionPane.YES_NO_OPTION, 
+        JOptionPane.QUESTION_MESSAGE
+    );
+
+    if (respuesta == JOptionPane.YES_OPTION) {
+        System.exit(0);
+    }      
     }//GEN-LAST:event_salirBtnActionPerformed
 
     /**
