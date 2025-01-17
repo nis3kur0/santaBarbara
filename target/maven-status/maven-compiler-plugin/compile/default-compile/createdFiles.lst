@@ -5,10 +5,12 @@ com\mycompany\views\Reportes.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Empleados$9.class
 com\mycompany\santabarbara\Dashborad$4.class
+com\mycompany\views\Empleados$11.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\views\Configuracion.class
 com\mycompany\views\Empleados$5.class
 com\mycompany\santabarbara\Dashborad$3.class
+com\mycompany\views\Empleados$14.class
 com\mycompany\views\Empleados$4.class
 com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\santabarbara\Dashborad.class
@@ -17,10 +19,14 @@ com\mycompany\views\Empleados$7.class
 com\mycompany\views\Empleados$8.class
 com\mycompany\form\agregarEmpleado$1.class
 com\mycompany\santabarbara\Dashborad$5.class
+com\mycompany\views\Empleados$12.class
+com\mycompany\views\Empleados$10.class
 com\mycompany\views\Empleados$1.class
+com\mycompany\views\Empleados$15.class
 com\mycompany\loginandsignup\Login$1.class
 com\mycompany\form\agregarEmpleado.class
 com\mycompany\views\Empleados$6.class
 com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Empleados$3.class
 com\mycompany\views\Inicio.class
+com\mycompany\views\Empleados$13.class
