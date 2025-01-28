@@ -213,10 +213,10 @@ public class Login extends javax.swing.JFrame {
         
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
-    public void SetImageLabel(JLabel labelName, String root) {
+    public void SetImageLabel(JLabel jLabel4, String root) {
         ImageIcon image = new ImageIcon(root);
-        Icon icon = new ImageIcon(image.getImage().getScaledInstance(labelName.getWidth(), labelName.getHeight(), Image.SCALE_DEFAULT));
-        labelName.setIcon(icon);
+        Icon icon = new ImageIcon(image.getImage().getScaledInstance(jLabel4.getWidth(), jLabel4.getHeight(), Image.SCALE_DEFAULT));
+        jLabel4.setIcon(icon);
         this.repaint();
     }
 

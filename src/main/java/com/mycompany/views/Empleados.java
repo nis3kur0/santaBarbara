@@ -3,7 +3,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.mycompany.views;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JOptionPane;
 /**
  *
  * @author gabo
@@ -16,14 +24,19 @@ public class Empleados extends javax.swing.JPanel {
     public Empleados() {
         initComponents();
         Styles();
+        model=(DefaultTableModel) this.jTable1.getModel();
     }
+    DefaultTableModel model;
+    String url="jdbc:sqlite:santabarbara.db";
+    Connection connect;
+    
  private void Styles() {
         // Configurar fondo
         
         agregarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         eliminarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         editarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-        calcularBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        conectarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
 
 
     }
@@ -73,7 +86,7 @@ public class Empleados extends javax.swing.JPanel {
         editarBtn = new javax.swing.JButton();
         agregarBtn = new javax.swing.JButton();
         eliminarBtn = new javax.swing.JButton();
-        calcularBtn = new javax.swing.JButton();
+        conectarBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
@@ -81,6 +94,8 @@ public class Empleados extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(0, 0));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setMinimumSize(new java.awt.Dimension(100, 100));
+        jPanel2.setName(""); // NOI18N
         jPanel2.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos de empleado"));
@@ -258,7 +273,7 @@ public class Empleados extends javax.swing.JPanel {
                                 .addComponent(jLabel15)
                                 .addComponent(jLabel14)
                                 .addComponent(jLabel7)))))
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -282,11 +297,12 @@ public class Empleados extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel10)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel14))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel14)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel2)
+                                .addComponent(jLabel10)
+                                .addComponent(jLabel9)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(23, 23, 23)
@@ -316,22 +332,42 @@ public class Empleados extends javax.swing.JPanel {
                             .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder("Acciones")));
+        jPanel3.setMinimumSize(new java.awt.Dimension(100, 100));
 
         editarBtn.setBackground(java.awt.SystemColor.activeCaption);
         editarBtn.setText("Editar");
+        editarBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editarBtnActionPerformed(evt);
+            }
+        });
 
         agregarBtn.setBackground(java.awt.SystemColor.activeCaption);
         agregarBtn.setText("Agregar");
+        agregarBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarBtnActionPerformed(evt);
+            }
+        });
 
         eliminarBtn.setBackground(java.awt.SystemColor.activeCaption);
         eliminarBtn.setText("Eliminar");
+        eliminarBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eliminarBtnActionPerformed(evt);
+            }
+        });
 
-        calcularBtn.setBackground(java.awt.SystemColor.activeCaption);
-        calcularBtn.setText("Calcular");
+        conectarBtn.setText("Conectar");
+        conectarBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                conectarBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -340,10 +376,12 @@ public class Empleados extends javax.swing.JPanel {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(eliminarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(eliminarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, Short.MAX_VALUE)
                     .addComponent(agregarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(editarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(calcularBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(conectarBtn)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -356,8 +394,8 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(eliminarBtn)
                 .addGap(18, 18, 18)
-                .addComponent(calcularBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(conectarBtn)
+                .addContainerGap(67, Short.MAX_VALUE))
         );
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -405,7 +443,7 @@ public class Empleados extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
                 .addGap(67, 67, 67))
         );
 
@@ -413,11 +451,15 @@ public class Empleados extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 1451, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 86, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 893, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 92, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -477,10 +519,195 @@ public class Empleados extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField15ActionPerformed
 
+    private void conectarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conectarBtnActionPerformed
+        // TODO add your handling code here:
+        model.setRowCount (0);
+        ResultSet resul=null;
+        
+        try{
+            connect = DriverManager.getConnection(url);
+            
+            if(connect!=null){
+                JOptionPane.showMessageDialog(null, "Conectado");
+            }
+        }catch(Exception x){
+            JOptionPane.showMessageDialog(null, x.getMessage().toString());
+            
+        }
+    }//GEN-LAST:event_conectarBtnActionPerformed
+
+    private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
+        // TODO add your handling code here:
+    try {
+        // Obtener los valores de los campos de texto
+        String nombre = jTextField2.getText().trim(); // Nombre
+        String apellido = "Guerra"; // Apellido
+        String tipoCedula = "V"; // Tipo de cédula
+        int cedula = jTextField6.getText().trim().isEmpty() ? 0 : Integer.parseInt(jTextField6.getText().trim()); // Cédula
+        String fechaNacimiento = "1999-08-06"; // Fecha de nacimiento (formato YYYY-MM-DD)
+        String sexo = jTextField10.getText().trim(); // Sexo
+        String cargo = jTextField1.getText().trim(); // Cargo
+        String telefono = jTextField3.getText().trim(); // Teléfono
+        String email = jTextField8.getText().trim(); // Email
+        String direccion = jTextField4.getText().trim(); // Dirección
+        double salario = jTextField11.getText().trim().isEmpty() ? 0.0 : Double.parseDouble(jTextField11.getText().trim()); // Salario
+        String tipoContrato = jTextField15.getText().trim(); // Tipo de contrato
+        String inicioContrato = jTextField7.getText().trim(); // Inicio de contrato (formato YYYY-MM-DD)
+        String finContrato = jTextField14.getText().trim(); // Fin de contrato (formato YYYY-MM-DD)
+        String estado = "Activo"; // Estado (valor predeterminado)
+        int horasTrabajadas = 0; // Horas trabajadas (valor predeterminado)
+        String banco = jTextField13.getText().trim(); // Banco
+        String numeroCuenta = jTextField9.getText().trim(); // Número de cuenta
+
+        // Valores genéricos para campos obligatorios
+        if (nombre.isEmpty()) {
+            nombre = "Sin nombre";
+        }
+        if (apellido.isEmpty()) {
+            apellido = "Sin apellido";
+        }
+        if (tipoCedula.isEmpty()) {
+            tipoCedula = "Sin tipo de cédula";
+        }
+        if (fechaNacimiento.isEmpty()) {
+            fechaNacimiento = "1900-01-01"; // Fecha predeterminada
+        }
+        if (sexo.isEmpty()) {
+            sexo = "Sin especificar";
+        }
+        if (cargo.isEmpty()) {
+            cargo = "Sin cargo";
+        }
+        if (telefono.isEmpty()) {
+            telefono = "Sin teléfono";
+        }
+        if (email.isEmpty()) {
+            email = "Sin email";
+        }
+        if (direccion.isEmpty()) {
+            direccion = "Sin dirección";
+        }
+        if (tipoContrato.isEmpty()) {
+            tipoContrato = "Sin tipo de contrato";
+        }
+        if (inicioContrato.isEmpty()) {
+            inicioContrato = "1900-01-01"; // Fecha predeterminada
+        }
+        if (finContrato.isEmpty()) {
+            finContrato = "1900-01-01"; // Fecha predeterminada
+        }
+        if (banco.isEmpty()) {
+            banco = "Sin banco";
+        }
+        if (numeroCuenta.isEmpty()) {
+            numeroCuenta = "Sin número de cuenta";
+        }
+
+        // Insertar los datos en la base de datos
+        String sql = "INSERT INTO empleados (ID, NOMBRE, APELLIDO, TIPO_CEDULA, CEDULA, FECHA_NACIMIENTO, SEXO, CARGO, TELEFONO, EMAIL, DIRECCION, SALARIO, TIPO_CONTRATO, INICIO_CONTRATO, FIN_CONTRATO, ESTADO, HORAS_TRABAJADAS, BANCO, NUMERO_CUENTA) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connect.prepareStatement(sql)) {
+            // Generar un ID único (puedes usar un autoincremento en la base de datos)
+            int id = obtenerNuevoID(); // Método para generar un nuevo ID
+
+            pstmt.setInt(1, id);
+            pstmt.setString(2, nombre);
+            pstmt.setString(3, apellido);
+            pstmt.setString(4, tipoCedula);
+            pstmt.setInt(5, cedula);
+            pstmt.setString(6, fechaNacimiento);
+            pstmt.setString(7, sexo);
+            pstmt.setString(8, cargo);
+            pstmt.setString(9, telefono);
+            pstmt.setString(10, email);
+            pstmt.setString(11, direccion);
+            pstmt.setDouble(12, salario);
+            pstmt.setString(13, tipoContrato);
+            pstmt.setString(14, inicioContrato);
+            pstmt.setString(15, finContrato);
+            pstmt.setString(16, estado);
+            pstmt.setInt(17, horasTrabajadas);
+            pstmt.setString(18, banco);
+            pstmt.setString(19, numeroCuenta);
+
+            pstmt.executeUpdate();
+        }
+
+        // Añadir la nueva fila al JTable
+        Object[] rowData = {
+            nombre,
+            apellido,
+            tipoCedula,
+            cedula,
+            fechaNacimiento,
+            sexo,
+            cargo,
+            telefono,
+            email,
+            direccion,
+            salario,
+            tipoContrato,
+            inicioContrato,
+            finContrato,
+            estado,
+            horasTrabajadas,
+            banco,
+            numeroCuenta
+        };
+        model.addRow(rowData);
+
+        // Mostrar mensaje de éxito
+        JOptionPane.showMessageDialog(null, "Registro añadido correctamente");
+
+        // Limpiar los campos de texto después de añadir el registro
+        jTextField2.setText("");
+        jTextField1.setText("");
+        jTextField3.setText("");
+        jTextField6.setText("");
+        jTextField4.setText("");
+        jTextField5.setText("");
+        jTextField8.setText("");
+        jTextField9.setText("");
+        jTextField10.setText("");
+        jTextField11.setText("");
+        jTextField12.setText("");
+        jTextField13.setText("");
+        jTextField14.setText("");
+        jTextField15.setText("");
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Error al añadir el registro a la base de datos: " + e.getMessage());
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "Por favor, ingrese valores válidos en los campos numéricos (Cedula y Salario).");
+    }
+}
+
+// Método para generar un nuevo ID (puedes implementar tu propia lógica)
+private int obtenerNuevoID() throws SQLException {
+    String sql = "SELECT MAX(ID) FROM empleados";
+    try (PreparedStatement pstmt = connect.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+        if (rs.next()) {
+            return rs.getInt(1) + 1; // Incrementa el ID máximo en 1
+        } else {
+            return 1; // Si no hay registros, comienza con 1
+        }
+    }
+    }//GEN-LAST:event_agregarBtnActionPerformed
+
+    private void editarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_editarBtnActionPerformed
+
+    private void eliminarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_eliminarBtnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton agregarBtn;
-    private javax.swing.JButton calcularBtn;
+    private javax.swing.JButton conectarBtn;
     private javax.swing.JButton editarBtn;
     private javax.swing.JButton eliminarBtn;
     private javax.swing.JLabel jLabel1;
