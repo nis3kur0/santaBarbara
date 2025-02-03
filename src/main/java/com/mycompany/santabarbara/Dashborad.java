@@ -8,7 +8,10 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -25,12 +28,40 @@ public class Dashborad extends javax.swing.JFrame {
      */
     public Dashborad() {
         initComponents();
+        scaleIcons();
         initContent();
         Styles();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
            
     }
+    
+private void scaleIcons() {
+    // Lista de botones y sus respectivos iconos
+    Object[][] iconos = {
+        {inicioBtn, homeIcn, "/home.png"},
+        {empleBtn, nominaIcn, "/nomina.png"},
+        {asistBtn, asistIcn, "/asistencia.png"},
+        {configBtn, confIcn, "/conf.png"},
+        {salirBtn, salirIcn, "/salir.png"}
+    };
+
+    for (Object[] icono : iconos) {
+        JButton boton = (JButton) icono[0];
+        JLabel etiqueta = (JLabel) icono[1];
+        String ruta = (String) icono[2];
+
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource(ruta));
+        Image img = originalIcon.getImage();
+
+        int btnHeight = boton.getHeight();
+        int btnWidth = btnHeight;
+
+        Image resizedImg = img.getScaledInstance(btnWidth, btnHeight, Image.SCALE_SMOOTH);
+        etiqueta.setIcon(new ImageIcon(resizedImg));
+    }
+}
+
     
  private void Styles() {
         // Configurar fondo
@@ -80,6 +111,11 @@ public void initContent() {
         jTable1 = new javax.swing.JTable();
         background = new javax.swing.JPanel();
         menu = new javax.swing.JPanel();
+        salirIcn = new javax.swing.JLabel();
+        confIcn = new javax.swing.JLabel();
+        asistIcn = new javax.swing.JLabel();
+        nominaIcn = new javax.swing.JLabel();
+        homeIcn = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
@@ -110,6 +146,31 @@ public void initContent() {
         menu.setBackground(java.awt.Color.red);
         menu.setPreferredSize(new java.awt.Dimension(270, 640));
         menu.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        salirIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
+        salirIcn.setText("jLabel1");
+        salirIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(salirIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 590, 40, 40));
+
+        confIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
+        confIcn.setText("jLabel1");
+        confIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(confIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, 50, 50));
+
+        asistIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asistencia.png"))); // NOI18N
+        asistIcn.setText("jLabel1");
+        asistIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(asistIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 340, 50, 50));
+
+        nominaIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/nomina.png"))); // NOI18N
+        nominaIcn.setText("jLabel1");
+        nominaIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(nominaIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, 50, 50));
+
+        homeIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/home.png"))); // NOI18N
+        homeIcn.setText("jLabel1");
+        homeIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(homeIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 50, 50));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/account.png"))); // NOI18N
         menu.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 50, -1, -1));
@@ -170,6 +231,7 @@ public void initContent() {
             backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgroundLayout.createSequentialGroup()
                 .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE))
         );
         backgroundLayout.setVerticalGroup(
@@ -218,7 +280,7 @@ Asistencia asistenciaPanel = new Asistencia();
 
     if (respuesta == JOptionPane.YES_OPTION) {
         System.exit(0);
-    }    // TODO add your handling code here:
+    }      
     }//GEN-LAST:event_salirBtnActionPerformed
 
     /**
@@ -264,10 +326,13 @@ Asistencia asistenciaPanel = new Asistencia();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton asistBtn;
+    private javax.swing.JLabel asistIcn;
     private javax.swing.JPanel background;
+    private javax.swing.JLabel confIcn;
     private javax.swing.JButton configBtn;
     private javax.swing.JPanel content;
     private javax.swing.JButton empleBtn;
+    private javax.swing.JLabel homeIcn;
     private javax.swing.JButton inicioBtn;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -275,6 +340,8 @@ Asistencia asistenciaPanel = new Asistencia();
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel menu;
+    private javax.swing.JLabel nominaIcn;
     private javax.swing.JButton salirBtn;
+    private javax.swing.JLabel salirIcn;
     // End of variables declaration//GEN-END:variables
 }
