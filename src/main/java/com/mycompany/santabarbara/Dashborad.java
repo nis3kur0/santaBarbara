@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.loginandsignup.*;
 import com.mycompany.views.*;
 import java.awt.*;  
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -29,8 +30,16 @@ public class Dashborad extends javax.swing.JFrame {
         Styles();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-           
+        setIcon();
+          
     }
+    
+    private void setIcon() {
+    java.net.URL imgURL = getClass().getResource("/logo.jpg");
+    setIconImage(new ImageIcon(imgURL).getImage());
+
+    }
+
     
  private void Styles() {
         // Configurar fondo

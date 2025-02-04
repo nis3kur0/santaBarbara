@@ -12,12 +12,18 @@ public class Login extends javax.swing.JFrame {
   
     public Login() {
         initComponents();
-        this.setLocationRelativeTo(this);
+        this.setLocationRelativeTo(null);
         this.setResizable(false); 
         SetImageLabel(jLabel4, "src/main/resources/santa.jpg");
+        setIconImage(getLogo());
 
         
     }
+    
+    private Image getLogo() {
+        return new ImageIcon(getClass().getResource("/logo.jpg")).getImage();
+    }
+    
     
 
 
