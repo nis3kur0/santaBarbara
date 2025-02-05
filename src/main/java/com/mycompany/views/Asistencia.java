@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import com.mycompany.ConexionBD;
 
 /**
  *
@@ -34,8 +35,6 @@ public class Asistencia extends javax.swing.JPanel {
 
     }
     DefaultTableModel model;
-    String url = "jdbc:sqlite:santabarbara.db";
-    Connection connect;
 
     //FUNCIONES PARA CARGAR LOS DATOS
     private void cargarDatosAsistenciasEnTabla() {
@@ -43,7 +42,7 @@ public class Asistencia extends javax.swing.JPanel {
                 + "FROM asistencias a "
                 + "JOIN empleados e ON a.ID_EMPLEADO = e.ID"; // Consulta para obtener todas las asistencias
 
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             // Ejecutar la consulta
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -85,7 +84,7 @@ public class Asistencia extends javax.swing.JPanel {
                 + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
                 + "ORDER BY a.FECHA DESC, a.HORA_ENTRADA DESC";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
 
             // Obtener los metadatos de la consulta
             ResultSetMetaData metaData = rs.getMetaData();
@@ -120,7 +119,7 @@ public class Asistencia extends javax.swing.JPanel {
         jComboBox1.addItem("Selecciona un empleado");
         String query = "SELECT NOMBRE_COMPLETO FROM empleados";
 
-        try (Connection con = DriverManager.getConnection(url); Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+        try (Connection con = ConexionBD.obtenerConexion(); Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
                 String nombreEmpleado = rs.getString("NOMBRE_COMPLETO");
@@ -135,7 +134,7 @@ public class Asistencia extends javax.swing.JPanel {
     private int obtenerIdEmpleadoPorNombre(String nombre) {
         String sql = "SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?";
 
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, nombre);
 
@@ -154,7 +153,7 @@ public class Asistencia extends javax.swing.JPanel {
     private boolean verificarRegistroExistente(int idEmpleado) {
         String query = "SELECT COUNT(*) FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now')";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, idEmpleado);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -171,7 +170,7 @@ public class Asistencia extends javax.swing.JPanel {
     private boolean verificarSalidaRegistrada(int idEmpleado) {
         String sql = "SELECT 1 FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NOT NULL";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setInt(1, idEmpleado);
 
             ResultSet rs = pstmt.executeQuery();
@@ -206,7 +205,7 @@ public class Asistencia extends javax.swing.JPanel {
         String horaEntrada = LocalTime.now().toString();
         String query = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, 'Presente')";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, idEmpleado);
             stmt.setString(2, horaEntrada);
 
@@ -256,7 +255,7 @@ public class Asistencia extends javax.swing.JPanel {
         // Actualizar el registro de asistencia con la hora de salida
         String sql = "UPDATE asistencias SET HORA_SALIDA = ?, ESTADO = 'Presente' WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, horaSalida); // Hora de salida
             stmt.setInt(2, idEmpleado); // ID del empleado
 

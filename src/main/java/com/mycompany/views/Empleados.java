@@ -12,7 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
+import com.mycompany.ConexionBD;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 
@@ -33,8 +33,6 @@ public class Empleados extends javax.swing.JPanel {
 
     }
     DefaultTableModel model;
-    String url = "jdbc:sqlite:santabarbara.db";
-    Connection connect;
 
     
     //ESTILOS DEL LOOK AND FEEL
@@ -56,7 +54,7 @@ public class Empleados extends javax.swing.JPanel {
     private void cargarDatosEnTabla() {
         String sql = "SELECT * FROM empleados"; 
 
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
         
             ResultSetMetaData metaData = rs.getMetaData();
@@ -165,7 +163,7 @@ public class Empleados extends javax.swing.JPanel {
     String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA) "
                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    try (Connection con = DriverManager.getConnection(url);
+    try (Connection con = ConexionBD.obtenerConexion();
          PreparedStatement pstmt = con.prepareStatement(sql)) {
 
         pstmt.setString(1, nombre);
@@ -711,9 +709,9 @@ private boolean isFechaValida(String fecha) {
         ResultSet resul = null;
 
         try {
-            connect = DriverManager.getConnection(url);
+            Connection conn = ConexionBD.obtenerConexion();
 
-            if (connect != null) {
+            if (conn != null) {
                 JOptionPane.showMessageDialog(null, "Conectado");
             }
         } catch (Exception x) {
@@ -731,7 +729,9 @@ private boolean isFechaValida(String fecha) {
 // Método para generar un nuevo ID (puedes implementar tu propia lógica)
     private int obtenerNuevoID() throws SQLException {
         String sql = "SELECT MAX(ID) FROM empleados";
-        try (PreparedStatement pstmt = connect.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = ConexionBD.obtenerConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1) + 1; 
             } else {
@@ -762,7 +762,7 @@ private boolean isFechaValida(String fecha) {
         }
 
     
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
 
             pstmt.setInt(1, id); 
             int filasEliminadas = pstmt.executeUpdate();
