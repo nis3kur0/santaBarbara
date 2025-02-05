@@ -4,6 +4,10 @@
  */
 package com.mycompany.views;
 
+import java.awt.Insets;
+import javax.swing.ImageIcon;
+import javax.swing.SwingConstants;
+
 /**
  *
  * @author gabo
@@ -16,6 +20,23 @@ public class Empleados extends javax.swing.JPanel {
     public Empleados() {
         initComponents();
         Styles();
+        agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
+        agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        agregarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        agregarBtn.setMargin(new Insets(0, 0, 0, 20)); // 
+        editarBtn.setIcon(new ImageIcon(getClass().getResource("/editar.png"))); 
+        editarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        editarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        editarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        eliminarBtn.setIcon(new ImageIcon(getClass().getResource("/eliminar.png"))); 
+        eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        eliminarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        calcularBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
+        calcularBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        calcularBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        calcularBtn.setMargin(new Insets(0, 0, 0, 20)); //
+
     }
  private void Styles() {
         // Configurar fondo
@@ -66,10 +87,16 @@ public class Empleados extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(0, 0));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setMinimumSize(new java.awt.Dimension(100, 100));
         jPanel2.setPreferredSize(new java.awt.Dimension(0, 0));
 
         agregarBtn.setBackground(java.awt.SystemColor.activeCaption);
         agregarBtn.setText("Agregar");
+        agregarBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarBtnActionPerformed(evt);
+            }
+        });
 
         editarBtn.setBackground(java.awt.SystemColor.activeCaption);
         editarBtn.setText("Editar");
@@ -288,7 +315,9 @@ public class Empleados extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 1281, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1266, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -296,7 +325,7 @@ public class Empleados extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -332,6 +361,11 @@ public class Empleados extends javax.swing.JPanel {
     private void jTextField8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField8ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField8ActionPerformed
+
+    private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_agregarBtnActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
