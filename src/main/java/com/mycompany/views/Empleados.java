@@ -14,6 +14,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
+import java.awt.Insets;
+import javax.swing.ImageIcon;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -29,6 +32,32 @@ public class Empleados extends javax.swing.JPanel {
         Styles();
         model = (DefaultTableModel) this.jTable1.getModel();
         cargarDatosEnTabla();
+        agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
+        agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        agregarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        agregarBtn.setMargin(new Insets(0, 0, 0, 20)); // 
+        editarBtn.setIcon(new ImageIcon(getClass().getResource("/editar.png"))); 
+        editarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        editarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        editarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        eliminarBtn.setIcon(new ImageIcon(getClass().getResource("/eliminar.png"))); 
+        eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        eliminarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        calcularBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
+        calcularBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        calcularBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        calcularBtn.setMargin(new Insets(0, 0, 0, 20)); //
+
+    }
+ private void Styles() {
+        // Configurar fondo
+        
+        agregarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        eliminarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        editarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        calcularBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+
 
     }
     DefaultTableModel model;
@@ -686,6 +715,11 @@ public class Empleados extends javax.swing.JPanel {
 
         limpiarCamposEmpleado();
     }//GEN-LAST:event_limpiarBtnActionPerformed
+
+    private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_agregarBtnActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

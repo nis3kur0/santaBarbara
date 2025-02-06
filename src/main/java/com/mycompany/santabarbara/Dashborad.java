@@ -34,7 +34,8 @@ public class Dashborad extends javax.swing.JFrame {
         Styles();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-           
+        setIcon();
+          
     }
     
 private void scaleIcons() {
@@ -62,6 +63,11 @@ private void scaleIcons() {
         etiqueta.setIcon(new ImageIcon(resizedImg));
     }
 }
+    private void setIcon() {
+    java.net.URL imgURL = getClass().getResource("/logo.jpg");
+    setIconImage(new ImageIcon(imgURL).getImage());
+
+    }
 
     
  private void Styles() {
