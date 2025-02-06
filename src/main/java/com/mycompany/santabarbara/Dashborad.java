@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.mycompany.santabarbara; 
+package com.mycompany.santabarbara;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.mycompany.loginandsignup.*;
@@ -12,10 +12,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import java.awt.*;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-
 
 /**
  *
@@ -74,30 +75,32 @@ private void scaleIcons() {
 
 
     }
-  
-   private void ShowJPanel(JPanel p, String panelName) { 
-    content.add(p, panelName);
-    CardLayout layout = (CardLayout) content.getLayout();
-    layout.show(content, panelName);
-    content.revalidate();
-    content.repaint();
-}
-   
-   
-    
-    
-public void initContent() {
-    Inicio p1 = new Inicio();
-    content.add(p1, "Inicio");
-    CardLayout layout = (CardLayout) content.getLayout();
-    layout.show(content, "Inicio");
-    content.revalidate();
-    content.repaint();
-}
 
+    private void Styles() {
+        inicioBtn.putClientProperty("JButton.buttonType", "roundRect");
+        empleBtn.putClientProperty("JButton.buttonType", "roundRect");
+        asistBtn.putClientProperty("JButton.buttonType", "roundRect");
+        salirBtn.putClientProperty("JButton.buttonType", "roundRect");
+        configBtn.putClientProperty("JButton.buttonType", "roundRect");
+    }
 
+    private void ShowJPanel(JPanel p, String panelName) {
+        content.add(p, panelName);
+        CardLayout layout = (CardLayout) content.getLayout();
+        layout.show(content, panelName);
+        content.revalidate();
+        content.repaint();
+    }
 
-   
+    public void initContent() {
+        Inicio p1 = new Inicio();
+        content.add(p1, "Inicio");
+        CardLayout layout = (CardLayout) content.getLayout();
+        layout.show(content, "Inicio");
+        content.revalidate();
+        content.repaint();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -192,7 +195,7 @@ public void initContent() {
         menu.add(inicioBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 220, 270, 50));
 
         empleBtn.setBackground(new java.awt.Color(255, 102, 102));
-        empleBtn.setText("Nomina");
+        empleBtn.setText("Empleados");
         empleBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 empleBtnActionPerformed(evt);
@@ -216,10 +219,10 @@ public void initContent() {
                 salirBtnActionPerformed(evt);
             }
         });
-        menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 590, 270, 40));
+        menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 600, 270, 40));
 
         configBtn.setBackground(new java.awt.Color(255, 102, 102));
-        configBtn.setText("Configuracion");
+        configBtn.setText("Nomina");
         menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
 
         content.setRequestFocusEnabled(false);
@@ -255,18 +258,18 @@ public void initContent() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void inicioBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inicioBtnActionPerformed
- Inicio inicioPanel = new Inicio();
-    ShowJPanel(inicioPanel, "Inicio");        // TODO add your handling code here:
+        Inicio inicioPanel = new Inicio();
+        ShowJPanel(inicioPanel, "Inicio");        // TODO add your handling code here:
     }//GEN-LAST:event_inicioBtnActionPerformed
 
     private void asistBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asistBtnActionPerformed
-Asistencia asistenciaPanel = new Asistencia();
-    ShowJPanel(asistenciaPanel, "Asistencia");        // TODO add your handling code here:
+        Asistencia asistenciaPanel = new Asistencia();
+        ShowJPanel(asistenciaPanel, "Asistencia");        // TODO add your handling code here:
     }//GEN-LAST:event_asistBtnActionPerformed
 
     private void empleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_empleBtnActionPerformed
- Empleados empleadosPanel = new Empleados();
-    ShowJPanel(empleadosPanel, "Empleados");        // TODO add your handling code here:
+        Empleados empleadosPanel = new Empleados();
+        ShowJPanel(empleadosPanel, "Empleados");        // TODO add your handling code here:
     }//GEN-LAST:event_empleBtnActionPerformed
 
     private void salirBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salirBtnActionPerformed
@@ -287,31 +290,29 @@ Asistencia asistenciaPanel = new Asistencia();
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-     try {
-    UIManager.setLookAndFeel( new FlatLightLaf() );
-} catch( Exception ex ) {
-    System.err.println( "Failed to initialize LaF" );
-}
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize LaF");s
+        }
 
- 
         java.awt.EventQueue.invokeLater(new Runnable() {
-                    @Override
+            @Override
 
             public void run() {
-                
-            Login login = new Login();
-            login.setVisible(true);
-            
 
-            if (login.isLoginSuccessful()) {
-                new Dashborad().setVisible(true);
-                login.dispose(); // Cerrar la ventana del login
-            } else {
-                System.exit(0);
+                Login login = new Login();
+                login.setVisible(true);
+
+                if (login.isLoginSuccessful()) {
+                    new Dashborad().setVisible(true);
+                    login.dispose(); // Cerrar la ventana del login
+                } else {
+                    System.exit(0);
+                }
             }
-        }
-    });
-}
+        });
+    }
 //private void setDate() {
 //    LocalDate now = LocalDate.now();
 //    int year = now.getYear();
