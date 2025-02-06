@@ -44,28 +44,17 @@ public class Empleados extends javax.swing.JPanel {
         eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
         eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
         eliminarBtn.setMargin(new Insets(0, 0, 0, 20)); //
-        calcularBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
-        calcularBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
-        calcularBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
-        calcularBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        limpiarBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
+        limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
+        limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
 
     }
  private void Styles() {
-        // Configurar fondo
-        
-        agregarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-        eliminarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-        editarBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-        calcularBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-
-
-    }
-    DefaultTableModel model;
-    String url = "jdbc:sqlite:santabarbara.db";
-    Connection connect;
+      
 
     //ESTILOS DEL LOOK AND FEEL
-    private void Styles() {
+
 
         agregarBtn.putClientProperty("JButton.buttonType", "roundRect");
         eliminarBtn.putClientProperty("JButton.buttonType", "roundRect");
@@ -73,6 +62,9 @@ public class Empleados extends javax.swing.JPanel {
         limpiarBtn.putClientProperty("JButton.buttonType", "roundRect");
 
     }
+ DefaultTableModel model;
+    String url = "jdbc:sqlite:santabarbara.db";
+    Connection connect;
 
     //FUNCIONES PARA ACTUALIZAR Y CARGAR DATOS
     private void cargarDatosEnTabla() {
@@ -276,7 +268,6 @@ public class Empleados extends javax.swing.JPanel {
         agregarBtn = new javax.swing.JButton();
         eliminarBtn = new javax.swing.JButton();
         limpiarBtn = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(1440, 900));
         setPreferredSize(new java.awt.Dimension(1440, 900));
@@ -574,21 +565,10 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(17, 17, 17))
         );
 
-        jButton1.setText("Imprimir lista");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(75, 75, 75))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -603,9 +583,7 @@ public class Empleados extends javax.swing.JPanel {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26))
+                .addGap(103, 103, 103))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -649,26 +627,9 @@ public class Empleados extends javax.swing.JPanel {
     }//GEN-LAST:event_textNumeroCuentaActionPerformed
 
     private void textTlfhabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textTlfhabActionPerformed
-        // TODO add your handling code here:
+       // TODO add your handling code here:
     }//GEN-LAST:event_textTlfhabActionPerformed
-
-    private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-
-        agregarEmpleado();
-
-    }
-
-// Método para generar un nuevo ID (puedes implementar tu propia lógica)
-    private int obtenerNuevoID() throws SQLException {
-        String sql = "SELECT MAX(ID) FROM empleados";
-        try (PreparedStatement pstmt = connect.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1) + 1;
-            } else {
-                return 1;
-            }
-        }
-    }//GEN-LAST:event_agregarBtnActionPerformed
+                                          
 
     private void editarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarBtnActionPerformed
         // TODO add your handling code here:
@@ -707,18 +668,14 @@ public class Empleados extends javax.swing.JPanel {
         }        // TODO add your handling code here:
     }//GEN-LAST:event_eliminarBtnActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void limpiarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limpiarBtnActionPerformed
 
         limpiarCamposEmpleado();
     }//GEN-LAST:event_limpiarBtnActionPerformed
 
     private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-        // TODO add your handling code here:
-        
+
+       agregarEmpleado();
     }//GEN-LAST:event_agregarBtnActionPerformed
 
 
@@ -730,7 +687,6 @@ public class Empleados extends javax.swing.JPanel {
     private com.toedter.calendar.JDateChooser dateInicio;
     private javax.swing.JButton editarBtn;
     private javax.swing.JButton eliminarBtn;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
