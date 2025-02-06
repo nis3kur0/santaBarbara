@@ -76,13 +76,6 @@ private void scaleIcons() {
 
     }
 
-    private void Styles() {
-        inicioBtn.putClientProperty("JButton.buttonType", "roundRect");
-        empleBtn.putClientProperty("JButton.buttonType", "roundRect");
-        asistBtn.putClientProperty("JButton.buttonType", "roundRect");
-        salirBtn.putClientProperty("JButton.buttonType", "roundRect");
-        configBtn.putClientProperty("JButton.buttonType", "roundRect");
-    }
 
     private void ShowJPanel(JPanel p, String panelName) {
         content.add(p, panelName);
@@ -293,7 +286,7 @@ private void scaleIcons() {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
-            System.err.println("Failed to initialize LaF");s
+            System.err.println("Failed to initialize LaF");
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
