@@ -32,14 +32,14 @@ public class Dashborad extends javax.swing.JFrame {
         scaleIcons();
         initContent();
         Styles();
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setIcon();
           
     }
     
 private void scaleIcons() {
-    // Lista de botones y sus respectivos iconos
+    
     Object[][] iconos = {
         {inicioBtn, homeIcn, "/home.png"},
         {empleBtn, nominaIcn, "/nomina.png"},
@@ -71,14 +71,13 @@ private void scaleIcons() {
 
     
  private void Styles() {
-        // Configurar fondo
+       
         
         inicioBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         empleBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         asistBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         salirBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         configBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-
 
     }
 
@@ -142,8 +141,14 @@ private void scaleIcons() {
         jScrollPane1.setViewportView(jTable1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMaximumSize(new java.awt.Dimension(1440, 900));
+        setMinimumSize(new java.awt.Dimension(1280, 720));
+        setPreferredSize(new java.awt.Dimension(1280, 720));
 
         background.setBackground(new java.awt.Color(255, 255, 255));
+        background.setMaximumSize(new java.awt.Dimension(1440, 900));
+        background.setMinimumSize(new java.awt.Dimension(1280, 720));
+        background.setPreferredSize(new java.awt.Dimension(1280, 720));
 
         menu.setBackground(java.awt.Color.red);
         menu.setPreferredSize(new java.awt.Dimension(270, 640));
@@ -224,6 +229,8 @@ private void scaleIcons() {
         configBtn.setText("Nomina");
         menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
 
+        content.setMaximumSize(new java.awt.Dimension(1000, 720));
+        content.setMinimumSize(new java.awt.Dimension(1000, 720));
         content.setRequestFocusEnabled(false);
         content.setLayout(new java.awt.CardLayout());
 
@@ -234,7 +241,7 @@ private void scaleIcons() {
             .addGroup(backgroundLayout.createSequentialGroup()
                 .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE))
+                .addComponent(content, javax.swing.GroupLayout.DEFAULT_SIZE, 1010, Short.MAX_VALUE))
         );
         backgroundLayout.setVerticalGroup(
             backgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -312,17 +319,6 @@ private void scaleIcons() {
             }
         });
     }
-//private void setDate() {
-//    LocalDate now = LocalDate.now();
-//    int year = now.getYear();
-//    int day = now.getDayOfMonth();
-//    int month = now.getMonthValue();
-//    String[] meses = {
-//        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-//        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-//    };
-//    textDate.setText("Hoy es " + day + " de " + meses[month - 1] + " de " + year);
-//}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton asistBtn;
