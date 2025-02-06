@@ -53,7 +53,7 @@ public class Inicio extends javax.swing.JPanel {
             // Obtener la imagen original desde los recursos
             ImageIcon originalIcon = new ImageIcon(getClass().getResource("/local.jpg"));
             // Redimensionar la imagen a 549x459 con suavizado
-            Image imagenEscalada = originalIcon.getImage().getScaledInstance(610, 488, Image.SCALE_SMOOTH);
+            Image imagenEscalada = originalIcon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH);
             // Crear un nuevo ImageIcon y asignarlo al JLabel
             jLabel14.setIcon(new ImageIcon(imagenEscalada));
 }
@@ -285,6 +285,9 @@ private void setDate() {
 
         jLabel14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/local.jpg"))); // NOI18N
         jLabel14.setText("jLabel14");
+        jLabel14.setMaximumSize(new java.awt.Dimension(300, 300));
+        jLabel14.setMinimumSize(new java.awt.Dimension(300, 300));
+        jLabel14.setPreferredSize(new java.awt.Dimension(300, 300));
 
         jLabel19.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel19.setText("ofreciendo herramientas eficientes para: ");
@@ -327,21 +330,21 @@ private void setDate() {
                                         .addGap(123, 123, 123)
                                         .addComponent(icono3, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 610, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(bgLayout.createSequentialGroup()
-                        .addGap(213, 213, 213)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 962, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(bgLayout.createSequentialGroup()
                         .addGap(221, 221, 221)
-                        .addComponent(jLabel12)))
-                .addContainerGap(724, Short.MAX_VALUE))
+                        .addComponent(jLabel12))
+                    .addGroup(bgLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 962, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         bgLayout.setVerticalGroup(
             bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bgLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
+                .addGap(31, 31, 31)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel12)
                 .addGap(63, 63, 63)
                 .addGroup(bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -365,8 +368,8 @@ private void setDate() {
                         .addGroup(bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(icono2, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(icono4, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(301, Short.MAX_VALUE))
+                    .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

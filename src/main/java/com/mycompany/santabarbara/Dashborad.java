@@ -143,7 +143,6 @@ private void scaleIcons() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMaximumSize(new java.awt.Dimension(1440, 900));
         setMinimumSize(new java.awt.Dimension(1280, 720));
-        setPreferredSize(new java.awt.Dimension(1280, 720));
 
         background.setBackground(new java.awt.Color(255, 255, 255));
         background.setMaximumSize(new java.awt.Dimension(1440, 900));

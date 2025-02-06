@@ -47,8 +47,7 @@ public class Asistencia extends javax.swing.JPanel {
     private void cargarDatosAsistenciasEnTabla() {
         String sql = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
                 + "FROM asistencias a "
-                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID"; // Consulta para obtener todas las asistencias
-
+                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID"; 
         try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
           
@@ -61,8 +60,6 @@ public class Asistencia extends javax.swing.JPanel {
        
                 model.setRowCount(0); 
                 model.setColumnCount(0); 
-
-                model.addColumn("ID");
                 model.addColumn("Nombre Empleado");
                 model.addColumn("Fecha");
                 model.addColumn("Hora de Entrada");
