@@ -38,6 +38,7 @@ public class Asistencia extends javax.swing.JPanel {
     Connection connect;
 
     //FUNCIONES PARA CARGAR LOS DATOS
+    
     private void cargarDatosAsistenciasEnTabla() {
         String sql = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
                 + "FROM asistencias a "
@@ -45,18 +46,18 @@ public class Asistencia extends javax.swing.JPanel {
 
         try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // Ejecutar la consulta
+          
             try (ResultSet rs = pstmt.executeQuery()) {
 
-                // Obtener los metadatos de la consulta
+                
                 ResultSetMetaData metaData = rs.getMetaData();
                 int columnCount = metaData.getColumnCount();
 
-                // Limpiar el modelo actual
-                model.setRowCount(0); // Limpiar las filas
-                model.setColumnCount(0); // Limpiar las columnas
+       
+                model.setRowCount(0); 
+                model.setColumnCount(0); 
 
-                // Agregar los nombres de las columnas al modelo
+            
                 model.addColumn("Nombre Empleado");
                 model.addColumn("Fecha");
                 model.addColumn("Hora de Entrada");
@@ -64,13 +65,13 @@ public class Asistencia extends javax.swing.JPanel {
                 model.addColumn("Estado");
                 model.addColumn("Observaciones");
 
-                // Agregar los datos de las filas al modelo
+             
                 while (rs.next()) {
                     Object[] rowData = new Object[columnCount];
                     for (int i = 1; i <= columnCount; i++) {
                         rowData[i - 1] = rs.getObject(i);
                     }
-                    model.addRow(rowData); // Añadir la fila al modelo de la tabla
+                    model.addRow(rowData); 
                 }
             }
 
@@ -87,21 +88,21 @@ public class Asistencia extends javax.swing.JPanel {
 
         try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
 
-            // Obtener los metadatos de la consulta
+        
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
 
-            // Obtener el modelo de la tabla
+            
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-            model.setRowCount(0);  // Limpiar las filas actuales
-            model.setColumnCount(0); // Limpiar los encabezados
+            model.setRowCount(0);  
+            model.setColumnCount(0);
 
-            // Agregar los nombres de las columnas
+        
             for (int i = 1; i <= columnCount; i++) {
                 model.addColumn(metaData.getColumnName(i));
             }
 
-            // Agregar los datos de las filas
+        
             while (rs.next()) {
                 Object[] rowData = new Object[columnCount];
                 for (int i = 1; i <= columnCount; i++) {
@@ -117,6 +118,7 @@ public class Asistencia extends javax.swing.JPanel {
 
     public void cargarEmpleadosEnComboBox() {
 
+        jComboBox1.removeAllItems();
         jComboBox1.addItem("Selecciona un empleado");
         String query = "SELECT NOMBRE_COMPLETO FROM empleados";
 
@@ -141,7 +143,7 @@ public class Asistencia extends javax.swing.JPanel {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("ID"); 
+                    return rs.getInt("ID");
                 }
             }
         } catch (SQLException e) {
@@ -149,23 +151,26 @@ public class Asistencia extends javax.swing.JPanel {
         }
         return -1;
     }
+    
+   //FIN//
 
     //VERIFICACIONES
     private boolean verificarRegistroExistente(int idEmpleado) {
-        String query = "SELECT COUNT(*) FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now')";
+        String query = "SELECT COUNT(*) FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
 
         try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query)) {
+
             stmt.setInt(1, idEmpleado);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0; 
+                    return rs.getInt(1) > 0;  // Devuelve true si hay registros abiertos
                 }
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al verificar registro existente: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        return false; 
+        return false;
     }
 
     private boolean verificarSalidaRegistrada(int idEmpleado) {
@@ -181,8 +186,11 @@ public class Asistencia extends javax.swing.JPanel {
             return false;
         }
     }
+    
+      //FIN//
 
-    //FUNCIONES PARA REGISTRAR ACCIONES
+    //FUNCIONES PARA ACCIONES
+    
     public void registrarEntrada() {
         String nombreEmpleado = (String) jComboBox1.getSelectedItem();
 
@@ -203,12 +211,18 @@ public class Asistencia extends javax.swing.JPanel {
             return;
         }
 
-        String horaEntrada = LocalTime.now().toString();
-        String query = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, 'Presente')";
+        LocalTime horaActual = LocalTime.now();
+
+        LocalTime horaDeEntrada = LocalTime.of(8, 0); 
+
+        String estado = horaActual.isAfter(horaDeEntrada) ? "Tarde" : "Presente";
+
+        String query = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, ?)";
 
         try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, idEmpleado);
-            stmt.setString(2, horaEntrada);
+            stmt.setString(2, horaActual.toString()); // Guardar la hora de entrada
+            stmt.setString(3, estado); // Guardar el estado (Presente o Tarde)
 
             int filasInsertadas = stmt.executeUpdate();
             if (filasInsertadas > 0) {
@@ -238,27 +252,27 @@ public class Asistencia extends javax.swing.JPanel {
             return;
         }
 
-        // Verificar si ya existe un registro de entrada para el empleado en el día de hoy
+     
         if (!verificarRegistroExistente(idEmpleado)) {
             JOptionPane.showMessageDialog(null, "No se puede registrar la salida sin haber registrado previamente la entrada.", "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Verificar si ya se registró la salida previamente para el mismo día (para evitar múltiples salidas)
+       
         if (verificarSalidaRegistrada(idEmpleado)) {
             JOptionPane.showMessageDialog(null, "Ya se ha registrado la salida para este empleado en el día de hoy.", "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Obtener la hora actual para la salida
+        
         String horaSalida = LocalTime.now().toString();
 
-        // Actualizar el registro de asistencia con la hora de salida
+        
         String sql = "UPDATE asistencias SET HORA_SALIDA = ?, ESTADO = 'Presente' WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
 
         try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, horaSalida); // Hora de salida
-            stmt.setInt(2, idEmpleado); // ID del empleado
+            stmt.setString(1, horaSalida); 
+            stmt.setInt(2, idEmpleado); 
 
             int filasActualizadas = stmt.executeUpdate();
             if (filasActualizadas > 0) {
@@ -274,6 +288,51 @@ public class Asistencia extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, "Error al registrar la salida: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    public void registrarAusencia() {
+      
+        String nombreEmpleado = (String) jComboBox1.getSelectedItem();
+
+        if (nombreEmpleado == null || nombreEmpleado.equals("Selecciona un empleado")) {
+            JOptionPane.showMessageDialog(null, "Debe seleccionar un empleado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
+
+        if (idEmpleado == -1) {
+            JOptionPane.showMessageDialog(null, "No se pudo encontrar el ID del empleado.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+    
+        if (verificarRegistroExistente(idEmpleado)) {
+            JOptionPane.showMessageDialog(null, "Ya existe un registro de asistencia para este empleado en el día de hoy.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        
+        String sql = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, HORA_SALIDA, ESTADO) VALUES (?, date('now'), '00:00:00', '00:00:00', 'Ausente')";
+
+        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, idEmpleado);
+
+            int filasInsertadas = stmt.executeUpdate();
+            if (filasInsertadas > 0) {
+                JOptionPane.showMessageDialog(null, "Ausencia registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+              
+                jComboBox1.setSelectedIndex(0);
+
+               
+                actualizarTabla();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al registrar la ausencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+      //FIN//
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -295,8 +354,8 @@ public class Asistencia extends javax.swing.JPanel {
         jTable1 = new javax.swing.JTable();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        observacionesText = new javax.swing.JTextArea();
+        jLabel2 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
@@ -349,7 +408,7 @@ public class Asistencia extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 155, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -392,28 +451,31 @@ public class Asistencia extends javax.swing.JPanel {
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Observaciones"));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        observacionesText.setColumns(20);
+        observacionesText.setRows(5);
+        jScrollPane2.setViewportView(observacionesText);
 
-        jCheckBox1.setText("¿Desea añadir observaciones?");
+        jLabel2.setText("?Desea añadir observaciones?");
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox1)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(jLabel2)))
                 .addContainerGap(93, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(jCheckBox1)
+                .addGap(29, 29, 29)
+                .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -513,7 +575,7 @@ public class Asistencia extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(474, 474, 474)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(110, Short.MAX_VALUE))
+                .addContainerGap(75, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -548,7 +610,7 @@ public class Asistencia extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
+        registrarAusencia();
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
@@ -565,7 +627,7 @@ public class Asistencia extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-       registrarSalida();
+        registrarSalida();
     }//GEN-LAST:event_jButton2ActionPerformed
 
 
@@ -578,9 +640,9 @@ public class Asistencia extends javax.swing.JPanel {
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -590,6 +652,6 @@ public class Asistencia extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea observacionesText;
     // End of variables declaration//GEN-END:variables
 }

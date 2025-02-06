@@ -120,7 +120,7 @@ public class Dashborad extends javax.swing.JFrame {
         menu.add(inicioBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 220, 270, 50));
 
         empleBtn.setBackground(new java.awt.Color(255, 102, 102));
-        empleBtn.setText("Nomina");
+        empleBtn.setText("Empleados");
         empleBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 empleBtnActionPerformed(evt);
@@ -147,7 +147,7 @@ public class Dashborad extends javax.swing.JFrame {
         menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 600, 270, 40));
 
         configBtn.setBackground(new java.awt.Color(255, 102, 102));
-        configBtn.setText("Configuracion");
+        configBtn.setText("Nomina");
         menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
 
         content.setRequestFocusEnabled(false);
