@@ -218,7 +218,7 @@ private void scaleIcons() {
                 salirBtnActionPerformed(evt);
             }
         });
-        menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 600, 270, 40));
+        menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 590, 270, 50));
 
         configBtn.setBackground(new java.awt.Color(255, 102, 102));
         configBtn.setText("Nomina");

@@ -312,7 +312,7 @@ public class Asistencia extends javax.swing.JPanel {
         
         String sql = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, HORA_SALIDA, ESTADO) VALUES (?, date('now'), '00:00:00', '00:00:00', 'Ausente')";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement stmt = con.prepareStatement(sql)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, idEmpleado);
 
             int filasInsertadas = stmt.executeUpdate();

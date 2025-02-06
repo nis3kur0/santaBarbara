@@ -26,6 +26,7 @@ com\mycompany\views\Asistencia$1.class
 com\mycompany\santabarbara\Dashborad.class
 com\mycompany\views\Empleados$7.class
 com\mycompany\form\agregarEmpleado$1.class
+com\mycompany\ConexionBD.class
 com\mycompany\santabarbara\Dashborad$5.class
 com\mycompany\views\Empleados$10.class
 com\mycompany\loginandsignup\Login$1.class
