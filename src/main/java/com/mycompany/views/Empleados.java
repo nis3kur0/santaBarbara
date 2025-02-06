@@ -12,6 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import com.mycompany.ConexionBD;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.awt.Insets;
@@ -70,7 +71,7 @@ public class Empleados extends javax.swing.JPanel {
     private void cargarDatosEnTabla() {
         String sql = "SELECT * FROM empleados";
 
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -650,7 +651,8 @@ public class Empleados extends javax.swing.JPanel {
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection(url); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
+    
+        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
 
             pstmt.setInt(1, id);
             int filasEliminadas = pstmt.executeUpdate();
