@@ -1,6 +1,14 @@
 package com.mycompany.views;
 
 import java.time.LocalDate;
+import com.mycompany.ConexionBD;
+import java.awt.Image;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -14,8 +22,49 @@ public class Inicio extends javax.swing.JPanel {
     public Inicio() {
         initComponents();
         setDate();
+        actualizarTotalEmpleados();
+        actualizarEmpleadosPresentes();
+    }
+    
+        private void actualizarEmpleadosPresentes() {
+        String sql = "SELECT COUNT(DISTINCT ID_EMPLEADO) AS presentes "
+                   + "FROM asistencias "
+                   + "WHERE ESTADO = 'Presente' "; // Asume que FECHA está en formato DATE
+        
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            if (rs.next()) {
+                int presentes = rs.getInt("presentes");
+                jLabel4.setText(String.valueOf(presentes));
+            }
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener empleados presentes: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            jLabel4.setText("0");
+        }
     }
 
+    private void actualizarTotalEmpleados() {
+        String sql = "SELECT COUNT(*) AS total FROM empleados";
+        
+        try (Connection conn = ConexionBD.obtenerConexion();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
+            
+            if (rs.next()) {
+                int total = rs.getInt("total");
+                jLabel6.setText(String.valueOf(total));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener el total de empleados: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            jLabel6.setText("0");
+        }
+            
+    }
 private void setDate() {
     LocalDate now = LocalDate.now();
     int year = now.getYear();
@@ -155,7 +204,7 @@ private void setDate() {
         bgLayout.setHorizontalGroup(
             bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, bgLayout.createSequentialGroup()
-                .addContainerGap(27, Short.MAX_VALUE)
+                .addContainerGap(433, Short.MAX_VALUE)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -165,7 +214,7 @@ private void setDate() {
             .addGroup(bgLayout.createSequentialGroup()
                 .addGap(91, 91, 91)
                 .addComponent(jLabel12)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(748, Short.MAX_VALUE))
         );
         bgLayout.setVerticalGroup(
             bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
