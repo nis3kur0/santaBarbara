@@ -226,6 +226,11 @@ private void scaleIcons() {
 
         configBtn.setBackground(new java.awt.Color(255, 102, 102));
         configBtn.setText("Nomina");
+        configBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configBtnActionPerformed(evt);
+            }
+        });
         menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
 
         content.setMaximumSize(new java.awt.Dimension(1000, 720));
@@ -290,6 +295,11 @@ private void scaleIcons() {
         System.exit(0);
     }      
     }//GEN-LAST:event_salirBtnActionPerformed
+
+    private void configBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configBtnActionPerformed
+       Nomina nominaPanel = new Nomina();
+        ShowJPanel(nominaPanel, "Nomina"); 
+    }//GEN-LAST:event_configBtnActionPerformed
 
     /**
      * @param args the command line arguments

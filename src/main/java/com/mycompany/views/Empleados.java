@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
 import javax.swing.table.DefaultTableModel;
@@ -18,6 +17,7 @@ import javax.swing.JOptionPane;
 import java.awt.Insets;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 /**
  *
@@ -34,20 +34,20 @@ public class Empleados extends javax.swing.JPanel {
         model = (DefaultTableModel) this.jTable1.getModel();
         cargarDatosEnTabla();
         agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
-        agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
-        agregarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
+        agregarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
         agregarBtn.setMargin(new Insets(0, 0, 0, 20)); // 
         editarBtn.setIcon(new ImageIcon(getClass().getResource("/editar.png"))); 
-        editarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
-        editarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        editarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
+        editarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
         editarBtn.setMargin(new Insets(0, 0, 0, 20)); //
         eliminarBtn.setIcon(new ImageIcon(getClass().getResource("/eliminar.png"))); 
-        eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
-        eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
+        eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
         eliminarBtn.setMargin(new Insets(0, 0, 0, 20)); //
         limpiarBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
-        limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); // Texto a la derecha del icono
-        limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER); // Centra todo el contenido del botón
+        limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
         limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
 
     }
@@ -61,6 +61,7 @@ public class Empleados extends javax.swing.JPanel {
         eliminarBtn.putClientProperty("JButton.buttonType", "roundRect");
         editarBtn.putClientProperty("JButton.buttonType", "roundRect");
         limpiarBtn.putClientProperty("JButton.buttonType", "roundRect");
+        tablaEmpleadosLabel.setFont( UIManager.getFont( "h1.font" ) );
 
     }
  DefaultTableModel model;
@@ -229,8 +230,6 @@ public class Empleados extends javax.swing.JPanel {
 
         jCalendarDemo1 = new com.toedter.calendar.demo.JCalendarDemo();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -270,6 +269,11 @@ public class Empleados extends javax.swing.JPanel {
         agregarBtn = new javax.swing.JButton();
         eliminarBtn = new javax.swing.JButton();
         limpiarBtn = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        tablaEmpleadosLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
         javax.swing.GroupLayout jCalendarDemo1Layout = new javax.swing.GroupLayout(jCalendarDemo1.getContentPane());
         jCalendarDemo1.getContentPane().setLayout(jCalendarDemo1Layout);
@@ -290,23 +294,6 @@ public class Empleados extends javax.swing.JPanel {
         jPanel2.setMinimumSize(new java.awt.Dimension(1080, 720));
         jPanel2.setName(""); // NOI18N
         jPanel2.setPreferredSize(new java.awt.Dimension(0, 0));
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jTable1.setGridColor(new java.awt.Color(204, 204, 204));
-        jTable1.setName("Empleados"); // NOI18N
-        jTable1.setSelectionBackground(new java.awt.Color(255, 51, 51));
-        jTable1.setShowGrid(true);
-        jScrollPane2.setViewportView(jTable1);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Datos basicos"));
 
@@ -545,7 +532,7 @@ public class Empleados extends javax.swing.JPanel {
                 limpiarBtnActionPerformed(evt);
             }
         });
-        jPanel3.add(limpiarBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 120, 20));
+        jPanel3.add(limpiarBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 130, -1));
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -574,6 +561,33 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(17, 17, 17))
         );
 
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imprimir1.png"))); // NOI18N
+        jButton1.setText("Reporte de personal");
+
+        tablaEmpleadosLabel.setText("Tabla de empleados");
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        jTable1.setGridColor(new java.awt.Color(204, 204, 204));
+        jTable1.setName("Empleados"); // NOI18N
+        jTable1.setSelectionBackground(new java.awt.Color(255, 51, 51));
+        jTable1.setShowGrid(true);
+        jScrollPane2.setViewportView(jTable1);
+
+        jScrollPane1.setViewportView(jScrollPane2);
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -584,25 +598,39 @@ public class Empleados extends javax.swing.JPanel {
                         .addContainerGap()
                         .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 945, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(44, 44, 44)
+                        .addComponent(tablaEmpleadosLabel))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(33, 33, 33)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 927, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(150, 150, 150))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(28, 28, 28)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addGap(16, 16, 16)
+                .addComponent(tablaEmpleadosLabel)
+                .addGap(27, 27, 27)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1029, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1029, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -700,6 +728,7 @@ public class Empleados extends javax.swing.JPanel {
     private com.toedter.calendar.JDateChooser dateInicio;
     private javax.swing.JButton editarBtn;
     private javax.swing.JButton eliminarBtn;
+    private javax.swing.JButton jButton1;
     private com.toedter.calendar.demo.JCalendarDemo jCalendarDemo1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -722,10 +751,12 @@ public class Empleados extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JButton limpiarBtn;
     private javax.swing.JComboBox<String> sexoBox;
+    private javax.swing.JLabel tablaEmpleadosLabel;
     private javax.swing.JTextField textCargo;
     private javax.swing.JTextField textCedula;
     private javax.swing.JTextField textDireccion;

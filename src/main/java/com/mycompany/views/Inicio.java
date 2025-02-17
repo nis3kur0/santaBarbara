@@ -36,7 +36,6 @@ public class Inicio extends javax.swing.JPanel {
         escalarIcono(icono4, "/i_icono4.png", 115, 106);
 }
 
-// Método genérico para escalar cualquier icono
     private void escalarIcono(JLabel label, String rutaImagen, int ancho, int alto) {
     try {
         ImageIcon iconoOriginal = new ImageIcon(getClass().getResource(rutaImagen));
@@ -47,20 +46,19 @@ public class Inicio extends javax.swing.JPanel {
             "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
-
     
         private void escalarImagenLabel14() {
-            // Obtener la imagen original desde los recursos
+            
             ImageIcon originalIcon = new ImageIcon(getClass().getResource("/local.jpg"));
-            // Redimensionar la imagen a 549x459 con suavizado
+           
             Image imagenEscalada = originalIcon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH);
-            // Crear un nuevo ImageIcon y asignarlo al JLabel
+       
             jLabel14.setIcon(new ImageIcon(imagenEscalada));
 }
         private void actualizarEmpleadosPresentes() {
         String sql = "SELECT COUNT(DISTINCT ID_EMPLEADO) AS presentes "
                    + "FROM asistencias "
-                   + "WHERE ESTADO = 'Presente' "; // Asume que FECHA está en formato DATE
+                   + "WHERE ESTADO = 'Presente' "; 
         
         try (Connection conn = ConexionBD.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -106,9 +104,9 @@ private void setDate() {
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     };
     
-    // Asignar valores a los labels
+
     jLabel9.setText(day + " /");
-    jLabel10.setText(meses[month - 1] + " /"); // Los meses empiezan en 0 en el array
+    jLabel10.setText(meses[month - 1] + " /"); 
     jLabel11.setText(" " + year);
 }
 
