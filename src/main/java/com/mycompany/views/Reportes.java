@@ -6,7 +6,6 @@ package com.mycompany.views;
 
 /**
  *
- * @author gabo
  */
 public class Reportes extends javax.swing.JPanel {
 

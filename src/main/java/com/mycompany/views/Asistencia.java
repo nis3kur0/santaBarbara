@@ -18,7 +18,7 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author gabo
+ *
  */
 public class Asistencia extends javax.swing.JPanel {
 
@@ -181,7 +181,7 @@ public class Asistencia extends javax.swing.JPanel {
             pstmt.setInt(1, idEmpleado);
 
             ResultSet rs = pstmt.executeQuery();
-            return rs.next(); // Si ya existe una salida registrada, retorna true
+            return rs.next(); 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al verificar el registro de salida: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;

@@ -6,7 +6,7 @@ package com.mycompany.views;
 
 /**
  *
- * @author gabo
+ * 
  */
 public class Configuracion extends javax.swing.JPanel {
 

@@ -21,7 +21,7 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author gabo
+ * 
  */
 public class Empleados extends javax.swing.JPanel {
 

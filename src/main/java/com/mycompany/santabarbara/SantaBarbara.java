@@ -5,8 +5,7 @@
 package com.mycompany.santabarbara;
 
 /**
- *
- * @author gabo
+
  */
 public class SantaBarbara {
 

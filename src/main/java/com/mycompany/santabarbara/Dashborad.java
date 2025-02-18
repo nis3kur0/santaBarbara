@@ -20,7 +20,6 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author gabo
  */
 public class Dashborad extends javax.swing.JFrame {
 

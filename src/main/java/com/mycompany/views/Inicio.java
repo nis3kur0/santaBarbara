@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author gabo
  */
 public class Inicio extends javax.swing.JPanel {
 
