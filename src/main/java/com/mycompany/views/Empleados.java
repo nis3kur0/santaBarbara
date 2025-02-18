@@ -18,6 +18,7 @@ import java.awt.Insets;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -70,31 +71,42 @@ public class Empleados extends javax.swing.JPanel {
 
     //FUNCIONES PARA ACTUALIZAR Y CARGAR DATOS
     private void cargarDatosEnTabla() {
-        String sql = "SELECT * FROM empleados";
+    String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados";
 
-        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+    try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
+        String[] columnNames = {
+            "ID", "Nombre Completo", "Cédula", "Fecha Nacimiento", "Teléfono",
+            "Teléfono Habitación", "Email", "Dirección", "Cargo", "Salario",
+            "Inicio de Contrato", "Fin de Contrato"
+        };
 
-            model.setRowCount(0);
-            model.setColumnCount(0);
+        model.setRowCount(0);
+        model.setColumnCount(0);
+        
+        // Asignar nombres personalizados a las columnas
+        model.setColumnIdentifiers(columnNames);
 
-            for (int i = 1; i <= columnCount; i++) {
-                model.addColumn(metaData.getColumnName(i));
+        while (rs.next()) {
+            Object[] rowData = new Object[columnNames.length];
+            for (int i = 1; i <= columnNames.length; i++) {
+                rowData[i - 1] = rs.getObject(i);
             }
-            while (rs.next()) {
-                Object[] rowData = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    rowData[i - 1] = rs.getObject(i);
-                }
-                model.addRow(rowData);
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            model.addRow(rowData);
         }
+
+        // Ajustar el ancho de la columna ID
+        int[] columnWidths = {30, 140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
+
+        for (int i = 0; i < columnWidths.length; i++) {
+            TableColumn column = jTable1.getColumnModel().getColumn(i);
+            column.setPreferredWidth(columnWidths[i]);// Evitar demasiado encogimiento
+            }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
 
     private void limpiarCamposEmpleado() {
         textNombre.setText("");
@@ -110,7 +122,7 @@ public class Empleados extends javax.swing.JPanel {
         dateInicio.setDate(null);
         dateFinal.setDate(null);
         bancoBox.setSelectedIndex(0);
-        tipoCuentaBox.setSelectedIndex(0);
+        pagoMovilBox.setSelectedIndex(0);
         textNumeroCuenta.setText("");
     }
 
@@ -119,6 +131,7 @@ public class Empleados extends javax.swing.JPanel {
 
         String nombre = textNombre.getText().trim();
         String cedulaTexto = textCedula.getText().trim();
+        String tipoCedula = (String) cedulaBox.getSelectedItem();
         String sexo = (String) sexoBox.getSelectedItem();
         String telefono = textTelefono.getText().trim();
         String telefonoHabitacion = textTlfhab.getText().trim();
@@ -129,6 +142,8 @@ public class Empleados extends javax.swing.JPanel {
         String banco = (String) bancoBox.getSelectedItem();
         String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
         String numeroCuenta = textNumeroCuenta.getText().trim();
+        String pagoMovil = (String) pagoMovilBox.getSelectedItem(); // Nuevo JComboBox
+
 
       
         int cedula;
@@ -180,27 +195,31 @@ public class Empleados extends javax.swing.JPanel {
         banco = banco.isEmpty() ? "Banesco" : banco;
         tipoCuenta = tipoCuenta.isEmpty() ? "Ahorro" : tipoCuenta;
         numeroCuenta = numeroCuenta.isEmpty() ? "0000000000000000" : numeroCuenta;
+        tipoCedula = (tipoCedula == null || tipoCedula.isEmpty()) ? "V" : tipoCedula;
+        pagoMovil = (pagoMovil == null || pagoMovil.isEmpty()) ? "No" : pagoMovil;
 
-        String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, TIPO_CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA, PAGO_MOVIL) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DriverManager.getConnection(url); PreparedStatement pstmt = con.prepareStatement(sql)) {
-
             pstmt.setString(1, nombre);
             pstmt.setInt(2, cedula);
-            pstmt.setString(3, fechaNacimiento);
-            pstmt.setString(4, sexo);
-            pstmt.setString(5, telefono);
-            pstmt.setString(6, telefonoHabitacion);
-            pstmt.setString(7, email);
-            pstmt.setString(8, direccion);
-            pstmt.setString(9, cargo);
-            pstmt.setDouble(10, salario);
-            pstmt.setString(11, inicioContrato);
-            pstmt.setString(12, finContrato);
-            pstmt.setString(13, banco);
-            pstmt.setString(14, tipoCuenta);
-            pstmt.setString(15, numeroCuenta);
+            pstmt.setString(3, tipoCedula);
+            pstmt.setString(4, fechaNacimiento);
+            pstmt.setString(5, sexo);
+            pstmt.setString(6, telefono);
+            pstmt.setString(7, telefonoHabitacion);
+            pstmt.setString(8, email);
+            pstmt.setString(9, direccion);
+            pstmt.setString(10, cargo);
+            pstmt.setDouble(11, salario);
+            pstmt.setString(12, inicioContrato);
+            pstmt.setString(13, finContrato);
+            pstmt.setString(14, banco);
+            pstmt.setString(15, tipoCuenta);
+            pstmt.setString(16, numeroCuenta);
+            pstmt.setString(17, pagoMovil);
 
             int filasInsertadas = pstmt.executeUpdate();
             if (filasInsertadas > 0) {
@@ -248,6 +267,7 @@ public class Empleados extends javax.swing.JPanel {
         jLabel16 = new javax.swing.JLabel();
         dateCumpleaños = new com.toedter.calendar.JDateChooser();
         sexoBox = new javax.swing.JComboBox<>();
+        cedulaBox = new javax.swing.JComboBox<>();
         jPanel4 = new javax.swing.JPanel();
         textCargo = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
@@ -261,8 +281,10 @@ public class Empleados extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         textNumeroCuenta = new javax.swing.JTextField();
-        jLabel15 = new javax.swing.JLabel();
         bancoBox = new javax.swing.JComboBox<>();
+        jLabel17 = new javax.swing.JLabel();
+        pagoMovilBox = new javax.swing.JComboBox<>();
+        jLabel15 = new javax.swing.JLabel();
         tipoCuentaBox = new javax.swing.JComboBox<>();
         jPanel3 = new javax.swing.JPanel();
         editarBtn = new javax.swing.JButton();
@@ -297,7 +319,7 @@ public class Empleados extends javax.swing.JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Datos basicos"));
 
-        jLabel2.setText("Nombre y apedillo");
+        jLabel2.setText("Nombre y apellido");
 
         textNombre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -351,6 +373,13 @@ public class Empleados extends javax.swing.JPanel {
 
         sexoBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Selecciona", "Masculino", "Femenino", "Otro" }));
 
+        cedulaBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "V", "E" }));
+        cedulaBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cedulaBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -358,40 +387,46 @@ public class Empleados extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(16, 16, 16)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel10)
-                            .addGap(172, 181, Short.MAX_VALUE))
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(sexoBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel10)
+                        .addGap(181, 181, 181))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(92, 92, 92)
-                                .addComponent(jLabel11))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel12)
-                                .addGap(152, 152, 152)
-                                .addComponent(jLabel5))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel2)
+                                        .addGap(79, 79, 79)
+                                        .addComponent(jLabel11))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel12)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(152, 152, 152)
+                                                .addComponent(jLabel5))
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(18, 18, 18)
+                                                .addComponent(textCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(textNombre)
+                                        .addGap(27, 27, 27))
                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addComponent(jLabel3)
                                         .addGap(140, 140, 140))
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(textNombre)
-                                        .addGap(27, 27, 27)))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(cedulaBox, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(132, 132, 132)))
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel13)
-                                    .addComponent(textEmail)))
+                                    .addComponent(textEmail)
+                                    .addComponent(textTlfhab)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(textCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(27, 27, 27)
-                                .addComponent(textTlfhab))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(textTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(textTelefono, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                                    .addComponent(sexoBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(27, 27, 27)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(textDireccion)
@@ -399,7 +434,7 @@ public class Empleados extends javax.swing.JPanel {
                                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(jLabel16)
                                             .addComponent(dateCumpleaños, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                                        .addGap(0, 8, Short.MAX_VALUE)))))
                         .addContainerGap())))
         );
         jPanel1Layout.setVerticalGroup(
@@ -417,21 +452,23 @@ public class Empleados extends javax.swing.JPanel {
                     .addComponent(textNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(textEmail, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel13)))
-                .addGap(6, 6, 6)
+                    .addComponent(jLabel13))
+                .addGap(12, 12, 12)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textCedula, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(textTlfhab, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
-                    .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textTlfhab, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cedulaBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel12))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel5)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(sexoBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(textDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -456,7 +493,7 @@ public class Empleados extends javax.swing.JPanel {
         jPanel4.add(textCargo, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 184, -1));
 
         jLabel4.setText("Cargo");
-        jPanel4.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(11, 35, -1, -1));
+        jPanel4.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 30, -1, -1));
         jPanel4.add(textSalario, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, 184, -1));
 
         jLabel6.setText("Salario");
@@ -468,7 +505,7 @@ public class Empleados extends javax.swing.JPanel {
         jLabel8.setText("Fecha inicio de contrato");
         jPanel4.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 160, -1, -1));
         jPanel4.add(dateInicio, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 180, 190, -1));
-        jPanel4.add(dateFinal, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 240, 190, -1));
+        jPanel4.add(dateFinal, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 230, 190, -1));
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Datos bancarios"));
         jPanel5.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -477,23 +514,39 @@ public class Empleados extends javax.swing.JPanel {
         jPanel5.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 30, -1, -1));
 
         jLabel14.setText("Tipo de cuenta");
-        jPanel5.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, -1, -1));
+        jPanel5.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, -1, -1));
 
         textNumeroCuenta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 textNumeroCuentaActionPerformed(evt);
             }
         });
-        jPanel5.add(textNumeroCuenta, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 210, 184, -1));
-
-        jLabel15.setText("Numero de cuenta");
-        jPanel5.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 180, -1, -1));
+        jPanel5.add(textNumeroCuenta, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 180, 184, -1));
 
         bancoBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccionar banco", "Banco Activo", "Banco Caroní", "Banco de Venezuela", "Banco del Tesoro", "Banco Exterior", "Banco Mercantil", "Banco Nacional de Credito", "Bancamiga Banco Microfinanciero C.A", "Bancaribe", "Bancrecer", "Banesco", "BBVA Provincial", "Delsur Banco Universal" }));
         jPanel5.add(bancoBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 190, -1));
 
+        jLabel17.setText("Numero de cuenta");
+        jPanel5.add(jLabel17, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 160, -1, -1));
+
+        pagoMovilBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccionar", "Si", "No" }));
+        pagoMovilBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pagoMovilBoxActionPerformed(evt);
+            }
+        });
+        jPanel5.add(pagoMovilBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 230, 190, -1));
+
+        jLabel15.setText("Pago móvil");
+        jPanel5.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 210, -1, -1));
+
         tipoCuentaBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccionar", "Corriente", "Ahorro" }));
-        jPanel5.add(tipoCuentaBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 190, -1));
+        tipoCuentaBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tipoCuentaBoxActionPerformed(evt);
+            }
+        });
+        jPanel5.add(tipoCuentaBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, 190, -1));
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "Acciones"));
         jPanel3.setMinimumSize(new java.awt.Dimension(100, 100));
@@ -620,7 +673,7 @@ public class Empleados extends javax.swing.JPanel {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -719,10 +772,23 @@ public class Empleados extends javax.swing.JPanel {
        agregarEmpleado();
     }//GEN-LAST:event_agregarBtnActionPerformed
 
+    private void cedulaBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cedulaBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cedulaBoxActionPerformed
+
+    private void tipoCuentaBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoCuentaBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tipoCuentaBoxActionPerformed
+
+    private void pagoMovilBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pagoMovilBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pagoMovilBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton agregarBtn;
     private javax.swing.JComboBox<String> bancoBox;
+    private javax.swing.JComboBox<String> cedulaBox;
     private com.toedter.calendar.JDateChooser dateCumpleaños;
     private com.toedter.calendar.JDateChooser dateFinal;
     private com.toedter.calendar.JDateChooser dateInicio;
@@ -737,6 +803,7 @@ public class Empleados extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -755,6 +822,7 @@ public class Empleados extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JButton limpiarBtn;
+    private javax.swing.JComboBox<String> pagoMovilBox;
     private javax.swing.JComboBox<String> sexoBox;
     private javax.swing.JLabel tablaEmpleadosLabel;
     private javax.swing.JTextField textCargo;
