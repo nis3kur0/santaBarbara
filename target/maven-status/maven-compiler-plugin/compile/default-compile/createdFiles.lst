@@ -16,12 +16,14 @@ com\mycompany\views\Empleados$8.class
 com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class
 com\mycompany\views\Asistencia$2.class
+com\mycompany\views\Empleados$15.class
 com\mycompany\loginandsignup\Login.class
 com\mycompany\views\Nomina.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Asistencia$4.class
 com\mycompany\views\Empleados$11.class
 com\mycompany\santabarbara\Dashborad$3.class
+com\mycompany\views\Empleados$14.class
 com\mycompany\views\Empleados$4.class
 com\mycompany\views\Asistencia$1.class
 com\mycompany\santabarbara\Dashborad.class
@@ -38,3 +40,4 @@ com\mycompany\views\Empleados$3.class
 com\mycompany\views\Nomina$3.class
 com\mycompany\views\Inicio.class
 com\mycompany\views\Asistencia$7.class
+com\mycompany\views\Empleados$13.class
