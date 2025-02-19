@@ -16,6 +16,7 @@ com\mycompany\views\Asistencia$5.class
 com\mycompany\views\Empleados$8.class
 com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class
+com\mycompany\views\Nomina$5.class
 com\mycompany\views\Asistencia$2.class
 com\mycompany\views\Empleados$15.class
 com\mycompany\loginandsignup\Login.class
@@ -38,6 +39,7 @@ com\mycompany\loginandsignup\Login$1.class
 com\mycompany\views\Empleados$6.class
 com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Empleados$3.class
+com\mycompany\views\Nomina$6.class
 com\mycompany\views\Nomina$3.class
 com\mycompany\views\Inicio.class
 com\mycompany\views\Asistencia$7.class

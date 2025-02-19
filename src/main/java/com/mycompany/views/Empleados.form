@@ -94,6 +94,8 @@
               </Group>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                   <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="150" max="-2" attributes="0"/>
               </Group>
@@ -109,8 +111,11 @@
                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                   <Component id="jScrollPane1" min="-2" pref="259" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="38" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="jToggleButton1" max="32767" attributes="0"/>
+                      <Component id="jButton1" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="20" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -805,6 +810,11 @@
             </Container>
           </SubComponents>
         </Container>
+        <Component class="javax.swing.JToggleButton" name="jToggleButton1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Ficha de empleado"/>
+          </Properties>
+        </Component>
       </SubComponents>
     </Container>
   </SubComponents>

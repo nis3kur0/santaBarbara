@@ -84,7 +84,6 @@ public class Empleados extends javax.swing.JPanel {
         model.setRowCount(0);
         model.setColumnCount(0);
         
-        // Asignar nombres personalizados a las columnas
         model.setColumnIdentifiers(columnNames);
 
         while (rs.next()) {
@@ -95,12 +94,11 @@ public class Empleados extends javax.swing.JPanel {
             model.addRow(rowData);
         }
 
-        // Ajustar el ancho de la columna ID
         int[] columnWidths = {30, 140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
 
         for (int i = 0; i < columnWidths.length; i++) {
             TableColumn column = jTable1.getColumnModel().getColumn(i);
-            column.setPreferredWidth(columnWidths[i]);// Evitar demasiado encogimiento
+            column.setPreferredWidth(columnWidths[i]);
             }
 
     } catch (SQLException e) {
@@ -142,7 +140,7 @@ public class Empleados extends javax.swing.JPanel {
         String banco = (String) bancoBox.getSelectedItem();
         String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
         String numeroCuenta = textNumeroCuenta.getText().trim();
-        String pagoMovil = (String) pagoMovilBox.getSelectedItem(); // Nuevo JComboBox
+        String pagoMovil = (String) pagoMovilBox.getSelectedItem();
 
 
       
@@ -296,6 +294,7 @@ public class Empleados extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         javax.swing.GroupLayout jCalendarDemo1Layout = new javax.swing.GroupLayout(jCalendarDemo1.getContentPane());
         jCalendarDemo1.getContentPane().setLayout(jCalendarDemo1Layout);
@@ -641,6 +640,8 @@ public class Empleados extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jScrollPane2);
 
+        jToggleButton1.setText("Ficha de empleado");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -659,6 +660,8 @@ public class Empleados extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jToggleButton1)
+                .addGap(37, 37, 37)
                 .addComponent(jButton1)
                 .addGap(150, 150, 150))
         );
@@ -672,8 +675,10 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -821,6 +826,7 @@ public class Empleados extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JButton limpiarBtn;
     private javax.swing.JComboBox<String> pagoMovilBox;
     private javax.swing.JComboBox<String> sexoBox;

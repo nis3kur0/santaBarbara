@@ -320,7 +320,7 @@ private void scaleIcons() {
 
                 if (login.isLoginSuccessful()) {
                     new Dashborad().setVisible(true);
-                    login.dispose(); // Cerrar la ventana del login
+                    login.dispose(); 
                 } else {
                     System.exit(0);
                 }

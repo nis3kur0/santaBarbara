@@ -165,7 +165,7 @@ public class Asistencia extends javax.swing.JPanel {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;  // Devuelve true si hay registros abiertos
+                    return rs.getInt(1) > 0; 
                 }
             }
         } catch (SQLException e) {
@@ -289,8 +289,8 @@ public class Asistencia extends javax.swing.JPanel {
         String sql = "UPDATE asistencias SET HORA_SALIDA = ?, ESTADO = 'Presente' WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
 
         try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, horaSalida); // Hora de salida
-            stmt.setInt(2, idEmpleado); // ID del empleado
+            stmt.setString(1, horaSalida); 
+            stmt.setInt(2, idEmpleado); 
 
             int filasActualizadas = stmt.executeUpdate();
             if (filasActualizadas > 0) {
