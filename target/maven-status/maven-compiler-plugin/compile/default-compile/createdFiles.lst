@@ -3,6 +3,7 @@ com\mycompany\views\Nomina$1.class
 com\mycompany\santabarbara\Dashborad$1.class
 com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
+com\mycompany\views\Empleados$16.class
 com\mycompany\views\Empleados$9.class
 com\mycompany\santabarbara\Dashborad$4.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
@@ -10,13 +11,17 @@ com\mycompany\views\Configuracion.class
 com\mycompany\views\Empleados$5.class
 com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\views\Asistencia$3.class
+com\mycompany\views\Empleados$17.class
 com\mycompany\views\Asistencia.class
 com\mycompany\views\Asistencia$5.class
 com\mycompany\views\Empleados$8.class
+com\mycompany\views\Empleados$NumericDocumentFilter.class
+com\mycompany\views\Ficha.class
 com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class
 com\mycompany\views\Asistencia$2.class
 com\mycompany\views\Empleados$15.class
+com\mycompany\views\Empleados$LettersDocumentFilter.class
 com\mycompany\loginandsignup\Login.class
 com\mycompany\views\Nomina.class
 com\mycompany\views\Empleados.class

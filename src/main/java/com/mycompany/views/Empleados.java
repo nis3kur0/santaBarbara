@@ -12,6 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.awt.Insets;
@@ -19,6 +20,15 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
+import java.awt.Toolkit;
+import java.util.regex.Pattern;
+import javax.swing.JDialog;
+import javax.swing.JTextField;
 
 /**
  *
@@ -50,7 +60,11 @@ public class Empleados extends javax.swing.JPanel {
         limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
         limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
         limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
-
+        
+        setupNumericFilters();
+        disableDateChooserTextEdits();
+        setupLettersFilters(); // Nuevo
+        setupEmailValidation(); // Nuevo
     }
  private void Styles() {
       
@@ -136,6 +150,13 @@ public class Empleados extends javax.swing.JPanel {
         String telefono = textTelefono.getText().trim();
         String telefonoHabitacion = textTlfhab.getText().trim();
         String email = textEmail.getText().trim();
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            JOptionPane.showMessageDialog(null, 
+                "Formato de email inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         String direccion = textDireccion.getText().trim();
         String cargo = textCargo.getText().trim();
         String salarioTexto = textSalario.getText().trim();
@@ -236,7 +257,147 @@ public class Empleados extends javax.swing.JPanel {
             }
         }
     }
+    
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$";
+        return email.matches(emailRegex);
+}
+    
+    private void setupLettersFilters() {
+        setLettersFilter(textNombre);
+        setLettersFilter(textCargo);
+}
 
+    private void setLettersFilter(JTextField textField) {
+        PlainDocument doc = (PlainDocument) textField.getDocument();
+        doc.setDocumentFilter(new LettersDocumentFilter());
+}
+
+    private void setupEmailValidation() {
+        textEmail.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                validateEmailFormat();
+        }
+    });
+}
+
+    private void validateEmailFormat() {
+        String email = textEmail.getText().trim();
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this, 
+                "Formato de email inválido. Ejemplo válido: usuario@dominio.com", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            textEmail.setText("");
+            textEmail.requestFocus();
+    }
+}
+
+    private void setupNumericFilters() {
+        setNumericFilter(textCedula, false);
+        setNumericFilter(textTelefono, false);
+        setNumericFilter(textTlfhab, false);
+        setNumericFilter(textSalario, true);
+        setNumericFilter(textNumeroCuenta, false);
+    }
+    
+        private void setNumericFilter(JTextField textField, boolean allowDecimal) {
+        PlainDocument doc = (PlainDocument) textField.getDocument();
+        doc.setDocumentFilter(new NumericDocumentFilter(allowDecimal));
+    }
+
+    private static class NumericDocumentFilter extends DocumentFilter {
+        private boolean allowDecimal;
+
+        public NumericDocumentFilter(boolean allowDecimal) {
+            this.allowDecimal = allowDecimal;
+        }
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            StringBuilder sb = new StringBuilder();
+            Document doc = fb.getDocument();
+            try {
+                sb.append(doc.getText(0, doc.getLength()));
+            } catch (BadLocationException e) {
+                return;
+            }
+            sb.insert(offset, string);
+
+            if (isValid(sb.toString())) {
+                super.insertString(fb, offset, string, attr);
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            StringBuilder sb = new StringBuilder();
+            Document doc = fb.getDocument();
+            try {
+                sb.append(doc.getText(0, doc.getLength()));
+            } catch (BadLocationException e) {
+                return;
+            }
+            sb.replace(offset, offset + length, text);
+
+            if (isValid(sb.toString())) {
+                super.replace(fb, offset, length, text, attrs);
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+        private boolean isValid(String text) {
+            if (text.isEmpty()) {
+                return true;
+            }
+            if (allowDecimal) {
+                return text.matches("^\\d+(\\.\\d*)?$");
+            } else {
+                return text.matches("^\\d+$");
+            }
+        }
+    }
+
+    private void disableDateChooserTextEdits() {
+        setDateChooserEditable(dateCumpleaños, false);
+        setDateChooserEditable(dateInicio, false);
+        setDateChooserEditable(dateFinal, false);
+    }
+
+    private void setDateChooserEditable(JDateChooser dateChooser, boolean editable) {
+        if (dateChooser == null) return;
+        JTextField dateTextField = (JTextField) dateChooser.getDateEditor().getUiComponent();
+        dateTextField.setEditable(editable);
+    }
+    
+    private static class LettersDocumentFilter extends DocumentFilter {
+    private final Pattern pattern = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s'-]+$");
+
+    @Override
+    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+        if (string == null) return;
+        
+        if (pattern.matcher(string).matches()) {
+            super.insertString(fb, offset, string, attr);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    @Override
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        if (text == null) return;
+        
+        if (pattern.matcher(text).matches()) {
+            super.replace(fb, offset, length, text, attrs);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -292,6 +453,7 @@ public class Empleados extends javax.swing.JPanel {
         eliminarBtn = new javax.swing.JButton();
         limpiarBtn = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        Ficha = new javax.swing.JButton();
         tablaEmpleadosLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -617,6 +779,14 @@ public class Empleados extends javax.swing.JPanel {
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imprimir1.png"))); // NOI18N
         jButton1.setText("Reporte de personal");
 
+        Ficha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/empleados.png"))); // NOI18N
+        Ficha.setText("Ficha de empleado");
+        Ficha.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FichaActionPerformed(evt);
+            }
+        });
+
         tablaEmpleadosLabel.setText("Tabla de empleados");
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -659,6 +829,8 @@ public class Empleados extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(Ficha)
+                .addGap(18, 18, 18)
                 .addComponent(jButton1)
                 .addGap(150, 150, 150))
         );
@@ -672,7 +844,9 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(Ficha))
                 .addContainerGap(38, Short.MAX_VALUE))
         );
 
@@ -762,6 +936,7 @@ public class Empleados extends javax.swing.JPanel {
         }        // TODO add your handling code here:
     }//GEN-LAST:event_eliminarBtnActionPerformed
 
+    
     private void limpiarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limpiarBtnActionPerformed
 
         limpiarCamposEmpleado();
@@ -784,8 +959,34 @@ public class Empleados extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_pagoMovilBoxActionPerformed
 
+    private void FichaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FichaActionPerformed
+    int filaSeleccionada = jTable1.getSelectedRow();
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this, 
+            "Seleccione un empleado de la tabla primero", 
+            "Advertencia", 
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
+    
+    // Crear y mostrar la ficha
+    JDialog dialog = new JDialog();
+    Ficha ficha = new Ficha();
+    ficha.cargarDatosEmpleado(idEmpleado);
+    dialog.add(ficha);
+    dialog.pack();
+    dialog.setLocationRelativeTo(this);
+    dialog.setTitle("Ficha del Empleado");
+    dialog.setModal(true);
+    dialog.setVisible(true);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_FichaActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Ficha;
     private javax.swing.JButton agregarBtn;
     private javax.swing.JComboBox<String> bancoBox;
     private javax.swing.JComboBox<String> cedulaBox;
