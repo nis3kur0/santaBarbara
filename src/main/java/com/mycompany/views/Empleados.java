@@ -26,8 +26,11 @@ import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import java.awt.Toolkit;
+import java.text.ParseException;
+import com.mycompany.loginandsignup.Login;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 /**
@@ -35,6 +38,13 @@ import javax.swing.JTextField;
  * @author gabo
  */
 public class Empleados extends javax.swing.JPanel {
+    
+    DefaultTableModel model = new DefaultTableModel() {
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false; // Todas las celdas no editables
+    }
+};
 
     /**
      * Creates new form Empleados
@@ -42,7 +52,7 @@ public class Empleados extends javax.swing.JPanel {
     public Empleados() {
         initComponents();
         Styles();
-        model = (DefaultTableModel) this.jTable1.getModel();
+        jTable1.setModel(model);
         cargarDatosEnTabla();
         agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
         agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
@@ -60,6 +70,23 @@ public class Empleados extends javax.swing.JPanel {
         limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
         limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
         limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        
+        // Agrega este código en el constructor después de inicializar la tabla
+jTable1.getSelectionModel().addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow >= 0) {
+            try {
+                // Obtén el ID (columna 0 en la tabla)
+                int idEmpleado = (int) jTable1.getValueAt(selectedRow, 0);
+                cargarDatosCompletoEmpleado(idEmpleado);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+});
+
         
         setupNumericFilters();
         disableDateChooserTextEdits();
@@ -79,7 +106,6 @@ public class Empleados extends javax.swing.JPanel {
         tablaEmpleadosLabel.setFont( UIManager.getFont( "h1.font" ) );
 
     }
- DefaultTableModel model;
     String url = "jdbc:sqlite:santabarbara.db";
     Connection connect;
 
@@ -121,6 +147,49 @@ public class Empleados extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
+    
+private void cargarDatosCompletoEmpleado(int idEmpleado) {
+    String sql = "SELECT * FROM empleados WHERE ID = ?";
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idEmpleado);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            // Nombre
+            textNombre.setText(rs.getString("NOMBRE_COMPLETO"));
+
+            // Cédula: solo números
+            int cedula = rs.getInt("CEDULA");
+            textCedula.setText(String.valueOf(cedula));
+
+            // Fecha de nacimiento
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            dateCumpleaños.setDate(sdf.parse(rs.getString("FECHA_NACIMIENTO")));
+
+            // Otros campos
+            sexoBox.setSelectedItem(rs.getString("SEXO"));
+            textTelefono.setText(rs.getString("TELEFONO"));
+            textTlfhab.setText(rs.getString("TELEFONO_HABITACION"));
+            textEmail.setText(rs.getString("EMAIL"));
+            textDireccion.setText(rs.getString("DIRECCION"));
+            textCargo.setText(rs.getString("CARGO"));
+            textSalario.setText(String.valueOf(rs.getDouble("SALARIO")));
+            dateInicio.setDate(sdf.parse(rs.getString("INICIO_CONTRATO")));
+            dateFinal.setDate(sdf.parse(rs.getString("FIN_CONTRATO")));
+            bancoBox.setSelectedItem(rs.getString("BANCO"));
+            tipoCuentaBox.setSelectedItem(rs.getString("TIPO_CUENTA"));
+            textNumeroCuenta.setText(rs.getString("NUMERO_CUENTA"));
+
+            // Pago móvil: se selecciona "Si" o "No"
+            String pagoMovil = rs.getString("PAGO_MOVIL");
+            pagoMovilBox.setSelectedItem(pagoMovil);
+        }
+    } catch (SQLException | ParseException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar datos del empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
 
     private void limpiarCamposEmpleado() {
         textNombre.setText("");
@@ -398,6 +467,31 @@ public class Empleados extends javax.swing.JPanel {
         }
     }
 }
+    
+private boolean confirmarAccionConPassword() {
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "¿Estás seguro de que quieres hacer los cambios?",
+        "Confirmar acción",
+        JOptionPane.YES_NO_OPTION
+    );
+    
+    if (confirm == JOptionPane.YES_OPTION) {
+        JPasswordField pf = new JPasswordField();
+        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (okCxl == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(pf.getPassword());
+            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
+            if (inputPassword.equals(contraseñaValida)) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    return false;
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -899,41 +993,100 @@ public class Empleados extends javax.swing.JPanel {
                                           
 
     private void editarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarBtnActionPerformed
-        // TODO add your handling code here:
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla", "Error", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    if (confirmarAccionConPassword()) {
+        actualizarEmpleado(selectedRow);
+    }
+}                                         
+
+private void actualizarEmpleado(int selectedRow) {
+    try {
+        Connection conn = ConexionBD.obtenerConexion();
+        String sql = "UPDATE empleados SET "
+            + "NOMBRE_COMPLETO = ?, "
+            + "CEDULA = ?, "
+            + "FECHA_NACIMIENTO = ?, "
+            + "SEXO = ?, "
+            + "TELEFONO = ?, "
+            + "TELEFONO_HABITACION = ?, "
+            + "EMAIL = ?, "
+            + "DIRECCION = ?, "
+            + "CARGO = ?, "
+            + "SALARIO = ?, "
+            + "INICIO_CONTRATO = ?, "
+            + "FIN_CONTRATO = ?, "
+            + "BANCO = ?, "
+            + "TIPO_CUENTA = ?, "
+            + "NUMERO_CUENTA = ? "
+            + "WHERE ID = ?";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // Establecer parámetros
+        pstmt.setString(1, textNombre.getText());
+        pstmt.setInt(2, Integer.parseInt(textCedula.getText()));
+        pstmt.setString(3, sdf.format(dateCumpleaños.getDate()));
+        pstmt.setString(4, sexoBox.getSelectedItem().toString());
+        pstmt.setString(5, textTelefono.getText());
+        pstmt.setString(6, textTlfhab.getText());
+        pstmt.setString(7, textEmail.getText());
+        pstmt.setString(8, textDireccion.getText());
+        pstmt.setString(9, textCargo.getText());
+        pstmt.setDouble(10, Double.parseDouble(textSalario.getText()));
+        pstmt.setString(11, sdf.format(dateInicio.getDate()));
+        pstmt.setString(12, sdf.format(dateFinal.getDate()));
+        pstmt.setString(13, bancoBox.getSelectedItem().toString());
+        pstmt.setString(14, tipoCuentaBox.getSelectedItem().toString());
+        pstmt.setString(15, textNumeroCuenta.getText());
+        
+        // ID del empleado
+        int id = (int) jTable1.getValueAt(selectedRow, 0);
+        pstmt.setInt(16, id);
+
+        int updated = pstmt.executeUpdate();
+        if (updated > 0) {
+            JOptionPane.showMessageDialog(this, "Empleado actualizado!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            cargarDatosEnTabla();
+            limpiarCamposEmpleado();
+        }
+    } catch (SQLException | NumberFormatException  e) {
+        JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    } // TODO add your handling code here:
     }//GEN-LAST:event_editarBtnActionPerformed
 
     private void eliminarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarBtnActionPerformed
 
-        int selectedRow = jTable1.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int id = (int) jTable1.getValueAt(selectedRow, 0);
-
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar este registro?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
-        if (confirmacion != JOptionPane.YES_OPTION) {
-            return;
-        }
-
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
     
-        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
-
+    if (confirmarAccionConPassword()) {
+        int id = (int) jTable1.getValueAt(selectedRow, 0);
+        try (Connection conn = ConexionBD.obtenerConexion(); 
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
+            
             pstmt.setInt(1, id);
             int filasEliminadas = pstmt.executeUpdate();
-
+            
             if (filasEliminadas > 0) {
-
                 model.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(this, "Registro eliminado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(this, "No se pudo eliminar el registro.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al eliminar el registro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }        // TODO add your handling code here:
+        }
+    }        // TODO add your handling code here:
     }//GEN-LAST:event_eliminarBtnActionPerformed
 
     
@@ -943,8 +1096,9 @@ public class Empleados extends javax.swing.JPanel {
     }//GEN-LAST:event_limpiarBtnActionPerformed
 
     private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-
-       agregarEmpleado();
+    if (confirmarAccionConPassword()) {
+        agregarEmpleado();
+    }
     }//GEN-LAST:event_agregarBtnActionPerformed
 
     private void cedulaBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cedulaBoxActionPerformed
