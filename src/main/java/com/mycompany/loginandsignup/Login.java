@@ -8,6 +8,9 @@ import com.mycompany.santabarbara.*;
 
 
 public class Login extends javax.swing.JFrame {
+    
+    public static final String correoValido = "admin";
+    public static final String contraseñaValida = "admin1234";
 
   
     public Login() {
@@ -189,9 +192,6 @@ public class Login extends javax.swing.JFrame {
         {
         String correo = jTextField1.getText();
         String contraseña = new String(jPasswordField1.getPassword());
-
-        String correoValido = "admin";
-        String contraseñaValida = "admin1234";
 
         if (correo.equals(correoValido) && contraseña.equals(contraseñaValida)) {
             JOptionPane.showMessageDialog(

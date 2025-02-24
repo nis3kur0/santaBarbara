@@ -12,6 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.awt.Insets;
@@ -19,12 +20,31 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
+import java.awt.Toolkit;
+import java.text.ParseException;
+import com.mycompany.loginandsignup.Login;
+import java.util.regex.Pattern;
+import javax.swing.JDialog;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 /**
  *
- * 
+ * @author gabo
  */
 public class Empleados extends javax.swing.JPanel {
+    
+    DefaultTableModel model = new DefaultTableModel() {
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false; // Todas las celdas no editables
+    }
+};
 
     /**
      * Creates new form Empleados
@@ -32,7 +52,7 @@ public class Empleados extends javax.swing.JPanel {
     public Empleados() {
         initComponents();
         Styles();
-        model = (DefaultTableModel) this.jTable1.getModel();
+        jTable1.setModel(model);
         cargarDatosEnTabla();
         agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
         agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
@@ -50,7 +70,28 @@ public class Empleados extends javax.swing.JPanel {
         limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
         limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
         limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        
+        // Agrega este código en el constructor después de inicializar la tabla
+jTable1.getSelectionModel().addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow >= 0) {
+            try {
+                // Obtén el ID (columna 0 en la tabla)
+                int idEmpleado = (int) jTable1.getValueAt(selectedRow, 0);
+                cargarDatosCompletoEmpleado(idEmpleado);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+});
 
+        
+        setupNumericFilters();
+        disableDateChooserTextEdits();
+        setupLettersFilters(); // Nuevo
+        setupEmailValidation(); // Nuevo
     }
  private void Styles() {
       
@@ -65,7 +106,6 @@ public class Empleados extends javax.swing.JPanel {
         tablaEmpleadosLabel.setFont( UIManager.getFont( "h1.font" ) );
 
     }
- DefaultTableModel model;
     String url = "jdbc:sqlite:santabarbara.db";
     Connection connect;
 
@@ -84,6 +124,7 @@ public class Empleados extends javax.swing.JPanel {
         model.setRowCount(0);
         model.setColumnCount(0);
         
+        // Asignar nombres personalizados a las columnas
         model.setColumnIdentifiers(columnNames);
 
         while (rs.next()) {
@@ -94,17 +135,61 @@ public class Empleados extends javax.swing.JPanel {
             model.addRow(rowData);
         }
 
+        // Ajustar el ancho de la columna ID
         int[] columnWidths = {30, 140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
 
         for (int i = 0; i < columnWidths.length; i++) {
             TableColumn column = jTable1.getColumnModel().getColumn(i);
-            column.setPreferredWidth(columnWidths[i]);
+            column.setPreferredWidth(columnWidths[i]);// Evitar demasiado encogimiento
             }
 
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
+    
+private void cargarDatosCompletoEmpleado(int idEmpleado) {
+    String sql = "SELECT * FROM empleados WHERE ID = ?";
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idEmpleado);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            // Nombre
+            textNombre.setText(rs.getString("NOMBRE_COMPLETO"));
+
+            // Cédula: solo números
+            int cedula = rs.getInt("CEDULA");
+            textCedula.setText(String.valueOf(cedula));
+
+            // Fecha de nacimiento
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            dateCumpleaños.setDate(sdf.parse(rs.getString("FECHA_NACIMIENTO")));
+
+            // Otros campos
+            sexoBox.setSelectedItem(rs.getString("SEXO"));
+            textTelefono.setText(rs.getString("TELEFONO"));
+            textTlfhab.setText(rs.getString("TELEFONO_HABITACION"));
+            textEmail.setText(rs.getString("EMAIL"));
+            textDireccion.setText(rs.getString("DIRECCION"));
+            textCargo.setText(rs.getString("CARGO"));
+            textSalario.setText(String.valueOf(rs.getDouble("SALARIO")));
+            dateInicio.setDate(sdf.parse(rs.getString("INICIO_CONTRATO")));
+            dateFinal.setDate(sdf.parse(rs.getString("FIN_CONTRATO")));
+            bancoBox.setSelectedItem(rs.getString("BANCO"));
+            tipoCuentaBox.setSelectedItem(rs.getString("TIPO_CUENTA"));
+            textNumeroCuenta.setText(rs.getString("NUMERO_CUENTA"));
+
+            // Pago móvil: se selecciona "Si" o "No"
+            String pagoMovil = rs.getString("PAGO_MOVIL");
+            pagoMovilBox.setSelectedItem(pagoMovil);
+        }
+    } catch (SQLException | ParseException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar datos del empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
 
     private void limpiarCamposEmpleado() {
         textNombre.setText("");
@@ -134,13 +219,20 @@ public class Empleados extends javax.swing.JPanel {
         String telefono = textTelefono.getText().trim();
         String telefonoHabitacion = textTlfhab.getText().trim();
         String email = textEmail.getText().trim();
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            JOptionPane.showMessageDialog(null, 
+                "Formato de email inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         String direccion = textDireccion.getText().trim();
         String cargo = textCargo.getText().trim();
         String salarioTexto = textSalario.getText().trim();
         String banco = (String) bancoBox.getSelectedItem();
         String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
         String numeroCuenta = textNumeroCuenta.getText().trim();
-        String pagoMovil = (String) pagoMovilBox.getSelectedItem();
+        String pagoMovil = (String) pagoMovilBox.getSelectedItem(); // Nuevo JComboBox
 
 
       
@@ -234,6 +326,171 @@ public class Empleados extends javax.swing.JPanel {
             }
         }
     }
+    
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$";
+        return email.matches(emailRegex);
+}
+    
+    private void setupLettersFilters() {
+        setLettersFilter(textNombre);
+        setLettersFilter(textCargo);
+}
+
+    private void setLettersFilter(JTextField textField) {
+        PlainDocument doc = (PlainDocument) textField.getDocument();
+        doc.setDocumentFilter(new LettersDocumentFilter());
+}
+
+    private void setupEmailValidation() {
+        textEmail.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                validateEmailFormat();
+        }
+    });
+}
+
+    private void validateEmailFormat() {
+        String email = textEmail.getText().trim();
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this, 
+                "Formato de email inválido. Ejemplo válido: usuario@dominio.com", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            textEmail.setText("");
+            textEmail.requestFocus();
+    }
+}
+
+    private void setupNumericFilters() {
+        setNumericFilter(textCedula, false);
+        setNumericFilter(textTelefono, false);
+        setNumericFilter(textTlfhab, false);
+        setNumericFilter(textSalario, true);
+        setNumericFilter(textNumeroCuenta, false);
+    }
+    
+        private void setNumericFilter(JTextField textField, boolean allowDecimal) {
+        PlainDocument doc = (PlainDocument) textField.getDocument();
+        doc.setDocumentFilter(new NumericDocumentFilter(allowDecimal));
+    }
+
+    private static class NumericDocumentFilter extends DocumentFilter {
+        private boolean allowDecimal;
+
+        public NumericDocumentFilter(boolean allowDecimal) {
+            this.allowDecimal = allowDecimal;
+        }
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            StringBuilder sb = new StringBuilder();
+            Document doc = fb.getDocument();
+            try {
+                sb.append(doc.getText(0, doc.getLength()));
+            } catch (BadLocationException e) {
+                return;
+            }
+            sb.insert(offset, string);
+
+            if (isValid(sb.toString())) {
+                super.insertString(fb, offset, string, attr);
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            StringBuilder sb = new StringBuilder();
+            Document doc = fb.getDocument();
+            try {
+                sb.append(doc.getText(0, doc.getLength()));
+            } catch (BadLocationException e) {
+                return;
+            }
+            sb.replace(offset, offset + length, text);
+
+            if (isValid(sb.toString())) {
+                super.replace(fb, offset, length, text, attrs);
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+        private boolean isValid(String text) {
+            if (text.isEmpty()) {
+                return true;
+            }
+            if (allowDecimal) {
+                return text.matches("^\\d+(\\.\\d*)?$");
+            } else {
+                return text.matches("^\\d+$");
+            }
+        }
+    }
+
+    private void disableDateChooserTextEdits() {
+        setDateChooserEditable(dateCumpleaños, false);
+        setDateChooserEditable(dateInicio, false);
+        setDateChooserEditable(dateFinal, false);
+    }
+
+    private void setDateChooserEditable(JDateChooser dateChooser, boolean editable) {
+        if (dateChooser == null) return;
+        JTextField dateTextField = (JTextField) dateChooser.getDateEditor().getUiComponent();
+        dateTextField.setEditable(editable);
+    }
+    
+    private static class LettersDocumentFilter extends DocumentFilter {
+    private final Pattern pattern = Pattern.compile("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s'-]+$");
+
+    @Override
+    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+        if (string == null) return;
+        
+        if (pattern.matcher(string).matches()) {
+            super.insertString(fb, offset, string, attr);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+
+    @Override
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+        if (text == null) return;
+        
+        if (pattern.matcher(text).matches()) {
+            super.replace(fb, offset, length, text, attrs);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+}
+    
+private boolean confirmarAccionConPassword() {
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "¿Estás seguro de que quieres hacer los cambios?",
+        "Confirmar acción",
+        JOptionPane.YES_NO_OPTION
+    );
+    
+    if (confirm == JOptionPane.YES_OPTION) {
+        JPasswordField pf = new JPasswordField();
+        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (okCxl == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(pf.getPassword());
+            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
+            if (inputPassword.equals(contraseñaValida)) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    return false;
+}
 
 
     /**
@@ -290,11 +547,11 @@ public class Empleados extends javax.swing.JPanel {
         eliminarBtn = new javax.swing.JButton();
         limpiarBtn = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        Ficha = new javax.swing.JButton();
         tablaEmpleadosLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jToggleButton1 = new javax.swing.JToggleButton();
 
         javax.swing.GroupLayout jCalendarDemo1Layout = new javax.swing.GroupLayout(jCalendarDemo1.getContentPane());
         jCalendarDemo1.getContentPane().setLayout(jCalendarDemo1Layout);
@@ -616,6 +873,14 @@ public class Empleados extends javax.swing.JPanel {
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imprimir1.png"))); // NOI18N
         jButton1.setText("Reporte de personal");
 
+        Ficha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/empleados.png"))); // NOI18N
+        Ficha.setText("Ficha de empleado");
+        Ficha.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FichaActionPerformed(evt);
+            }
+        });
+
         tablaEmpleadosLabel.setText("Tabla de empleados");
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -640,8 +905,6 @@ public class Empleados extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jScrollPane2);
 
-        jToggleButton1.setText("Ficha de empleado");
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -660,8 +923,8 @@ public class Empleados extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jToggleButton1)
-                .addGap(37, 37, 37)
+                .addComponent(Ficha)
+                .addGap(18, 18, 18)
                 .addComponent(jButton1)
                 .addGap(150, 150, 150))
         );
@@ -675,10 +938,10 @@ public class Empleados extends javax.swing.JPanel {
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(Ficha))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -730,51 +993,112 @@ public class Empleados extends javax.swing.JPanel {
                                           
 
     private void editarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editarBtnActionPerformed
-        // TODO add your handling code here:
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla", "Error", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    if (confirmarAccionConPassword()) {
+        actualizarEmpleado(selectedRow);
+    }
+}                                         
+
+private void actualizarEmpleado(int selectedRow) {
+    try {
+        Connection conn = ConexionBD.obtenerConexion();
+        String sql = "UPDATE empleados SET "
+            + "NOMBRE_COMPLETO = ?, "
+            + "CEDULA = ?, "
+            + "FECHA_NACIMIENTO = ?, "
+            + "SEXO = ?, "
+            + "TELEFONO = ?, "
+            + "TELEFONO_HABITACION = ?, "
+            + "EMAIL = ?, "
+            + "DIRECCION = ?, "
+            + "CARGO = ?, "
+            + "SALARIO = ?, "
+            + "INICIO_CONTRATO = ?, "
+            + "FIN_CONTRATO = ?, "
+            + "BANCO = ?, "
+            + "TIPO_CUENTA = ?, "
+            + "NUMERO_CUENTA = ? "
+            + "WHERE ID = ?";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // Establecer parámetros
+        pstmt.setString(1, textNombre.getText());
+        pstmt.setInt(2, Integer.parseInt(textCedula.getText()));
+        pstmt.setString(3, sdf.format(dateCumpleaños.getDate()));
+        pstmt.setString(4, sexoBox.getSelectedItem().toString());
+        pstmt.setString(5, textTelefono.getText());
+        pstmt.setString(6, textTlfhab.getText());
+        pstmt.setString(7, textEmail.getText());
+        pstmt.setString(8, textDireccion.getText());
+        pstmt.setString(9, textCargo.getText());
+        pstmt.setDouble(10, Double.parseDouble(textSalario.getText()));
+        pstmt.setString(11, sdf.format(dateInicio.getDate()));
+        pstmt.setString(12, sdf.format(dateFinal.getDate()));
+        pstmt.setString(13, bancoBox.getSelectedItem().toString());
+        pstmt.setString(14, tipoCuentaBox.getSelectedItem().toString());
+        pstmt.setString(15, textNumeroCuenta.getText());
+        
+        // ID del empleado
+        int id = (int) jTable1.getValueAt(selectedRow, 0);
+        pstmt.setInt(16, id);
+
+        int updated = pstmt.executeUpdate();
+        if (updated > 0) {
+            JOptionPane.showMessageDialog(this, "Empleado actualizado!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            cargarDatosEnTabla();
+            limpiarCamposEmpleado();
+        }
+    } catch (SQLException | NumberFormatException  e) {
+        JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    } // TODO add your handling code here:
     }//GEN-LAST:event_editarBtnActionPerformed
 
     private void eliminarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarBtnActionPerformed
 
-        int selectedRow = jTable1.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int id = (int) jTable1.getValueAt(selectedRow, 0);
-
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar este registro?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
-        if (confirmacion != JOptionPane.YES_OPTION) {
-            return;
-        }
-
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
     
-        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
-
+    if (confirmarAccionConPassword()) {
+        int id = (int) jTable1.getValueAt(selectedRow, 0);
+        try (Connection conn = ConexionBD.obtenerConexion(); 
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
+            
             pstmt.setInt(1, id);
             int filasEliminadas = pstmt.executeUpdate();
-
+            
             if (filasEliminadas > 0) {
-
                 model.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(this, "Registro eliminado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(this, "No se pudo eliminar el registro.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al eliminar el registro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }        // TODO add your handling code here:
+        }
+    }        // TODO add your handling code here:
     }//GEN-LAST:event_eliminarBtnActionPerformed
 
+    
     private void limpiarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limpiarBtnActionPerformed
 
         limpiarCamposEmpleado();
     }//GEN-LAST:event_limpiarBtnActionPerformed
 
     private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-
-       agregarEmpleado();
+    if (confirmarAccionConPassword()) {
+        agregarEmpleado();
+    }
     }//GEN-LAST:event_agregarBtnActionPerformed
 
     private void cedulaBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cedulaBoxActionPerformed
@@ -789,8 +1113,34 @@ public class Empleados extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_pagoMovilBoxActionPerformed
 
+    private void FichaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FichaActionPerformed
+    int filaSeleccionada = jTable1.getSelectedRow();
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this, 
+            "Seleccione un empleado de la tabla primero", 
+            "Advertencia", 
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
+    
+    // Crear y mostrar la ficha
+    JDialog dialog = new JDialog();
+    Ficha ficha = new Ficha();
+    ficha.cargarDatosEmpleado(idEmpleado);
+    dialog.add(ficha);
+    dialog.pack();
+    dialog.setLocationRelativeTo(this);
+    dialog.setTitle("Ficha del Empleado");
+    dialog.setModal(true);
+    dialog.setVisible(true);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_FichaActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Ficha;
     private javax.swing.JButton agregarBtn;
     private javax.swing.JComboBox<String> bancoBox;
     private javax.swing.JComboBox<String> cedulaBox;
@@ -826,7 +1176,6 @@ public class Empleados extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JButton limpiarBtn;
     private javax.swing.JComboBox<String> pagoMovilBox;
     private javax.swing.JComboBox<String> sexoBox;
