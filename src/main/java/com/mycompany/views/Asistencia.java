@@ -44,67 +44,35 @@ public class Asistencia extends javax.swing.JPanel {
 
     //FUNCIONES PARA CARGAR LOS DATOS
     
-    private void cargarDatosAsistenciasEnTabla() {
-        String sql = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
-                + "FROM asistencias a "
-                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID"; 
-        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+   private void cargarDatosAsistenciasEnTabla() {
+    // Obtener la fecha actual en formato yyyy-MM-dd
+    String fechaActual = java.time.LocalDate.now().toString();
 
-          
-            try (ResultSet rs = pstmt.executeQuery()) {
+    // Consulta SQL para obtener las asistencias del día actual
+    String sql = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
+               + "FROM asistencias a "
+               + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
+               + "WHERE a.FECHA = ?";
 
-                
-                ResultSetMetaData metaData = rs.getMetaData();
-                int columnCount = metaData.getColumnCount();
+    try (Connection conn = ConexionBD.obtenerConexion(); 
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-       
-                model.setRowCount(0); 
-                model.setColumnCount(0); 
-                model.addColumn("Nombre Empleado");
-                model.addColumn("Fecha");
-                model.addColumn("Hora de Entrada");
-                model.addColumn("Hora de Salida");
-                model.addColumn("Estado");
-                model.addColumn("Observaciones");
+        pstmt.setString(1, fechaActual);
 
-             
-                while (rs.next()) {
-                    Object[] rowData = new Object[columnCount];
-                    for (int i = 1; i <= columnCount; i++) {
-                        rowData[i - 1] = rs.getObject(i);
-                    }
-                    model.addRow(rowData); 
-                }
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar las asistencias: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void actualizarTabla() {
-        String query = "SELECT a.ID_ASISTENCIA, e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
-                + "FROM asistencias a "
-                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
-                + "ORDER BY a.FECHA DESC, a.HORA_ENTRADA DESC";
-
-        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
-
-        
+        try (ResultSet rs = pstmt.executeQuery()) {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
 
-            
-            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
             model.setRowCount(0);  
             model.setColumnCount(0);
 
-        
-            for (int i = 1; i <= columnCount; i++) {
-                model.addColumn(metaData.getColumnName(i));
-            }
+            model.addColumn("Nombre Empleado");
+            model.addColumn("Fecha");
+            model.addColumn("Hora de Entrada");
+            model.addColumn("Hora de Salida");
+            model.addColumn("Estado");
+            model.addColumn("Observaciones");
 
-        
             while (rs.next()) {
                 Object[] rowData = new Object[columnCount];
                 for (int i = 1; i <= columnCount; i++) {
@@ -112,11 +80,56 @@ public class Asistencia extends javax.swing.JPanel {
                 }
                 model.addRow(rowData);
             }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al actualizar la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar las asistencias: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
+
+
+  private void actualizarTabla() {
+    // Obtener la fecha actual en formato yyyy-MM-dd
+    String fechaActual = java.time.LocalDate.now().toString();
+
+    // Consulta SQL para obtener las asistencias del día actual
+    String query = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
+                 + "FROM asistencias a "
+                 + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
+                 + "WHERE a.FECHA = ? "
+                 + "ORDER BY a.HORA_ENTRADA DESC";
+
+    try (Connection con = ConexionBD.obtenerConexion(); 
+         PreparedStatement stmt = con.prepareStatement(query)) {
+
+        // Establecer el parámetro de la fecha actual
+        stmt.setString(1, fechaActual);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            // Obtener los metadatos del ResultSet
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            // Obtener el modelo de la tabla
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+
+           
+
+            // Añadir los datos al modelo de la tabla
+            while (rs.next()) {
+                Object[] rowData = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    rowData[i - 1] = rs.getObject(i);
+                }
+                model.addRow(rowData);
+            }
+        }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Error al actualizar la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
 
     public void cargarEmpleadosEnComboBox() {
 

@@ -14,8 +14,11 @@ import java.sql.SQLException;
 import javax.swing.*;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+
 
 
 
@@ -52,16 +55,91 @@ public class Nomina extends javax.swing.JPanel {
 
 
 
-public void calcularNomina() {
+
+public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin) {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
         con = ConexionBD.obtenerConexion();
+
+        // Convertimos las fechas a String para la consulta
+        String fechaInicioStr = fechaInicio.toString();  // "yyyy-MM-dd"
+        String fechaFinStr = fechaFin.toString();        // "yyyy-MM-dd"
+
+        // Consulta para verificar solapamientos de fechas de nómina
+        String sql = "SELECT COUNT(*) FROM nomina WHERE (" +
+                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    // Fecha inicio dentro del rango
+                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    // Fecha fin dentro del rango
+                     "(FECHA_INICIO_NOMINA BETWEEN ? AND ?) OR " +            // Rango de la nómina dentro de las fechas ingresadas
+                     "(FECHA_FIN_NOMINA BETWEEN ? AND ?))";                   // Rango de la nómina dentro de las fechas ingresadas
+
+        pst = con.prepareStatement(sql);
+        pst.setString(1, fechaInicioStr);
+        pst.setString(2, fechaFinStr);
+        pst.setString(3, fechaInicioStr);
+        pst.setString(4, fechaFinStr);
+        pst.setString(5, fechaInicioStr);
+        pst.setString(6, fechaFinStr);
+      
+
+        rs = pst.executeQuery();
+
+        if (rs.next() && rs.getInt(1) > 0) {
+            JOptionPane.showMessageDialog(null, "Las fechas seleccionadas se solapan con una nómina existente.");
+            return true; // Si hay solapamiento, retornar verdadero
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al verificar solapamiento de fechas: " + e.getMessage());
+    } finally {
+        try {
+            if (rs != null) rs.close();
+            if (pst != null) pst.close();
+            if (con != null) con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    return false; // Si no hay solapamiento, retornar falso
+}
+
+public void calcularNomina() {
+    Connection con = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+
+    try {
+        // Obtener las fechas de inicio y fin de los JDateChooser
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicio = sdf.format(fechaInicioNom.getDate());
-        String fechaFin = sdf.format(fechaFinNom.getDate());
+        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+        String fechaFinStr = sdf.format(fechaFinNom.getDate());
+
+        // Convertir las fechas a LocalDate para validarlas
+        LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
+        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+
+        // Validar que la diferencia entre las fechas sea entre 15 y 31 días
+        long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
+        if (diasDeDiferencia < 15) {
+            JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
+            return; // Salir si la validación falla
+        }
+        if (diasDeDiferencia > 31) {
+            JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
+            return; // Salir si la validación falla
+        }
+
+        // Validar si las fechas se solapan con otras nóminas
+        if (validarFechasSolapadas(fechaInicio, fechaFin)) {
+            return; // Salir si la validación de solapamiento falla
+        }
+
+        // Continuar con el cálculo de la nómina si las validaciones pasan
+        con = ConexionBD.obtenerConexion();
 
         String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
                      "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
@@ -81,8 +159,8 @@ public void calcularNomina() {
                      "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
 
         pst = con.prepareStatement(sql);
-        pst.setString(1, fechaInicio);
-        pst.setString(2, fechaFin);
+        pst.setString(1, fechaInicioStr);
+        pst.setString(2, fechaFinStr);
         rs = pst.executeQuery();
 
         // Definir el modelo de la tabla con las columnas correctas
@@ -97,7 +175,6 @@ public void calcularNomina() {
 
         // Variables para los totales
         double totalSalarioBase = 0;  // Nuevo total agregado
-
         totalSueldoNeto = 0;  // Reiniciar la variable global
         double totalDeducciones = 0;
         double totalFAOV = 0;
@@ -128,7 +205,7 @@ public void calcularNomina() {
             }
 
             // Agregar datos a la tabla con formato "BS"
-            model.addRow(new Object[]{
+            model.addRow(new Object[] {
                 rs.getInt("ID"),
                 rs.getString("NOMBRE_COMPLETO"),
                 String.format("%.2f BS", salarioBase),
@@ -161,7 +238,7 @@ public void calcularNomina() {
         deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
         faovLabel.setText(String.format("%.2f BS", totalFAOV));
         ivssLabel.setText(String.format("%.2f BS", totalIVSS));
-        incesLabel.setText(String.format("%.2f BS",totalInces ));
+        incesLabel.setText(String.format("%.2f BS", totalInces));
 
     } catch (Exception ex) {
         ex.printStackTrace();
@@ -468,12 +545,6 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addGap(98, 98, 98))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -486,9 +557,14 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                             .addComponent(jLabel7))
                         .addGap(47, 47, 47)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6))))
-                .addContainerGap(86, Short.MAX_VALUE))
+                            .addComponent(jLabel6)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel2Layout.createSequentialGroup()
+                                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(26, 26, 26)
+                                    .addComponent(jButton1))
+                                .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -511,7 +587,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                 .addContainerGap())
         );
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 650, 160));
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 610, 160));
 
         jButton2.setText("Generar Recibo");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -544,6 +620,16 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
 
         jLabel9.setText("Monto base total:");
 
+        montoBaseL.setText("Total");
+
+        montoNetoL.setText("Total");
+
+        deduccionesTotalesL.setText("Total");
+
+        faovLabel.setText("Total");
+
+        ivssLabel.setText("Total");
+
         jLabel8.setText("INCES");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -552,67 +638,68 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(incesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel5))
+                                .addGap(98, 98, 98)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(faovLabel)
+                                    .addComponent(ivssLabel))
+                                .addGap(0, 35, Short.MAX_VALUE)))
+                        .addGap(24, 24, 24))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel9)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 91, Short.MAX_VALUE)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(montoBaseL)
-                            .addComponent(montoNetoL)
-                            .addComponent(deduccionesTotalesL)
-                            .addComponent(faovLabel)
-                            .addComponent(ivssLabel))
-                        .addGap(46, 46, 46))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel8)
+                            .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(incesLabel)
-                        .addGap(24, 24, 24))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(montoNetoL, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(montoBaseL, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(deduccionesTotalesL))
+                        .addContainerGap())))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(montoBaseL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(14, 14, 14)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(montoNetoL, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(montoBaseL)
-                        .addGap(28, 28, 28)
-                        .addComponent(montoNetoL)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deduccionesTotalesL)
-                        .addGap(28, 28, 28)
-                        .addComponent(faovLabel))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)))
-                .addGap(4, 4, 4)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(deduccionesTotalesL))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(faovLabel))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(11, 11, 11)
-                        .addComponent(ivssLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(incesLabel))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(5, 5, 5)
                         .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8)))
+                        .addGap(46, 46, 46)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(incesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8)))
+                    .addComponent(ivssLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(6, 6, 6))
         );
 
-        jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 50, 270, 170));
+        jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 50, 270, 170));
 
         jButton5.setText("Historial de nomina");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -654,7 +741,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                 jButton8ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 230, 250, 30));
+        jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
         jButton9.setText("Leyenda");
         jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 670, 120, 40));
@@ -663,10 +750,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(180, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
