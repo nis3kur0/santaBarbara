@@ -155,7 +155,7 @@ private void scaleIcons() {
         salirIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
         salirIcn.setText("jLabel1");
         salirIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        menu.add(salirIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 590, 40, 40));
+        menu.add(salirIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 590, 50, 40));
 
         confIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
         confIcn.setText("jLabel1");
