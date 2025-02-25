@@ -5,10 +5,8 @@
 package com.mycompany.views;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
@@ -27,22 +25,20 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import java.awt.Toolkit;
 import java.text.ParseException;
-import com.mycompany.loginandsignup.Login;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 /**
- *
- * @author gabo
+ *PENDIENTE A REFACTORIZACION
  */
 public class Empleados extends javax.swing.JPanel {
     
     DefaultTableModel model = new DefaultTableModel() {
     @Override
     public boolean isCellEditable(int row, int column) {
-        return false; // Todas las celdas no editables
+        return false; 
     }
 };
 
@@ -57,27 +53,26 @@ public class Empleados extends javax.swing.JPanel {
         agregarBtn.setIcon(new ImageIcon(getClass().getResource("/agregar.png"))); 
         agregarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
         agregarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
-        agregarBtn.setMargin(new Insets(0, 0, 0, 20)); // 
+        agregarBtn.setMargin(new Insets(0, 0, 0, 20)); 
         editarBtn.setIcon(new ImageIcon(getClass().getResource("/editar.png"))); 
         editarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
         editarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
-        editarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        editarBtn.setMargin(new Insets(0, 0, 0, 20));
         eliminarBtn.setIcon(new ImageIcon(getClass().getResource("/eliminar.png"))); 
         eliminarBtn.setHorizontalTextPosition(SwingConstants.RIGHT); 
         eliminarBtn.setHorizontalAlignment(SwingConstants.CENTER); 
-        eliminarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        eliminarBtn.setMargin(new Insets(0, 0, 0, 20));
         limpiarBtn.setIcon(new ImageIcon(getClass().getResource("/calcular.png"))); 
         limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
         limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
-        limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); //
+        limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); 
         
-        // Agrega este código en el constructor después de inicializar la tabla
 jTable1.getSelectionModel().addListSelectionListener(e -> {
     if (!e.getValueIsAdjusting()) {
         int selectedRow = jTable1.getSelectedRow();
         if (selectedRow >= 0) {
             try {
-                // Obtén el ID (columna 0 en la tabla)
+            
                 int idEmpleado = (int) jTable1.getValueAt(selectedRow, 0);
                 cargarDatosCompletoEmpleado(idEmpleado);
             } catch (Exception ex) {
@@ -90,8 +85,8 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
         
         setupNumericFilters();
         disableDateChooserTextEdits();
-        setupLettersFilters(); // Nuevo
-        setupEmailValidation(); // Nuevo
+        setupLettersFilters(); 
+        setupEmailValidation(); 
     }
  private void Styles() {
       
@@ -106,10 +101,11 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
         tablaEmpleadosLabel.setFont( UIManager.getFont( "h1.font" ) );
 
     }
-    String url = "jdbc:sqlite:santabarbara.db";
-    Connection connect;
+    
+    
 
     //FUNCIONES PARA ACTUALIZAR Y CARGAR DATOS
+ 
     private void cargarDatosEnTabla() {
     String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados";
 
@@ -124,7 +120,7 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
         model.setRowCount(0);
         model.setColumnCount(0);
         
-        // Asignar nombres personalizados a las columnas
+     
         model.setColumnIdentifiers(columnNames);
 
         while (rs.next()) {
@@ -135,12 +131,12 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
             model.addRow(rowData);
         }
 
-        // Ajustar el ancho de la columna ID
+        
         int[] columnWidths = {30, 140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
 
         for (int i = 0; i < columnWidths.length; i++) {
             TableColumn column = jTable1.getColumnModel().getColumn(i);
-            column.setPreferredWidth(columnWidths[i]);// Evitar demasiado encogimiento
+            column.setPreferredWidth(columnWidths[i]);
             }
 
     } catch (SQLException e) {
@@ -156,18 +152,14 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         pstmt.setInt(1, idEmpleado);
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
-            // Nombre
             textNombre.setText(rs.getString("NOMBRE_COMPLETO"));
 
-            // Cédula: solo números
             int cedula = rs.getInt("CEDULA");
             textCedula.setText(String.valueOf(cedula));
 
-            // Fecha de nacimiento
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             dateCumpleaños.setDate(sdf.parse(rs.getString("FECHA_NACIMIENTO")));
 
-            // Otros campos
             sexoBox.setSelectedItem(rs.getString("SEXO"));
             textTelefono.setText(rs.getString("TELEFONO"));
             textTlfhab.setText(rs.getString("TELEFONO_HABITACION"));
@@ -181,7 +173,6 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             tipoCuentaBox.setSelectedItem(rs.getString("TIPO_CUENTA"));
             textNumeroCuenta.setText(rs.getString("NUMERO_CUENTA"));
 
-            // Pago móvil: se selecciona "Si" o "No"
             String pagoMovil = rs.getString("PAGO_MOVIL");
             pagoMovilBox.setSelectedItem(pagoMovil);
         }
@@ -208,8 +199,10 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         pagoMovilBox.setSelectedIndex(0);
         textNumeroCuenta.setText("");
     }
+    
+    //FIN//
 
-    //FUNCION PARA REALIZAR ACCIONES
+    //FUNCIONES PARA REALIZAR ACCIONES
     public void agregarEmpleado() {
 
         String nombre = textNombre.getText().trim();
@@ -232,8 +225,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         String banco = (String) bancoBox.getSelectedItem();
         String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
         String numeroCuenta = textNumeroCuenta.getText().trim();
-        String pagoMovil = (String) pagoMovilBox.getSelectedItem(); // Nuevo JComboBox
-
+        String pagoMovil = (String) pagoMovilBox.getSelectedItem(); 
 
       
         int cedula;
@@ -292,7 +284,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, TIPO_CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA, PAGO_MOVIL) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection con = DriverManager.getConnection(url); PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setString(1, nombre);
             pstmt.setInt(2, cedula);
             pstmt.setString(3, tipoCedula);
@@ -326,6 +318,10 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             }
         }
     }
+    
+    //FIN//
+    
+    //MAS VALIDACIONES
     
     private boolean isValidEmail(String email) {
         String emailRegex = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$";
@@ -492,6 +488,7 @@ private boolean confirmarAccionConPassword() {
     return false;
 }
 
+//FIN//
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -835,7 +832,7 @@ private boolean confirmarAccionConPassword() {
         });
         jPanel3.add(eliminarBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 170, 130, -1));
 
-        limpiarBtn.setText("Limpiar campos");
+        limpiarBtn.setText("Limpiar ");
         limpiarBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 limpiarBtnActionPerformed(evt);
@@ -949,9 +946,8 @@ private boolean confirmarAccionConPassword() {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1029, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(0, 0, 0)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 1029, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1029,7 +1025,6 @@ private void actualizarEmpleado(int selectedRow) {
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         
-        // Establecer parámetros
         pstmt.setString(1, textNombre.getText());
         pstmt.setInt(2, Integer.parseInt(textCedula.getText()));
         pstmt.setString(3, sdf.format(dateCumpleaños.getDate()));
@@ -1046,7 +1041,6 @@ private void actualizarEmpleado(int selectedRow) {
         pstmt.setString(14, tipoCuentaBox.getSelectedItem().toString());
         pstmt.setString(15, textNumeroCuenta.getText());
         
-        // ID del empleado
         int id = (int) jTable1.getValueAt(selectedRow, 0);
         pstmt.setInt(16, id);
 
@@ -1058,7 +1052,7 @@ private void actualizarEmpleado(int selectedRow) {
         }
     } catch (SQLException | NumberFormatException  e) {
         JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    } // TODO add your handling code here:
+    } 
     }//GEN-LAST:event_editarBtnActionPerformed
 
     private void eliminarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarBtnActionPerformed
@@ -1086,7 +1080,7 @@ private void actualizarEmpleado(int selectedRow) {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al eliminar el registro: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }        // TODO add your handling code here:
+    }        
     }//GEN-LAST:event_eliminarBtnActionPerformed
 
     
@@ -1125,7 +1119,6 @@ private void actualizarEmpleado(int selectedRow) {
     
     int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
     
-    // Crear y mostrar la ficha
     JDialog dialog = new JDialog();
     Ficha ficha = new Ficha();
     ficha.cargarDatosEmpleado(idEmpleado);
@@ -1135,7 +1128,6 @@ private void actualizarEmpleado(int selectedRow) {
     dialog.setTitle("Ficha del Empleado");
     dialog.setModal(true);
     dialog.setVisible(true);
-        // TODO add your handling code here:
     }//GEN-LAST:event_FichaActionPerformed
 
 

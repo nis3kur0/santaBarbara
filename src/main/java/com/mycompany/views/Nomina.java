@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -24,7 +25,7 @@ import javax.swing.table.DefaultTableModel;
 
 
 
-/**
+/** PENDIENTE A REFACTORIZACION
  *
  * 
  */
@@ -46,15 +47,12 @@ public class Nomina extends javax.swing.JPanel {
     
     }
     
- //OBTENER DATOS NOMINA, METODO EN PROCESO
-    
 
-
-
+        //VARIABLES
     private double totalSueldoNeto = 0;
 
 
-
+    //VALIDACIONES
 
 public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin) {
     Connection con = null;
@@ -64,16 +62,13 @@ public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin)
     try {
         con = ConexionBD.obtenerConexion();
 
-        // Convertimos las fechas a String para la consulta
-        String fechaInicioStr = fechaInicio.toString();  // "yyyy-MM-dd"
-        String fechaFinStr = fechaFin.toString();        // "yyyy-MM-dd"
+        String fechaInicioStr = fechaInicio.toString();
+        String fechaFinStr = fechaFin.toString();        
 
-        // Consulta para verificar solapamientos de fechas de nómina
         String sql = "SELECT COUNT(*) FROM nomina WHERE (" +
-                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    // Fecha inicio dentro del rango
-                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    // Fecha fin dentro del rango
-                     "(FECHA_INICIO_NOMINA BETWEEN ? AND ?) OR " +            // Rango de la nómina dentro de las fechas ingresadas
-                     "(FECHA_FIN_NOMINA BETWEEN ? AND ?))";                   // Rango de la nómina dentro de las fechas ingresadas
+                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    
+                     "(FECHA_INICIO_NOMINA BETWEEN ? AND ?) OR " +            
+                     "(FECHA_FIN_NOMINA BETWEEN ? AND ?))";                   
 
         pst = con.prepareStatement(sql);
         pst.setString(1, fechaInicioStr);
@@ -81,14 +76,13 @@ public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin)
         pst.setString(3, fechaInicioStr);
         pst.setString(4, fechaFinStr);
         pst.setString(5, fechaInicioStr);
-        pst.setString(6, fechaFinStr);
       
 
         rs = pst.executeQuery();
 
         if (rs.next() && rs.getInt(1) > 0) {
             JOptionPane.showMessageDialog(null, "Las fechas seleccionadas se solapan con una nómina existente.");
-            return true; // Si hay solapamiento, retornar verdadero
+            return true; 
         }
 
     } catch (SQLException e) {
@@ -104,41 +98,62 @@ public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin)
         }
     }
 
-    return false; // Si no hay solapamiento, retornar falso
+    return false;
 }
 
+
+private boolean confirmarAccionConPassword() {
+    
+   
+        JPasswordField pf = new JPasswordField();
+        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        
+        if (okCxl == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(pf.getPassword());
+            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
+
+            if (inputPassword.equals(contraseñaValida)) {
+                return true; 
+            } else {
+                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    
+    return false; 
+}
+
+    //FIN//
+
+//CALCULOS Y ACCIONES
 public void calcularNomina() {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
-        // Obtener las fechas de inicio y fin de los JDateChooser
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
         String fechaFinStr = sdf.format(fechaFinNom.getDate());
 
-        // Convertir las fechas a LocalDate para validarlas
+    
         LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
         LocalDate fechaFin = LocalDate.parse(fechaFinStr);
 
-        // Validar que la diferencia entre las fechas sea entre 15 y 31 días
+      
         long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
-        if (diasDeDiferencia < 15) {
+        if (diasDeDiferencia < 14) {
             JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
-            return; // Salir si la validación falla
+            return; 
         }
-        if (diasDeDiferencia > 31) {
+        if (diasDeDiferencia > 30) {
             JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
-            return; // Salir si la validación falla
+            return; 
         }
 
-        // Validar si las fechas se solapan con otras nóminas
         if (validarFechasSolapadas(fechaInicio, fechaFin)) {
-            return; // Salir si la validación de solapamiento falla
+            return; 
         }
 
-        // Continuar con el cálculo de la nómina si las validaciones pasan
         con = ConexionBD.obtenerConexion();
 
         String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
@@ -163,25 +178,27 @@ public void calcularNomina() {
         pst.setString(2, fechaFinStr);
         rs = pst.executeQuery();
 
-        // Definir el modelo de la tabla con las columnas correctas
-        DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(new Object[]{
-            "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias", 
-            "Horas Extras", "Sueldo Neto", "IVSS", "FAOV", "INCES"
-        });
+       DefaultTableModel model = new DefaultTableModel() {
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+};
 
-        // Asignar modelo a la tabla
-        tablaNomina.setModel(model);
+model.setColumnIdentifiers(new Object[]{
+    "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias", 
+    "Horas Extras", "IVSS", "FAOV", "INCES", "Salarioadmin Neto"
+});
 
-        // Variables para los totales
-        double totalSalarioBase = 0;  // Nuevo total agregado
-        totalSueldoNeto = 0;  // Reiniciar la variable global
+tablaNomina.setModel(model);
+
+        double totalSalarioBase = 0;  
+        totalSueldoNeto = 0;  
         double totalDeducciones = 0;
         double totalFAOV = 0;
         double totalIVSS = 0;
         double totalInces = 0;
 
-        // Llenar la tabla con los datos
         while (rs.next()) {
             int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
             int ausencias = rs.getInt("AUSENCIAS");
@@ -192,7 +209,6 @@ public void calcularNomina() {
             double inces = rs.getDouble("INCES");
             double salarioBase = rs.getDouble("SALARIO_BASE");
 
-            // Manejar valores NULL reemplazándolos por 0
             if (rs.wasNull()) {
                 diasTrabajados = 0;
                 ausencias = 0;
@@ -204,7 +220,6 @@ public void calcularNomina() {
                 salarioBase = 0.0;
             }
 
-            // Agregar datos a la tabla con formato "BS"
             model.addRow(new Object[] {
                 rs.getInt("ID"),
                 rs.getString("NOMBRE_COMPLETO"),
@@ -212,14 +227,13 @@ public void calcularNomina() {
                 diasTrabajados,
                 ausencias,
                 String.format("%.2f", horasExtras),
-                String.format("%.2f BS", sueldoNeto),
                 String.format("%.2f BS", ivss),
                 String.format("%.2f BS", faov),
-                String.format("%.2f BS", inces)
+                String.format("%.2f BS", inces),
+                String.format("%.2f BS", sueldoNeto),
             });
 
-            // Acumular totales
-            totalSalarioBase += salarioBase;  // Acumulando salarios base
+            totalSalarioBase += salarioBase;  
             totalSueldoNeto += sueldoNeto;
             totalDeducciones += (ivss + faov + inces);
             totalFAOV += faov;
@@ -227,12 +241,10 @@ public void calcularNomina() {
             totalInces += inces;
         }
 
-        // Si la tabla está vacía, mostrar un mensaje
         if (model.getRowCount() == 0) {
             JOptionPane.showMessageDialog(null, "No se encontraron datos para el período seleccionado.");
         }
 
-        // Actualizar labels con el formato "BS"
         montoBaseL.setText(String.format("%.2f BS", totalSalarioBase));
         montoNetoL.setText(String.format("%.2f BS", totalSueldoNeto));
         deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
@@ -258,125 +270,126 @@ public void calcularNomina() {
 
 
 private void guardarNomina(double totalSueldoNeto) {
-    Connection con = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
+    int respuesta = JOptionPane.showConfirmDialog(
+        null,
+        "Una vez guardada, la nómina no podrá cambiarse. ¿Estás seguro de que deseas continuar?",
+        "Advertencia",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE
+    );
 
-    try {
-        con = ConexionBD.obtenerConexion();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicio = sdf.format(fechaInicioNom.getDate());
-        String fechaFin = sdf.format(fechaFinNom.getDate());
+    if (respuesta == JOptionPane.YES_OPTION) {
+        if (confirmarAccionConPassword()) {
+            Connection con = null;
+            PreparedStatement pst = null;
+            ResultSet rs = null;
 
-        // Obtener la cantidad total de empleados registrados en la base de datos
-        String sqlEmpleados = "SELECT COUNT(*) AS total FROM empleados";
-        pst = con.prepareStatement(sqlEmpleados);
-        rs = pst.executeQuery();
-        
-        int totalEmpleados = 0;
-        if (rs.next()) {
-            totalEmpleados = rs.getInt("total");
-        }
+            try {
+                con = ConexionBD.obtenerConexion();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String fechaInicio = sdf.format(fechaInicioNom.getDate());
+                String fechaFin = sdf.format(fechaFinNom.getDate());
+                String fechaPago = sdf.format(new Date());
 
-        rs.close();
-        pst.close();
+                String sqlEmpleados = "SELECT COUNT(*) AS total FROM empleados";
+                pst = con.prepareStatement(sqlEmpleados);
+                rs = pst.executeQuery();
 
-        // Insertar la nómina en la tabla "nominas"
-        String sql = "INSERT INTO nomina (FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL) " +
-                     "VALUES (?, ?, ?, ?)";
-        pst = con.prepareStatement(sql);
-        pst.setString(1, fechaInicio);
-        pst.setString(2, fechaFin);
-        pst.setInt(3, totalEmpleados);
-        pst.setDouble(4, totalSueldoNeto);
+                int totalEmpleados = 0;
+                if (rs.next()) {
+                    totalEmpleados = rs.getInt("total");
+                }
 
-        int filasAfectadas = pst.executeUpdate();
-        
-        if (filasAfectadas > 0) {
-            JOptionPane.showMessageDialog(null, "Nómina guardada correctamente.");
-        } else {
-            JOptionPane.showMessageDialog(null, "No se pudo guardar la nómina.");
-        }
+                rs.close();
+                pst.close();
 
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al guardar la nómina: " + ex.getMessage());
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (pst != null) pst.close();
-            if (con != null) con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+                String sql = "INSERT INTO nomina (FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+                pst = con.prepareStatement(sql);
+                pst.setString(1, fechaInicio);
+                pst.setString(2, fechaFin);
+                pst.setString(3, fechaPago);
+                pst.setInt(4, totalEmpleados);
+                pst.setDouble(5, totalSueldoNeto);
+
+                int filasAfectadas = pst.executeUpdate();
+
+                if (filasAfectadas > 0) {
+                    JOptionPane.showMessageDialog(null, "Nómina guardada correctamente.");
+                } else {
+                    JOptionPane.showMessageDialog(null, "No se pudo guardar la nómina.");
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error al guardar la nómina: " + ex.getMessage());
+            } finally {
+                try {
+                    if (rs != null) rs.close();
+                    if (pst != null) pst.close();
+                    if (con != null) con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
 
-
 public void historialNomina() {
-    // Crear una nueva ventana (JFrame) para mostrar el historial
     JFrame historialFrame = new JFrame("Historial de Nómina");
     historialFrame.setSize(800, 400);
-    historialFrame.setLocationRelativeTo(null); // Centrar la ventana
-    historialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cerrar solo la ventana de historial
+    historialFrame.setLocationRelativeTo(null);
+    historialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-    // Crear el panel para el historial
     JPanel panel = new JPanel();
     panel.setLayout(new BorderLayout());
 
-    // Crear la tabla para mostrar los datos de la nómina
     JTable tablaHistorialNomina = new JTable();
     JScrollPane scrollPane = new JScrollPane(tablaHistorialNomina);
     panel.add(scrollPane, BorderLayout.CENTER);
 
-    // Crear el botón para cerrar la ventana
     JButton btnCerrar = new JButton("Cerrar");
-    btnCerrar.addActionListener(e -> historialFrame.dispose()); // Al hacer clic en cerrar, se cierra la ventana
+    btnCerrar.addActionListener(e -> historialFrame.dispose());
     panel.add(btnCerrar, BorderLayout.SOUTH);
 
-    // Agregar el panel al JFrame
     historialFrame.add(panel);
-
-    // Mostrar la ventana
     historialFrame.setVisible(true);
 
-    // Ahora obtenemos los registros y los agregamos a la tabla
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
-        // Establecer la conexión
         con = ConexionBD.obtenerConexion();
         
-        // Consulta para obtener los registros de la tabla nomina
-        String sql = "SELECT * FROM nomina";
+        String sql = "SELECT ID_NOMINA, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL FROM nomina";
         pst = con.prepareStatement(sql);
         rs = pst.executeQuery();
 
-        // Definir el modelo de la tabla con las columnas correctas
-        DefaultTableModel model = new DefaultTableModel();
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
+
         model.setColumnIdentifiers(new Object[]{
-            "ID Nomina", "Fecha Inicio", "Fecha Fin", "Fecha Pago", 
+            "ID Nómina", "Fecha Inicio", "Fecha Fin", "Fecha Pago", 
             "Total Empleados", "Monto Total"
         });
 
-        // Asignar el modelo de tabla
         tablaHistorialNomina.setModel(model);
 
-        // Recorrer los registros y agregarlos a la tabla
         while (rs.next()) {
-            // Recuperar los valores directamente
             String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
             String fechaFin = rs.getString("FECHA_FIN_NOMINA");
             String fechaPago = rs.getString("FECHA_PAGO_NOMINA");
 
-            // Si alguna de las fechas es null, mostrar "N/A"
-            if (fechaInicio == null) fechaInicio = "N/A";
-            if (fechaFin == null) fechaFin = "N/A";
-            if (fechaPago == null) fechaPago = "N/A";
+            fechaInicio = (fechaInicio != null) ? fechaInicio : "N/A";
+            fechaFin = (fechaFin != null) ? fechaFin : "N/A";
+            fechaPago = (fechaPago != null) ? fechaPago : "N/A";
 
-            // Agregar los datos a la tabla
             model.addRow(new Object[]{
                 rs.getInt("ID_NOMINA"),
                 fechaInicio,
@@ -387,7 +400,6 @@ public void historialNomina() {
             });
         }
 
-        // Verificar si la tabla está vacía
         if (model.getRowCount() == 0) {
             JOptionPane.showMessageDialog(null, "No se encontraron registros en el historial de nómina.");
         }
@@ -397,7 +409,6 @@ public void historialNomina() {
         JOptionPane.showMessageDialog(null, "Error al mostrar el historial de nómina: " + ex.getMessage());
     } finally {
         try {
-            // Cerrar los recursos
             if (rs != null) rs.close();
             if (pst != null) pst.close();
             if (con != null) con.close();
@@ -408,39 +419,40 @@ public void historialNomina() {
 }
 
 
+    //FIN//
+
+
+
+//OTROS
 
 public void calcularAportesEmpleador() {
-    // Verificar si la nómina ha sido calculada previamente
+   
     if (totalSueldoNeto == 0) {
         JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.");
         return;
     }
 
-    // Inicializar los totales de los aportes
     double totalIVSS = 0;
     double totalFAOV = 0;
     double totalINCES = 0;
     
-    // Sumar los aportes individuales de cada empleado
+  
     DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
     for (int i = 0; i < model.getRowCount(); i++) {
         double salarioBase = Double.parseDouble(model.getValueAt(i, 2).toString().replace(" BS", "").trim());
         
-        // Calcular los aportes individuales por empleado
-        double ivssEmpleado = salarioBase * 0.09;  // 9%
-        double faovEmpleado = salarioBase * 0.02;  // 2%
-        double incesEmpleado = salarioBase * 0.02; // 2%
+      
+        double ivssEmpleado = salarioBase * 0.09; 
+        double faovEmpleado = salarioBase * 0.02; 
+        double incesEmpleado = salarioBase * 0.02;
 
-        // Sumar a los totales
         totalIVSS += ivssEmpleado;
         totalFAOV += faovEmpleado;
         totalINCES += incesEmpleado;
     }
 
-    // Calcular el total de los aportes
     double totalAportes = totalIVSS + totalFAOV + totalINCES;
 
-    // Mostrar los resultados en un JDialog
     mostrarAportesDialog(totalIVSS, totalFAOV, totalINCES, totalAportes);
 }
 
@@ -468,6 +480,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
     dialog.setLocationRelativeTo(null);
     dialog.setVisible(true);
 }
+   //FIN//
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -527,6 +540,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
 
         jLabel7.setText("Fecha de inicio");
 
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/calculator.png"))); // NOI18N
         jButton4.setText("Calcular");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -534,6 +548,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
             }
         });
 
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asfasfasfas.png"))); // NOI18N
         jButton1.setText("Guardar nomina");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -558,13 +573,14 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                         .addGap(47, 47, 47)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(26, 26, 26)
-                                    .addComponent(jButton1))
-                                .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(46, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton1)
+                .addGap(54, 54, 54))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -581,31 +597,33 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(23, 23, 23)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 610, 160));
 
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/receipt.png"))); // NOI18N
         jButton2.setText("Generar Recibo");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 670, 120, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 670, 160, 40));
 
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/seo-report.png"))); // NOI18N
         jButton3.setText("Generar reporte");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 670, 130, 40));
+        jPanel1.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 670, 150, 40));
 
-        tableTitle.setText("Empleados");
+        tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Totales"));
@@ -649,91 +667,95 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel4)
                                     .addComponent(jLabel5))
-                                .addGap(98, 98, 98)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(faovLabel)
-                                    .addComponent(ivssLabel))
-                                .addGap(0, 35, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addGap(24, 24, 24))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(montoNetoL, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(montoBaseL, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(deduccionesTotalesL))
-                        .addContainerGap())))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(montoBaseL, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel9)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3))
+                                .addGap(37, 37, 37)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(ivssLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+                                    .addComponent(faovLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(montoNetoL, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+                                    .addComponent(deduccionesTotalesL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(0, 15, Short.MAX_VALUE)))
+                        .addGap(27, 27, 27))))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(montoBaseL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(montoBaseL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(14, 14, 14)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(montoNetoL, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(deduccionesTotalesL))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(faovLabel))))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(montoNetoL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(deduccionesTotalesL))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(faovLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addGap(46, 46, 46)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(incesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8)))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
                     .addComponent(ivssLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(46, 46, 46)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(incesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
                 .addGap(6, 6, 6))
         );
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 50, 270, 170));
 
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/clock.png"))); // NOI18N
         jButton5.setText("Historial de nomina");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 670, 140, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 670, 170, 40));
 
+        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton6.setText("Liquidación");
-        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 670, 120, 40));
+        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 670, 140, 40));
 
+        jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
         jButton7.setText("Vacaciones");
-        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 670, 110, 40));
+        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 670, 130, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         tablaNomina.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias", "Horas Extras", "IVSS", "FAOV", "INCES", "Salario Neto"
             }
         ));
         jScrollPane1.setViewportView(tablaNomina);
 
         jScrollPane2.setViewportView(jScrollPane1);
 
-        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 310, 910, 330));
+        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 310, 950, 330));
 
         jButton8.setText("Ver aportes de empleador");
         jButton8.addActionListener(new java.awt.event.ActionListener() {
@@ -744,7 +766,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
         jButton9.setText("Leyenda");
-        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 670, 120, 40));
+        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 670, 120, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

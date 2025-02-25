@@ -13,7 +13,7 @@ import java.sql.SQLException;
  */
 public class ConexionBD {
     
-    private static final String URL = "jdbc:sqlite:santabarbara.db";
+    private static final String URL = "jdbc:sqlite::resource:santabarbara.db";
     
     public static Connection obtenerConexion() throws SQLException {
         return DriverManager.getConnection(URL);

@@ -11,11 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 /**
  *
- * @author Nattitor
+ *
  */
 public class Ficha extends javax.swing.JPanel {
 
@@ -44,13 +43,11 @@ public class Ficha extends javax.swing.JPanel {
                 campo.setEditable(false);
                 campo.setFocusable(false);
             } else if (component instanceof javax.swing.JPanel) {
-                // Llamada recursiva para subpaneles
                 deshabilitarComponentesEnContenedor((javax.swing.JPanel) component);
             }
         }
     }
 
-    // Método para establecer estilos visuales
     private void establecerEstilos() {
         Color colorFondo = new Color(240, 240, 240);
         establecerEstilosEnContenedor(jPanel1, colorFondo);
@@ -62,7 +59,6 @@ public class Ficha extends javax.swing.JPanel {
                 component.setBackground(color);
                 component.setForeground(Color.BLACK);
             } else if (component instanceof javax.swing.JPanel) {
-                // Llamada recursiva para subpaneles
                 establecerEstilosEnContenedor((javax.swing.JPanel) component, color);
             }
         }
@@ -79,7 +75,6 @@ public class Ficha extends javax.swing.JPanel {
             ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                // Información básica
                 idText.setText(String.valueOf(rs.getInt("ID")));
                 nombreText.setText(rs.getString("NOMBRE_COMPLETO"));
                 cedulaText.setText(rs.getString("TIPO_CEDULA") + "-" + rs.getString("CEDULA"));
@@ -90,14 +85,11 @@ public class Ficha extends javax.swing.JPanel {
                 tlfHabitText.setText(rs.getString("TELEFONO_HABITACION"));
                 emailText.setText(rs.getString("EMAIL"));
                 
-                // Datos laborales
                 cargoText.setText(rs.getString("CARGO"));
                 fechaICText.setText(rs.getString("INICIO_CONTRATO"));
                 fechaFCText.setText(rs.getString("FIN_CONTRATO"));
                 salarioText.setText(String.format("%,.2f", rs.getDouble("SALARIO")));
-                
-                // Datos bancarios
-                bancoText.setText(rs.getString("BANCO"));
+                                bancoText.setText(rs.getString("BANCO"));
                 tipoCuentaText.setText(rs.getString("TIPO_CUENTA"));
                 numeroCuentaText.setText(rs.getString("NUMERO_CUENTA"));
                 pagoMovilText.setText(rs.getString("PAGO_MOVIL"));
@@ -116,7 +108,6 @@ public class Ficha extends javax.swing.JPanel {
     }
 
     private void limpiarCampos() {
-        // Limpiar todos los campos
         limpiarComponentesEnContenedor(jPanel1);
     }
     

@@ -17,7 +17,7 @@ import com.mycompany.ConexionBD;
 import javax.swing.UIManager;
 
 /**
- *
+ *PENDIENTE A RE DISEÑO Y RECONSTRUCCION
  *
  */
 public class Asistencia extends javax.swing.JPanel {
@@ -45,10 +45,8 @@ public class Asistencia extends javax.swing.JPanel {
     //FUNCIONES PARA CARGAR LOS DATOS
     
    private void cargarDatosAsistenciasEnTabla() {
-    // Obtener la fecha actual en formato yyyy-MM-dd
     String fechaActual = java.time.LocalDate.now().toString();
 
-    // Consulta SQL para obtener las asistencias del día actual
     String sql = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
                + "FROM asistencias a "
                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
@@ -89,10 +87,8 @@ public class Asistencia extends javax.swing.JPanel {
 
 
   private void actualizarTabla() {
-    // Obtener la fecha actual en formato yyyy-MM-dd
     String fechaActual = java.time.LocalDate.now().toString();
 
-    // Consulta SQL para obtener las asistencias del día actual
     String query = "SELECT e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
                  + "FROM asistencias a "
                  + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
@@ -102,20 +98,16 @@ public class Asistencia extends javax.swing.JPanel {
     try (Connection con = ConexionBD.obtenerConexion(); 
          PreparedStatement stmt = con.prepareStatement(query)) {
 
-        // Establecer el parámetro de la fecha actual
         stmt.setString(1, fechaActual);
 
         try (ResultSet rs = stmt.executeQuery()) {
-            // Obtener los metadatos del ResultSet
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
 
-            // Obtener el modelo de la tabla
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
            
 
-            // Añadir los datos al modelo de la tabla
             while (rs.next()) {
                 Object[] rowData = new Object[columnCount];
                 for (int i = 1; i <= columnCount; i++) {
