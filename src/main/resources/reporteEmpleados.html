@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Empleados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Empleados</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Tipo de Cédula</th>
+                <th>Cédula</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Sexo</th>
+                <th>Teléfono</th>
+                <th>Teléfono de Habitación</th>
+                <th>Email</th>
+                <th>Dirección</th>
+                <th>Cargo</th>
+                <th>Salario</th>
+                <th>Inicio de Contrato</th>
+                <th>Fin de Contrato</th>
+                <th>Banco</th>
+                <th>Tipo de Cuenta</th>
+                <th>Número de Cuenta</th>
+                <th>Pago Móvil</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{rows}} <!-- Aquí se insertarán las filas generadas dinámicamente -->
+        </tbody>
+    </table>
+</body>
+</html>

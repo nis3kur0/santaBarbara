@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
+import com.mycompany.reporteEmpleados;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
@@ -869,6 +870,11 @@ private boolean confirmarAccionConPassword() {
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imprimir1.png"))); // NOI18N
         jButton1.setText("Reporte de personal");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         Ficha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/empleados.png"))); // NOI18N
         Ficha.setText("Ficha de empleado");
@@ -1129,6 +1135,13 @@ private void actualizarEmpleado(int selectedRow) {
     dialog.setModal(true);
     dialog.setVisible(true);
     }//GEN-LAST:event_FichaActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+       reporteEmpleados.generarReporte();
+
+    // Mostrar mensaje de éxito (opcional)
+   // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
