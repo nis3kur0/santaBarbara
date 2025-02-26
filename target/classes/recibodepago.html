@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo de Pago</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #3498db; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Recibo de Pago</h1>
+    <p><strong>Empleado:</strong> {{nombre}}</p>
+    <p><strong>Período:</strong> {{fechaInicio}} - {{fechaFin}}</p>
+    <table>
+        <tr><th>Concepto</th><th>Valor</th></tr>
+        <tr><td>Salario Base</td><td>{{salarioBase}}</td></tr>
+        <tr><td>Días Trabajados</td><td>{{diasTrabajados}}</td></tr>
+        <tr><td>Ausencias</td><td>{{ausencias}}</td></tr>
+        <tr><td>Horas Extras</td><td>{{horasExtras}}</td></tr>
+        <tr><td>IVSS</td><td>{{ivss}}</td></tr>
+        <tr><td>FAOV</td><td>{{faov}}</td></tr>
+        <tr><td>INCES</td><td>{{inces}}</td></tr>
+        <tr><td>Sueldo Neto</td><td>{{sueldoNeto}}</td></tr>
+        <tr><td>Sueldo Final</td><td>{{sueldoFinal}}</td></tr>
+    </table>
+</body>
+</html>

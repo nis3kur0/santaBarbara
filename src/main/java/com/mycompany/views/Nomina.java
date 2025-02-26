@@ -5,6 +5,7 @@
 package com.mycompany.views;
 
 import com.mycompany.ConexionBD;
+import com.mycompany.recibodePago;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.sql.Connection;
@@ -801,7 +802,30 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+   
+ int filaSeleccionada = tablaNomina.getSelectedRow();
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla.");
+        return;
+    }
+
+    // Obtener el ID del empleado seleccionado
+    int idEmpleado = (int) tablaNomina.getValueAt(filaSeleccionada, 0);
+
+    // Obtener las fechas de inicio y fin del período
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    String fechaInicio = sdf.format(fechaInicioNom.getDate());
+    String fechaFin = sdf.format(fechaFinNom.getDate());
+
+    // Validar que las fechas no sean nulas
+    if (fechaInicio == null || fechaFin == null) {
+        JOptionPane.showMessageDialog(this, "Seleccione un período válido.");
+        return;
+    }
+
+    // Generar el recibo de pago
+    recibodePago.generarRecibo(idEmpleado, fechaInicio, fechaFin);        
+// TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
