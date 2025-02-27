@@ -6,7 +6,7 @@ package com.mycompany;
 
 /**
  *
- * @author gabo
+
  */
 import java.awt.Desktop;
 import javax.swing.*;
@@ -27,7 +27,7 @@ public class recibodePago {
         try {
             con = ConexionBD.obtenerConexion();
 
-            // Consulta para obtener los datos del empleado y su nómina
+        
             String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
                          "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
                          "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
@@ -65,7 +65,7 @@ public class recibodePago {
                 double inces = rs.getDouble("INCES");
                 double sueldoFinal = rs.getDouble("SUELDO_FINAL");
 
-                // Cargar la plantilla HTML desde recursos
+           
                 String plantilla;
                 try (InputStream inputStream = recibodePago.class.getClassLoader().getResourceAsStream("recibodepago.html")) {
                     if (inputStream == null) {
@@ -74,7 +74,6 @@ public class recibodePago {
                     plantilla = new String(inputStream.readAllBytes());
                 }
 
-                // Reemplazar los marcadores de posición con los datos del empleado
                 plantilla = plantilla.replace("{{nombre}}", nombre)
                                      .replace("{{fechaInicio}}", fechaInicio)
                                      .replace("{{fechaFin}}", fechaFin)
@@ -88,7 +87,6 @@ public class recibodePago {
                                      .replace("{{sueldoNeto}}", String.format(Locale.US, "%.2f BS", sueldoNeto))
                                      .replace("{{sueldoFinal}}", String.format(Locale.US, "%.2f BS", sueldoFinal));
 
-                // Permitir al usuario guardar el archivo HTML
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Recibo de Pago");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos HTML (*.html)", "html"));
@@ -107,7 +105,6 @@ public class recibodePago {
 
                     System.out.println("Recibo de pago generado con éxito en: " + htmlFile.getAbsolutePath());
 
-                    // Abrir el archivo HTML en el navegador predeterminado
                     abrirArchivoHTML(htmlFile);
                 } else {
                     System.out.println("El usuario canceló la operación.");
@@ -129,7 +126,6 @@ public class recibodePago {
         }
     }
 
-    // Método para abrir el archivo HTML en el navegador predeterminado
     public static void abrirArchivoHTML(File htmlFile) {
         try {
             if (htmlFile.exists()) {

@@ -12,7 +12,6 @@ import java.util.Date;
 public class reporteEmpleados {
 
     public static void generarReporte() {
-        // Declarar el formateador de fechas
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -21,12 +20,10 @@ public class reporteEmpleados {
 
             StringBuilder filas = new StringBuilder();
             while (rs.next()) {
-                // Obtener las fechas como cadenas
                 String fechaNacimientoStr = rs.getString("FECHA_NACIMIENTO");
                 String inicioContratoStr = rs.getString("INICIO_CONTRATO");
                 String finContratoStr = rs.getString("FIN_CONTRATO");
 
-                // Formatear las fechas
                 String fechaNacimientoFormatted = "";
                 String inicioContratoFormatted = "";
                 String finContratoFormatted = "";
@@ -48,7 +45,6 @@ public class reporteEmpleados {
                     e.printStackTrace();
                 }
 
-                // Construir la fila de la tabla
                 filas.append("<tr>")
                      .append("<td>").append(rs.getInt("ID")).append("</td>")
                      .append("<td>").append(rs.getString("NOMBRE_COMPLETO")).append("</td>")
@@ -71,7 +67,6 @@ public class reporteEmpleados {
                      .append("</tr>");
             }
 
-            // Cargar la plantilla HTML desde recursos
             String plantilla;
             try (InputStream inputStream = reporteEmpleados.class.getClassLoader().getResourceAsStream("reporteEmpleados.html")) {
                 if (inputStream == null) {
@@ -80,10 +75,8 @@ public class reporteEmpleados {
                 plantilla = new String(inputStream.readAllBytes());
             }
 
-            // Reemplazar el marcador de posición con las filas generadas
             plantilla = plantilla.replace("{{rows}}", filas.toString());
 
-            // Permitir al usuario elegir la ubicación para guardar el archivo HTML
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar Reporte HTML");
             fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos HTML (*.html)", "html"));
@@ -95,7 +88,6 @@ public class reporteEmpleados {
                     htmlFile = new File(htmlFile.getParentFile(), htmlFile.getName() + ".html");
                 }
 
-                // Guardar el HTML en el archivo seleccionado
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(htmlFile))) {
                     writer.write(plantilla);
                 }
@@ -113,7 +105,6 @@ public class reporteEmpleados {
         }
     }
 
-    // Método para abrir el archivo HTML en el navegador predeterminado
     public static void abrirArchivoHTML(File htmlFile) {
         try {
             if (htmlFile.exists()) {
