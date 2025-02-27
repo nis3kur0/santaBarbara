@@ -19,7 +19,7 @@ public class Login extends javax.swing.JFrame {
         this.setResizable(false); 
         SetImageLabel(jLabel4, "src/main/resources/santa.jpg");
         setIconImage(getLogo());
-
+        getRootPane().setDefaultButton(jButton1);
         
     }
     
