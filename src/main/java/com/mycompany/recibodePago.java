@@ -1,15 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany;
 
-/**
- *
-
- */
-import java.awt.Desktop;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
+import java.awt.Desktop;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,24 +20,23 @@ public class recibodePago {
         try {
             con = ConexionBD.obtenerConexion();
 
-        
-            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
-                         "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
-                         "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
-                         "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                         "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, " +
-                         "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, " +
-                         "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, " +
-                         "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, " +
-                         "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, " +
-                         "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - " +
-                         "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + " +
-                         "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                         "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL " +
-                         "FROM empleados e " +
-                         "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? " +
-                         "WHERE e.ID = ? " +
-                         "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
+            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.SALARIO AS SALARIO_BASE, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
+                    + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, "
+                    + "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - "
+                    + "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + "
+                    + "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL "
+                    + "FROM empleados e "
+                    + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
+                    + "WHERE e.ID = ? "
+                    + "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
 
             pst = con.prepareStatement(sql);
             pst.setString(1, fechaInicio);
@@ -64,8 +56,12 @@ public class recibodePago {
                 double faov = rs.getDouble("FAOV");
                 double inces = rs.getDouble("INCES");
                 double sueldoFinal = rs.getDouble("SUELDO_FINAL");
+                double totalDeducciones = ivss + faov + inces;
+                double salarioBaseDiario = salarioBase / 30;
+                int cedula = rs.getInt("CEDULA");
+                String tipoCedula = "V";
 
-           
+                // Cargar plantilla HTML
                 String plantilla;
                 try (InputStream inputStream = recibodePago.class.getClassLoader().getResourceAsStream("recibodepago.html")) {
                     if (inputStream == null) {
@@ -74,38 +70,46 @@ public class recibodePago {
                     plantilla = new String(inputStream.readAllBytes());
                 }
 
-                plantilla = plantilla.replace("{{nombre}}", nombre)
-                                     .replace("{{fechaInicio}}", fechaInicio)
-                                     .replace("{{fechaFin}}", fechaFin)
-                                     .replace("{{salarioBase}}", String.format(Locale.US, "%.2f BS", salarioBase))
-                                     .replace("{{diasTrabajados}}", String.valueOf(diasTrabajados))
-                                     .replace("{{ausencias}}", String.valueOf(ausencias))
-                                     .replace("{{horasExtras}}", String.format(Locale.US, "%.2f BS", horasExtras))
-                                     .replace("{{ivss}}", String.format(Locale.US, "%.2f BS", ivss))
-                                     .replace("{{faov}}", String.format(Locale.US, "%.2f BS", faov))
-                                     .replace("{{inces}}", String.format(Locale.US, "%.2f BS", inces))
-                                     .replace("{{sueldoNeto}}", String.format(Locale.US, "%.2f BS", sueldoNeto))
-                                     .replace("{{sueldoFinal}}", String.format(Locale.US, "%.2f BS", sueldoFinal));
+                // Reemplazar los valores en la plantilla HTML
+               plantilla = plantilla.replace("{{nombre}}", nombre)
+                     .replace("{{fechaInicio}}", fechaInicio)
+                     .replace("{{fechaFin}}", fechaFin)
+                     .replace("{{salarioBase}}", String.format(Locale.US, "%.2f BS", salarioBase))
+                     .replace("{{diasTrabajados}}", String.valueOf(diasTrabajados))
+                     .replace("{{ausencias}}", String.valueOf(ausencias))
+                     .replace("{{horasExtras}}", String.format(Locale.US, "%.2f BS", horasExtras))
+                     .replace("{{ivss}}", String.format(Locale.US, "%.2f BS", ivss))
+                     .replace("{{faov}}", String.format(Locale.US, "%.2f BS", faov))
+                     .replace("{{inces}}", String.format(Locale.US, "%.2f BS", inces))
+                     .replace("{{sueldoNeto}}", String.format(Locale.US, "%.2f BS", sueldoNeto))
+                     .replace("{{sueldoFinal}}", String.format(Locale.US, "%.2f BS", sueldoFinal))
+                     .replace("{{totalDeducciones}}", String.format(Locale.US, "%.2f BS", totalDeducciones))
+                     .replace("{{tipoCedula}}", tipoCedula)  // Se cambia el formateo numérico por un simple reemplazo de cadena
+                     .replace("{{salarioBaseDia}}", String.format(Locale.US, "%.2f BS", salarioBaseDiario))
+                     .replace("{{cedula}}", String.valueOf(cedula));
 
+                // Elegir la ubicación para guardar el archivo PDF
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Recibo de Pago");
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos HTML (*.html)", "html"));
+                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
                 int userSelection = fileChooser.showSaveDialog(null);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
-                    File htmlFile = fileChooser.getSelectedFile();
-                    if (!htmlFile.getName().toLowerCase().endsWith(".html")) {
-                        htmlFile = new File(htmlFile.getParentFile(), htmlFile.getName() + ".html");
+                    File pdfFile = fileChooser.getSelectedFile();
+                    if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
+                        pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");
                     }
 
-                    // Guardar el recibo en el archivo HTML
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(htmlFile))) {
-                        writer.write(plantilla);
+                    // Convertir HTML a PDF
+                    try (OutputStream os = new FileOutputStream(pdfFile)) {
+                        PdfRendererBuilder builder = new PdfRendererBuilder();
+                        builder.withHtmlContent(plantilla, null);
+                        builder.toStream(os); // Definir el flujo de salida
+                        builder.run();  // Generar el PDF
+
+                        System.out.println("Recibo de pago generado con éxito en: " + pdfFile.getAbsolutePath());
+                        abrirArchivoPDF(pdfFile);
                     }
-
-                    System.out.println("Recibo de pago generado con éxito en: " + htmlFile.getAbsolutePath());
-
-                    abrirArchivoHTML(htmlFile);
                 } else {
                     System.out.println("El usuario canceló la operación.");
                 }
@@ -117,29 +121,39 @@ public class recibodePago {
             JOptionPane.showMessageDialog(null, "Error al generar el recibo: " + ex.getMessage());
         } finally {
             try {
-                if (rs != null) rs.close();
-                if (pst != null) pst.close();
-                if (con != null) con.close();
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void abrirArchivoHTML(File htmlFile) {
+    public static void abrirArchivoPDF(File pdfFile) {
         try {
-            if (htmlFile.exists()) {
+            if (pdfFile.exists()) {
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(htmlFile.toURI());
+                    Desktop.getDesktop().open(pdfFile);  // Abrir el archivo PDF generado
                 } else {
-                    JOptionPane.showMessageDialog(null, "No se puede abrir el archivo HTML. El navegador no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+                    // Si el Desktop no está soportado, intentamos abrir el PDF en el navegador predeterminado
+                    String pdfPath = pdfFile.toURI().toURL().toString(); // Convertir archivo a URL
+                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  // Intentar abrir en el navegador
+                    System.out.println("El archivo se ha abierto en el navegador.");
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "El archivo HTML no existe.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "El archivo PDF no existe.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (IOException e) {
+        } catch (IOException | java.net.URISyntaxException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al abrir el archivo HTML: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al abrir el archivo PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 }

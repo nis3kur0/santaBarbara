@@ -1,31 +1,190 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Recibo de Pago</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recibo de Pago de Nómina</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { text-align: center; color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background-color: #3498db; color: white; }
+        @page {
+            size: A4; /* Establece el tamaño de la página a A4 */
+            margin: 10mm; /* Márgenes de la página */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            page-break-before: auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin: 5px 0;
+            font-size: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: auto; /* Ajuste automático */
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .header-table td {
+            border: none;
+            padding: 4px 8px;
+        }
+
+        .totals-table td {
+            border: none;
+        }
+
+        /* Asegura que la tabla no se corte */
+        @media print {
+            body {
+                font-size: 1rem; /* Asegura que la fuente no sea demasiado grande al imprimir */
+                width: 100%;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+
+            h1 {
+                font-size: 2rem; /* Títulos más grandes para la impresión */
+            }
+
+            .totals-table td {
+                font-weight: bold;
+            }
+        }
+
+        /* Ajuste para pantallas pequeñas */
+        @media (max-width: 768px) {
+            body {
+                font-size: 0.9rem; /* Reducir tamaño de la fuente en pantallas pequeñas */
+            }
+            table, th, td {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            table, th, td {
+                font-size: 0.8rem;
+                padding: 5px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Recibo de Pago</h1>
-    <p><strong>Empleado:</strong> {{nombre}}</p>
-    <p><strong>Período:</strong> {{fechaInicio}} - {{fechaFin}}</p>
-    <table>
-        <tr><th>Concepto</th><th>Valor</th></tr>
-        <tr><td>Salario Base</td><td>{{salarioBase}}</td></tr>
-        <tr><td>Días Trabajados</td><td>{{diasTrabajados}}</td></tr>
-        <tr><td>Ausencias</td><td>{{ausencias}}</td></tr>
-        <tr><td>Horas Extras</td><td>{{horasExtras}}</td></tr>
-        <tr><td>IVSS</td><td>{{ivss}}</td></tr>
-        <tr><td>FAOV</td><td>{{faov}}</td></tr>
-        <tr><td>INCES</td><td>{{inces}}</td></tr>
-        <tr><td>Sueldo Neto</td><td>{{sueldoNeto}}</td></tr>
-        <tr><td>Sueldo Final</td><td>{{sueldoFinal}}</td></tr>
-    </table>
+
+<h1>RECIBO DE PAGO DE NÓMINA</h1>
+<p><strong>Nómina:</strong> NOMINA GENERAL DE TRABAJADORES</p>
+
+<table class="header-table">
+    <tr>
+        <td><strong>Empresa:</strong> TEMIS GLOBAL C.A.</td>
+        <td><strong>R.I.F.:</strong> J</td>
+    </tr>
+    <tr>
+        <td><strong>Trabajador:</strong> {{nombre}}</td>
+        <td><strong>Ingreso:</strong> {{fechaInicio}}</td>
+    </tr>
+    <tr>
+        <td><strong>Cédula N°:</strong> {{tipoCedula}}-{{cedula}}</td>
+        <td><strong>Cargo:</strong> {{cargo}}</td>
+    </tr>
+    <tr>
+        <td><strong>Período Trabajado:</strong> Desde {{fechaInicio}} hasta {{fechaFin}}</td>
+        <td><strong>Salario Mensual:</strong> {{salarioBase}} - <strong>Diario:</strong> {{salarioBaseDia}}</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th>Cód.</th>
+        <th>Descripción del Concepto</th>
+        <th>Unid</th>
+        <th>Cant.</th>
+        <th>Asignaciones</th>
+        <th>Deducciones</th>
+    </tr>
+    <tr>
+        <td>001</td>
+        <td>Salario Básico por días trabajados</td>
+        <td>Días</td>
+        <td>{{diasTrabajados}}</td>
+        <td>{{salarioBase}}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>009</td>
+        <td>Días de Descanso y Feriados</td>
+        <td>Días</td>
+        <td>{{diasDescanso}}</td>
+        <td>{{asignacionesDescanso}}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>152</td>
+        <td>Seguro Social Obligatorio</td>
+        <td>%</td>
+        <td>4.00</td>
+        <td></td>
+        <td>{{ivss}}</td>
+    </tr>
+    <tr>
+        <td>153</td>
+        <td>Régimen Prestacional del Empleo</td>
+        <td>%</td>
+        <td>4,00</td>
+        <td></td>
+        <td>{{faov}}</td>
+    </tr>
+    <tr>
+        <td>154</td>
+        <td>Fondo de Ahorro Obligatorio para la Vivienda</td>
+        <td>%</td>
+        <td>1,00</td>
+        <td></td>
+        <td>{{inces}}</td>
+    </tr>
+</table>
+
+<table class="totals-table">
+    <tr>
+        <td><strong>Totales:</strong></td>
+        <td><strong>{{totalAsignaciones}}</strong></td>
+        <td><strong>{{totalDeducciones}}</strong></td>
+    </tr>
+    <tr>
+        <td colspan="3"><strong>Neto a pagar:</strong> {{sueldoFinal}}</td>
+    </tr>
+</table>
+
+<p>Certifico el pago por los conceptos mencionados anteriormente quedando conforme.</p>
+
+<table>
+    <tr>
+        <td><strong>Nombre:</strong> ___________________________</td>
+        <td><strong>Cédula N°:</strong> ___________________________</td>
+        <td><strong>Firma:</strong> ___________________________</td>
+        <td><strong>Huella Dactilar:</strong> ___________________________</td>
+    </tr>
+</table>
+
 </body>
 </html>
