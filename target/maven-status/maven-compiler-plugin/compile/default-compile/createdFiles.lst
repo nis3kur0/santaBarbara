@@ -26,6 +26,7 @@ com\mycompany\views\Nomina$6.class
 com\mycompany\views\Asistencia$7.class
 com\mycompany\views\Nomina$1.class
 com\mycompany\santabarbara\Dashborad$1.class
+com\mycompany\views\Ficha$1.class
 com\mycompany\views\Empleados$9.class
 com\mycompany\santabarbara\Dashborad$4.class
 com\mycompany\views\Configuracion.class
@@ -47,9 +48,11 @@ com\mycompany\views\Empleados$4.class
 com\mycompany\santabarbara\Dashborad.class
 com\mycompany\views\Nomina$2.class
 com\mycompany\santabarbara\Dashborad$6.class
+com\mycompany\views\Ficha$2.class
 com\mycompany\ConexionBD.class
 com\mycompany\santabarbara\Dashborad$5.class
 com\mycompany\loginandsignup\Login$1.class
+com\mycompany\views\Ficha$3.class
 com\mycompany\views\Empleados$3.class
 com\mycompany\views\Nomina$3.class
 com\mycompany\views\Inicio.class

@@ -107,7 +107,7 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
     //FUNCIONES PARA ACTUALIZAR Y CARGAR DATOS
  
     private void cargarDatosEnTabla() {
-    String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados";
+    String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, FOTOS FROM empleados";
 
     try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
@@ -145,7 +145,7 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
 }
     
 private void cargarDatosCompletoEmpleado(int idEmpleado) {
-    String sql = "SELECT * FROM empleados WHERE ID = ?";
+    String sql = "SELECT *, FOTOS FROM empleados WHERE ID = ?";
     try (Connection conn = ConexionBD.obtenerConexion();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -1119,15 +1119,25 @@ private void actualizarEmpleado(int selectedRow) {
     
     int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
     
-    JDialog dialog = new JDialog();
-    Ficha ficha = new Ficha();
-    ficha.cargarDatosEmpleado(idEmpleado);
-    dialog.add(ficha);
-    dialog.pack();
-    dialog.setLocationRelativeTo(this);
-    dialog.setTitle("Ficha del Empleado");
-    dialog.setModal(true);
-    dialog.setVisible(true);
+    try {
+        JDialog dialog = new JDialog();
+        Ficha ficha = new Ficha();
+        ficha.cargarDatosEmpleado(idEmpleado);
+        dialog.add(ficha);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setTitle("Ficha del Empleado");
+        dialog.setModal(true);
+        dialog.setVisible(true);
+        
+        // Forzar refresco de la tabla después de cerrar
+        cargarDatosEnTabla();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al abrir la ficha: " + e.getMessage(), 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_FichaActionPerformed
 
 

@@ -11,6 +11,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -21,11 +31,24 @@ public class Ficha extends javax.swing.JPanel {
     /**
      * Creates new form Ficha
      */
+    
+    private String fotoPath;
+    private int idEmpleadoActual;
+    private boolean fotoCargada = false;
+
+    
     public Ficha() {
         initComponents();
+        actualizarEstadoBotonesFoto();
+        agregarFoto.setPreferredSize(new java.awt.Dimension(78, 78));
+        agregarFoto.setSize(78, 78);
         limpiarCampos();
         deshabilitarCampos();
         establecerEstilos();
+        agregarFoto.setContentAreaFilled(false);  // Desactivar relleno automático
+        agregarFoto.setBorderPainted(false);      // Quitar borde
+        agregarFoto.setOpaque(true);              // Permitir fondo personalizado
+        agregarFoto.setBackground(Color.WHITE);   
 
     }
     
@@ -66,14 +89,15 @@ public class Ficha extends javax.swing.JPanel {
 
     
         public void cargarDatosEmpleado(int idEmpleado) {
+        this.idEmpleadoActual = idEmpleado;
         String sql = "SELECT * FROM empleados WHERE ID = ?";
-        
+    
         try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
             pstmt.setInt(1, idEmpleado);
             ResultSet rs = pstmt.executeQuery();
-            
+        
             if (rs.next()) {
                 idText.setText(String.valueOf(rs.getInt("ID")));
                 nombreText.setText(rs.getString("NOMBRE_COMPLETO"));
@@ -93,20 +117,66 @@ public class Ficha extends javax.swing.JPanel {
                 tipoCuentaText.setText(rs.getString("TIPO_CUENTA"));
                 numeroCuentaText.setText(rs.getString("NUMERO_CUENTA"));
                 pagoMovilText.setText(rs.getString("PAGO_MOVIL"));
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Empleado no encontrado", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
+                String rutaFoto = rs.getString("FOTOS");
+                fotoCargada = (rutaFoto != null && !rutaFoto.isEmpty());
+                           
+                if (fotoCargada) {
+                     cargarFotoEnBoton(rutaFoto);
+                } else {
+                    agregarFoto.setIcon(new ImageIcon(getClass().getResource("/agregarfoto2.png")));
+                }
+                }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, 
                 "Error al cargar datos: " + e.getMessage(), 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
+        actualizarEstadoBotonesFoto();
     }
 
+private void cargarFotoEnBoton(String path) {
+    try {
+        File imagenFile = new File(path);
+        if (!imagenFile.exists()) {
+            throw new IOException("Archivo no encontrado: " + path);
+        }
+        
+        BufferedImage originalImage = ImageIO.read(imagenFile);
+        Image scaledImage = originalImage.getScaledInstance(
+            agregarFoto.getWidth(), 
+            agregarFoto.getHeight(), 
+            Image.SCALE_SMOOTH
+        );
+        agregarFoto.setIcon(new ImageIcon(scaledImage));
+        fotoPath = path;
+        fotoCargada = true;
+        actualizarEstadoBotonesFoto();
+    } catch (IOException ex) {
+        JOptionPane.showMessageDialog(this, "Error al cargar la foto: " + ex.getMessage());
+        agregarFoto.setIcon(new ImageIcon(getClass().getResource("/agregarfoto1.png")));
+        fotoCargada = false;
+        actualizarEstadoBotonesFoto();
+    }
+}
+    
+    private void limpiarFotoEnBD() {
+    String sql = "UPDATE empleados SET FOTOS = NULL WHERE ID = ?";
+    
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        pstmt.setInt(1, idEmpleadoActual);
+        pstmt.executeUpdate();
+        
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al limpiar la foto en la base de datos: " + ex.getMessage(),
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+    }
+}
+    
     private void limpiarCampos() {
         limpiarComponentesEnContenedor(jPanel1);
     }
@@ -120,6 +190,31 @@ public class Ficha extends javax.swing.JPanel {
             }
         }
     }
+    
+    private void actualizarEstadoBotonesFoto() {
+    agregarFoto.setVisible(true);
+    cambiarFoto.setVisible(fotoCargada);
+    borrarFoto.setVisible(fotoCargada);
+}
+    
+    private void seleccionarYGuardarFoto() {
+    JFileChooser fileChooser = new JFileChooser();
+    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+        "Archivos de imagen", "jpg", "jpeg", "png", "gif");
+    fileChooser.setFileFilter(filter);
+    
+    int result = fileChooser.showOpenDialog(this);
+    if (result == JFileChooser.APPROVE_OPTION) {
+        File selectedFile = fileChooser.getSelectedFile();
+        try {
+            String nuevaRuta = guardarImagenConIncremento(selectedFile);
+            cargarFotoEnBoton(nuevaRuta);
+            actualizarRutaFotoEnBD(nuevaRuta);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error al procesar la imagen: " + ex.getMessage());
+        }
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -150,6 +245,8 @@ public class Ficha extends javax.swing.JPanel {
         tlfHabitText = new javax.swing.JTextField();
         emailLabel = new javax.swing.JLabel();
         emailText = new javax.swing.JTextField();
+        jPanel5 = new javax.swing.JPanel();
+        idText = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         cargoLabel = new javax.swing.JLabel();
         cargoText = new javax.swing.JTextField();
@@ -168,9 +265,10 @@ public class Ficha extends javax.swing.JPanel {
         numeroCuentaText = new javax.swing.JTextField();
         tipoCuentaText = new javax.swing.JTextField();
         pagoMovilText = new javax.swing.JTextField();
-        jPanel5 = new javax.swing.JPanel();
-        idText = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        agregarFoto = new javax.swing.JButton();
+        borrarFoto = new javax.swing.JButton();
+        cambiarFoto = new javax.swing.JButton();
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -212,6 +310,27 @@ public class Ficha extends javax.swing.JPanel {
 
         emailText.setText("jTextField1");
 
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Código:", javax.swing.border.TitledBorder.RIGHT, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
+        idText.setText("jTextField2");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(19, Short.MAX_VALUE)
+                .addComponent(idText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(idText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -251,19 +370,26 @@ public class Ficha extends javax.swing.JPanel {
                         .addComponent(fechaNacLabel)
                         .addGap(18, 18, 18)
                         .addComponent(fechaNacText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(308, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 196, Short.MAX_VALUE)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nombreLabel)
-                    .addComponent(nombreText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cedulaLabel)
-                    .addComponent(cedulaText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(nombreLabel)
+                            .addComponent(nombreText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cedulaLabel)
+                            .addComponent(cedulaText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sexoLabel)
@@ -421,67 +547,76 @@ public class Ficha extends javax.swing.JPanel {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Código:", javax.swing.border.TitledBorder.RIGHT, javax.swing.border.TitledBorder.DEFAULT_POSITION));
-
-        idText.setText("jTextField2");
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addContainerGap(118, Short.MAX_VALUE)
-                .addComponent(idText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(idText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
-
         jLabel2.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/santabr.png"))); // NOI18N
         jLabel2.setText("Ficha del Empleado");
+
+        agregarFoto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/agregarfoto2.png"))); // NOI18N
+        agregarFoto.setBorder(null);
+        agregarFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarFotoActionPerformed(evt);
+            }
+        });
+
+        borrarFoto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/delete.png"))); // NOI18N
+        borrarFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                borrarFotoActionPerformed(evt);
+            }
+        });
+
+        cambiarFoto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cambiar.png"))); // NOI18N
+        cambiarFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cambiarFotoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(15, 15, 15)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(15, 15, 15)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(agregarFoto)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(borrarFoto)
+                    .addComponent(cambiarFoto))
+                .addGap(10, 10, 10))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(25, 25, 25)
-                        .addComponent(jLabel2)))
-                .addGap(18, 18, 18)
+                        .addComponent(jLabel2))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(agregarFoto))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cambiarFoto)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(borrarFoto)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(9, Short.MAX_VALUE))
+                .addContainerGap(68, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -498,10 +633,97 @@ public class Ficha extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void agregarFotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarFotoActionPerformed
+        // TODO add your handling code here:
+        seleccionarYGuardarFoto();
+    }//GEN-LAST:event_agregarFotoActionPerformed
+
+    private void borrarFotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_borrarFotoActionPerformed
+        // TODO add your handling code here:
+    int confirm = JOptionPane.showConfirmDialog(
+        this, 
+        "¿Eliminar definitivamente la foto del empleado?", 
+        "Confirmar eliminación", 
+        JOptionPane.YES_NO_OPTION
+    );
+    
+    if (confirm == JOptionPane.YES_OPTION) {
+        limpiarFotoEnBD(); // Limpia el campo FOTOS en la base de datos
+        fotoCargada = false;
+        agregarFoto.setIcon(new ImageIcon(getClass().getResource("/agregarfoto2.png")));
+        // Al borrar la foto, habilitamos el botón agregarFoto nuevamente para poder agregar otra imagen
+        agregarFoto.setEnabled(true);
+        actualizarEstadoBotonesFoto();
+    }             
+    }//GEN-LAST:event_borrarFotoActionPerformed
+
+    private void cambiarFotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cambiarFotoActionPerformed
+        // TODO add your handling code here:
+            if (fotoCargada) {
+        int opcion = JOptionPane.showConfirmDialog(
+            this, 
+            "¿Está seguro que desea cambiar la foto?", 
+            "Confirmar cambio", 
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (opcion == JOptionPane.YES_OPTION) {
+            seleccionarYGuardarFoto();
+        }
+    }
+    }//GEN-LAST:event_cambiarFotoActionPerformed
+
+private String guardarImagenConIncremento(File origen) throws IOException {
+    // Usar directorio dentro del proyecto para mejor portabilidad
+    File directorio = new File(System.getProperty("user.dir") + File.separator + "efotos");
+    if (!directorio.exists()) {
+        directorio.mkdirs();
+    }
+    
+    int numero = 1;
+    while(new File(directorio, "e_" + String.format("%02d", numero) + ".png").exists()) {
+        numero++;
+    }
+    
+    String nombreArchivo = "e_" + String.format("%02d", numero) + ".png";
+    File destino = new File(directorio, nombreArchivo);
+    
+    BufferedImage originalImage = ImageIO.read(origen);
+    BufferedImage resizedImage = new BufferedImage(
+        agregarFoto.getWidth(), 
+        agregarFoto.getHeight(), 
+        BufferedImage.TYPE_INT_ARGB);
+    
+    java.awt.Graphics2D g2d = resizedImage.createGraphics();
+    g2d.drawImage(originalImage, 0, 0, agregarFoto.getWidth(), agregarFoto.getHeight(), null);
+    g2d.dispose();
+    
+    ImageIO.write(resizedImage, "png", destino);
+    
+    return destino.getAbsolutePath(); // Usar ruta absoluta para evitar confusiones
+}
+
+private void actualizarRutaFotoEnBD(String ruta) {
+    String sql = "UPDATE empleados SET FOTOS = ? WHERE ID = ?";
+    
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        pstmt.setString(1, ruta);
+        pstmt.setInt(2, idEmpleadoActual);
+        pstmt.executeUpdate();
+        
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(this, "Error al actualizar la foto en la base de datos: " + ex.getMessage());
+    }
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton agregarFoto;
     private javax.swing.JLabel bancoLabel;
     private javax.swing.JTextField bancoText;
+    private javax.swing.JButton borrarFoto;
+    private javax.swing.JButton cambiarFoto;
     private javax.swing.JLabel cargoLabel;
     private javax.swing.JTextField cargoText;
     private javax.swing.JLabel cedulaLabel;

@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -223,7 +224,7 @@ tablaNomina.setModel(model);
             model.addRow(new Object[] {
                 rs.getInt("ID"),
                 rs.getString("NOMBRE_COMPLETO"),
-                String.format("%.2f BS", salarioBase),
+                String.format(Locale.US, "%.2f BS", salarioBase),
                 diasTrabajados,
                 ausencias,
                 String.format("%.2f", horasExtras),
@@ -426,8 +427,8 @@ public void historialNomina() {
 //OTROS
 
 public void calcularAportesEmpleador() {
-   
-    if (totalSueldoNeto == 0) {
+    DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
+    if (model.getRowCount() == 0) {
         JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.");
         return;
     }
@@ -435,51 +436,74 @@ public void calcularAportesEmpleador() {
     double totalIVSS = 0;
     double totalFAOV = 0;
     double totalINCES = 0;
-    
-  
-    DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
-    for (int i = 0; i < model.getRowCount(); i++) {
-        double salarioBase = Double.parseDouble(model.getValueAt(i, 2).toString().replace(" BS", "").trim());
-        
-      
-        double ivssEmpleado = salarioBase * 0.09; 
-        double faovEmpleado = salarioBase * 0.02; 
-        double incesEmpleado = salarioBase * 0.02;
 
-        totalIVSS += ivssEmpleado;
-        totalFAOV += faovEmpleado;
-        totalINCES += incesEmpleado;
+    try {
+        for (int i = 0; i < model.getRowCount(); i++) {
+            // Obtener el salario base de la tabla y formatearlo correctamente
+            String salarioBaseStr = model.getValueAt(i, 2).toString()
+                    .replace(" BS", "")
+                    .replace(",", ".")  // Reemplazar comas por puntos
+                    .trim();
+            
+            double salarioBase = Double.parseDouble(salarioBaseStr);
+            
+            // Cálculo de los aportes del empleador
+            double ivssEmpleado = salarioBase * 0.09; // 9% IVSS
+            double faovEmpleado = salarioBase * 0.02; // 2% FAOV
+            double incesEmpleado = salarioBase * 0.02; // 2% INCES
+
+            totalIVSS += ivssEmpleado;
+            totalFAOV += faovEmpleado;
+            totalINCES += incesEmpleado;
+        }
+
+        double totalAportes = totalIVSS + totalFAOV + totalINCES;
+        mostrarAportesDialog(totalIVSS, totalFAOV, totalINCES, totalAportes);
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "Error al convertir el salario base: formato incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al calcular los aportes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
     }
-
-    double totalAportes = totalIVSS + totalFAOV + totalINCES;
-
-    mostrarAportesDialog(totalIVSS, totalFAOV, totalINCES, totalAportes);
 }
+
 
 
 private void mostrarAportesDialog(double ivss, double faov, double inces, double total) {
-    JDialog dialog = new JDialog();
-    dialog.setTitle("Aportes del Empleador");
-    dialog.setSize(350, 250);
-    dialog.setLayout(new GridLayout(5, 1));
+    try {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Aportes del Empleador");
+        dialog.setSize(350, 250);
+        dialog.setLayout(new BorderLayout());
 
-    JLabel ivssLabel = new JLabel(String.format("IVSS (9%%): %.2f BS", ivss));
-    JLabel faovLabel = new JLabel(String.format("FAOV (2%%): %.2f BS", faov));
-    JLabel incesLabel = new JLabel(String.format("INCES (2%%): %.2f BS", inces));
-    JLabel totalLabel = new JLabel(String.format("Total Aportes: %.2f BS", total));
+        // Crear los labels con los datos
+        JPanel panelDatos = new JPanel(new GridLayout(4, 1, 10, 10));
+        panelDatos.add(new JLabel(String.format("IVSS (9%%): %.2f BS", ivss)));
+        panelDatos.add(new JLabel(String.format("FAOV (2%%): %.2f BS", faov)));
+        panelDatos.add(new JLabel(String.format("INCES (2%%): %.2f BS", inces)));
+        panelDatos.add(new JLabel(String.format("Total Aportes: %.2f BS", total)));
 
-    JButton cerrarButton = new JButton("Cerrar");
-    cerrarButton.addActionListener(e -> dialog.dispose());
+        // Botón para cerrar el diálogo
+        JButton cerrarButton = new JButton("Cerrar");
+        cerrarButton.addActionListener(e -> dialog.dispose());
 
-    dialog.add(ivssLabel);
-    dialog.add(faovLabel);
-    dialog.add(incesLabel);
-    dialog.add(totalLabel);
-    dialog.add(cerrarButton);
+        // Estructurar el diálogo
+        dialog.add(panelDatos, BorderLayout.CENTER);
+        dialog.add(cerrarButton, BorderLayout.SOUTH);
 
-    dialog.setLocationRelativeTo(null);
-    dialog.setVisible(true);
+        dialog.setLocationRelativeTo(null);
+
+        // Asegurarse de que el diálogo se muestra en el hilo de eventos
+        SwingUtilities.invokeLater(() -> dialog.setVisible(true));
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al mostrar los aportes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }
+
    //FIN//
 
     /**
