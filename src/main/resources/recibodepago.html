@@ -6,8 +6,8 @@
     <title>Recibo de Pago de Nómina</title>
     <style>
         @page {
-            size: A4; /* Establece el tamaño de la página a A4 */
-            margin: 10mm; /* Márgenes de la página */
+            size: A4; 
+            margin: 10mm; 
         }
 
         body {
@@ -51,10 +51,10 @@
             border: none;
         }
 
-        /* Asegura que la tabla no se corte */
+        
         @media print {
             body {
-                font-size: 1rem; /* Asegura que la fuente no sea demasiado grande al imprimir */
+                font-size: 1rem; 
                 width: 100%;
             }
 
@@ -63,7 +63,7 @@
             }
 
             h1 {
-                font-size: 2rem; /* Títulos más grandes para la impresión */
+                font-size: 2rem; 
             }
 
             .totals-table td {
@@ -71,10 +71,10 @@
             }
         }
 
-        /* Ajuste para pantallas pequeñas */
+        
         @media (max-width: 768px) {
             body {
-                font-size: 0.9rem; /* Reducir tamaño de la fuente en pantallas pequeñas */
+                font-size: 0.9rem; 
             }
             table, th, td {
                 font-size: 0.9rem;
@@ -179,9 +179,9 @@
 
 <table>
     <tr>
-        <td><strong>Nombre:</strong> ___________________________</td>
-        <td><strong>Cédula N°:</strong> ___________________________</td>
-        <td><strong>Firma:</strong> ___________________________</td>
+        <td><strong>Nombre:</strong> ______________________</td>
+        <td><strong>Cédula N°:</strong> ________________________</td>
+        <td><strong>Firma:</strong> ________________________</td>
         <td><strong>Huella Dactilar:</strong> ___________________________</td>
     </tr>
 </table>

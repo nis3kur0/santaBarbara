@@ -228,7 +228,14 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         String numeroCuenta = textNumeroCuenta.getText().trim();
         String pagoMovil = (String) pagoMovilBox.getSelectedItem(); 
 
-      
+       if (numeroCuenta.length() != 20) {
+        JOptionPane.showMessageDialog(null, 
+            "El número de cuenta debe tener exactamente 20 caracteres.", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return; 
+    }
+
         int cedula;
         double salario = 0.0;
         try {

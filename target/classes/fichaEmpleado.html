@@ -1,0 +1,109 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <title>Ficha del Empleado</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .ficha-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .codigo {
+            display: flex;
+            align-items: center;
+        }
+
+        .codigo span {
+            margin-left: 5px;
+        }
+
+        .codigo-valor {
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            background-color: #e0e0e0;
+            padding: 8px;
+            margin-top: 0;
+            border-radius: 3px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+
+        strong {
+            font-weight: bold;
+            display: inline-block;
+            width: 180px; /* Ajusta este valor para alinear las etiquetas */
+        }
+    </style>
+</head>
+<body>
+    <div class="ficha-container">
+        <div class="header">
+            <h1>Ficha del Empleado</h1>
+            <div class="codigo">
+                <span>Código:</span>
+                <span class="codigo-valor">1</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Información Personal</h2>
+            <p><strong>Nombre:</strong> María González Pérez</p>
+            <p><strong>Cédula:</strong> null-25896347</p>
+            <p><strong>Sexo:</strong> Femenino</p>
+            <p><strong>Fecha de Nacimiento:</strong> 1990-05-15</p>
+            <p><strong>Dirección:</strong> Av. Principal, Caracas</p>
+            <p><strong>Teléfono:</strong> 4123456789</p>
+            <p><strong>Teléfono de Habitación:</strong> 2125554433</p>
+            <p><strong>Email:</strong> maria.gonzalez@example.com</p>
+        </div>
+
+        <div class="section">
+            <h2>Datos Laborales</h2>
+            <p><strong>Cargo:</strong> Gerente General</p>
+            <p><strong>Fecha de Inicio de Contrato:</strong> 2020-01-01</p>
+            <p><strong>Fecha de Fin de Contrato:</strong> 2025-12-31</p>
+            <p><strong>Salario:</strong> 5,000.00</p>
+        </div>
+
+        <div class="section">
+            <h2>Datos Bancarios</h2>
+            <p><strong>Banco:</strong> Banesco</p>
+            <p><strong>Número de Cuenta:</strong> 987654321</p>
+            <p><strong>Tipo de Cuenta:</strong> Corriente</p>
+            <p><strong>Pago Móvil:</strong> </p>
+        </div>
+    </div>
+</body>
+</html>

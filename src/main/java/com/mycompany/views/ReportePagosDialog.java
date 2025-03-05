@@ -10,20 +10,20 @@ public class ReportePagosDialog extends JDialog {
 
     private JTable tablaPagos;
     private JScrollPane scrollPane;
-    private JComboBox<String> jComboBox1;  // ComboBox para seleccionar el empleado
+    private JComboBox<String> jComboBox1;  
     private JButton btnCerrar;
 
     public ReportePagosDialog(Frame parent) {
-        super(parent, "Reporte de Pagos", true); // El "true" hace que el JDialog sea modal
+        super(parent, "Reporte de Pagos", true); 
         setLayout(new BorderLayout());
         setSize(800, 500);
-        setLocationRelativeTo(parent); // Centra el JDialog respecto a la ventana principal
+        setLocationRelativeTo(parent); 
 
-        // Crear ComboBox para seleccionar empleado
+        
         jComboBox1 = new JComboBox<>();
-        cargarEmpleadosEnComboBox();  // Cargar empleados en el JComboBox
+        cargarEmpleadosEnComboBox();  
 
-        // Botón para cargar los pagos
+    
         JButton btnCargarPagos = new JButton("Cargar Pagos");
         btnCargarPagos.addActionListener(e -> {
             String nombreEmpleado = (String) jComboBox1.getSelectedItem();
@@ -39,39 +39,38 @@ public class ReportePagosDialog extends JDialog {
             }
         });
 
-        // Panel para el ComboBox y el botón
+        
         JPanel panelSuperior = new JPanel();
         panelSuperior.add(new JLabel("Selecciona un empleado:"));
         panelSuperior.add(jComboBox1);
         panelSuperior.add(btnCargarPagos);
 
-        // Crear la tabla
+       
         tablaPagos = new JTable();
         scrollPane = new JScrollPane(tablaPagos);
 
-        // Crear panel de botones (guardar, imprimir, cerrar)
+       
         JPanel panelBotones = new JPanel();
         panelBotones.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-       // Botón de Guardar
 JButton btnGuardar = new JButton("Guardar");
 btnGuardar.addActionListener(e -> {
-    // Obtener el nombre del empleado seleccionado
+   
     String nombreEmpleado = (String) jComboBox1.getSelectedItem();
     
     if (!nombreEmpleado.equals("Selecciona un empleado")) {
-        // Obtener el ID del empleado por su nombre
+   
         int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
         
         if (idEmpleado != -1) {
-            // Aquí definimos un rango de fechas predeterminado para el recibo
-            String fechaInicio = "2025-01-01";  // Fecha de inicio predeterminada
-            String fechaFin = "2025-01-31";     // Fecha de fin predeterminada
+            
+            String fechaInicio = "2025-01-01"; 
+            String fechaFin = "2025-01-31";     
 
-            // Llamamos a generarRecibo con los parámetros obtenidos
+            
             reportePagos.generarRecibo(idEmpleado, fechaInicio, fechaFin);
             
-            JOptionPane.showMessageDialog(this, "Recibo generado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Historial generado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Empleado no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -80,29 +79,29 @@ btnGuardar.addActionListener(e -> {
     }
 });
 
-        // Botón de Imprimir (sin funcionalidad por ahora)
+        
         JButton btnImprimir = new JButton("Imprimir");
         btnImprimir.addActionListener(e -> {
-            // Aquí iría el código para imprimir los datos
-            System.out.println("Imprimir no implementado aún.");
+            
+            System.out.println("No se detecta ninguna impresora");
         });
 
-        // Botón de Cerrar
+        
         btnCerrar = new JButton("Cerrar");
-        btnCerrar.addActionListener(e -> dispose()); // Al hacer click, cierra el JDialog
+        btnCerrar.addActionListener(e -> dispose()); 
 
-        // Añadir los botones al panel de botones
+       
         panelBotones.add(btnGuardar);
         panelBotones.add(btnImprimir);
         panelBotones.add(btnCerrar);
 
-        // Añadir todo al JDialog
+      
         add(panelSuperior, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
     }
 
-    // Método para cargar empleados en el ComboBox
+
     public void cargarEmpleadosEnComboBox() {
         jComboBox1.removeAllItems();
         jComboBox1.addItem("Selecciona un empleado");
@@ -118,7 +117,7 @@ btnGuardar.addActionListener(e -> {
         }
     }
 
-    // Método para obtener el ID del empleado por su nombre
+
     private int obtenerIdEmpleadoPorNombre(String nombre) {
         String sql = "SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?";
 
@@ -136,8 +135,7 @@ btnGuardar.addActionListener(e -> {
         return -1;
     }
 
-    // Método para cargar los pagos del empleado en la tabla
-    public void cargarPagosEmpleadoEnTabla(int idEmpleado) {
+        public void cargarPagosEmpleadoEnTabla(int idEmpleado) {
         DefaultTableModel modelo = new DefaultTableModel();
         modelo.setColumnIdentifiers(new Object[]{
             "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago", 

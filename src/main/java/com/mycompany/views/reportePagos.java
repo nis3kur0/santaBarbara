@@ -25,7 +25,7 @@ public class reportePagos {
         try {
             con = ConexionBD.obtenerConexion();
 
-            // Query para obtener los datos necesarios para el reporte
+           
             String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.SALARIO AS SALARIO_BASE, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
@@ -65,9 +65,9 @@ public class reportePagos {
                 double totalDeducciones = ivss + faov + inces;
                 double salarioBaseDiario = salarioBase / 30;
                 int cedula = rs.getInt("CEDULA");
-                String tipoCedula = "V"; // Si necesitas hacerlo dinámico, adapta esta parte
+                String tipoCedula = "V"; 
 
-                // Cargar plantilla HTML
+          
                 String plantilla;
                 try (InputStream inputStream = reportePagos.class.getClassLoader().getResourceAsStream("reportePagos.html")) {
                     if (inputStream == null) {
@@ -76,7 +76,7 @@ public class reportePagos {
                     plantilla = new String(inputStream.readAllBytes());
                 }
 
-                // Reemplazar los valores en la plantilla HTML
+               
                 plantilla = plantilla.replace("{{idPago}}", String.valueOf(idEmpleado))
                         .replace("{{fechaInicio}}", fechaInicio)
                         .replace("{{fechaFin}}", fechaFin)
@@ -94,7 +94,7 @@ public class reportePagos {
                         .replace("{{salarioBaseDia}}", String.format(Locale.US, "%.2f BS", salarioBaseDiario))
                         .replace("{{cedula}}", String.valueOf(cedula));
 
-                // Elegir la ubicación para guardar el archivo PDF
+                
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Recibo de Pago");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
@@ -106,7 +106,7 @@ public class reportePagos {
                         pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");
                     }
 
-                    // Convertir HTML a PDF
+              
                     try (OutputStream os = new FileOutputStream(pdfFile)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(plantilla, null);
@@ -146,11 +146,11 @@ public class reportePagos {
         try {
             if (pdfFile.exists()) {
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(pdfFile);  // Abrir el archivo PDF generado
+                    Desktop.getDesktop().open(pdfFile);  
                 } else {
-                    // Si el Desktop no está soportado, intentamos abrir el PDF en el navegador predeterminado
-                    String pdfPath = pdfFile.toURI().toURL().toString(); // Convertir archivo a URL
-                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  // Intentar abrir en el navegador
+                   
+                    String pdfPath = pdfFile.toURI().toURL().toString(); 
+                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  
                     System.out.println("El archivo se ha abierto en el navegador.");
                 }
             } else {

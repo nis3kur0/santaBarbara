@@ -1,126 +1,23 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package com.mycompany.views;
 
-import com.mycompany.ConexionBD;
-import java.awt.Color;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import javax.swing.JOptionPane;
 import static com.mycompany.fichaEmpleado.generarFichaEmpleado;
-
+import javax.swing.JOptionPane;
 
 /**
  *
- *
+ * @author gabo
  */
-public class Ficha extends javax.swing.JPanel {
+public class fichaNomina extends javax.swing.JFrame {
 
     /**
-     * Creates new form Ficha
+     * Creates new form fichaNomina
      */
-    public Ficha() {
+    public fichaNomina() {
         initComponents();
-        limpiarCampos();
-        deshabilitarCampos();
-        establecerEstilos();
-
-    }
-    
-    
-        private void deshabilitarCampos() {
-        
-            deshabilitarComponentesEnContenedor(jPanel1);
-
-    }
-        
-    private void deshabilitarComponentesEnContenedor(java.awt.Container contenedor) {
-        for (java.awt.Component component : contenedor.getComponents()) {
-            if (component instanceof javax.swing.JTextField) {
-                javax.swing.JTextField campo = (javax.swing.JTextField) component;
-                campo.setEditable(false);
-                campo.setFocusable(false);
-            } else if (component instanceof javax.swing.JPanel) {
-                deshabilitarComponentesEnContenedor((javax.swing.JPanel) component);
-            }
-        }
-    }
-
-    private void establecerEstilos() {
-        Color colorFondo = new Color(240, 240, 240);
-        establecerEstilosEnContenedor(jPanel1, colorFondo);
-    }
-
-    private void establecerEstilosEnContenedor(java.awt.Container contenedor, Color color) {
-        for (java.awt.Component component : contenedor.getComponents()) {
-            if (component instanceof javax.swing.JTextField) {
-                component.setBackground(color);
-                component.setForeground(Color.BLACK);
-            } else if (component instanceof javax.swing.JPanel) {
-                establecerEstilosEnContenedor((javax.swing.JPanel) component, color);
-            }
-        }
-    }
-
-    
-        public void cargarDatosEmpleado(int idEmpleado) {
-        String sql = "SELECT * FROM empleados WHERE ID = ?";
-        
-        try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, idEmpleado);
-            ResultSet rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                idText.setText(String.valueOf(rs.getInt("ID")));
-                nombreText.setText(rs.getString("NOMBRE_COMPLETO"));
-                cedulaText.setText(rs.getString("TIPO_CEDULA") + "-" + rs.getString("CEDULA"));
-                sexoText.setText(rs.getString("SEXO"));
-                fechaNacText.setText(rs.getString("FECHA_NACIMIENTO"));
-                direccionText.setText(rs.getString("DIRECCION"));
-                telefonoText.setText(rs.getString("TELEFONO"));
-                tlfHabitText.setText(rs.getString("TELEFONO_HABITACION"));
-                emailText.setText(rs.getString("EMAIL"));
-                
-                cargoText.setText(rs.getString("CARGO"));
-                fechaICText.setText(rs.getString("INICIO_CONTRATO"));
-                fechaFCText.setText(rs.getString("FIN_CONTRATO"));
-                salarioText.setText(String.format("%,.2f", rs.getDouble("SALARIO")));
-                                bancoText.setText(rs.getString("BANCO"));
-                tipoCuentaText.setText(rs.getString("TIPO_CUENTA"));
-                numeroCuentaText.setText(rs.getString("NUMERO_CUENTA"));
-                pagoMovilText.setText(rs.getString("PAGO_MOVIL"));
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Empleado no encontrado", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar datos: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void limpiarCampos() {
-        limpiarComponentesEnContenedor(jPanel1);
-    }
-    
-    private void limpiarComponentesEnContenedor(java.awt.Container contenedor) {
-        for (java.awt.Component component : contenedor.getComponents()) {
-            if (component instanceof javax.swing.JTextField) {
-                ((javax.swing.JTextField) component).setText("");
-            } else if (component instanceof javax.swing.JPanel) {
-                limpiarComponentesEnContenedor((javax.swing.JPanel) component);
-            }
-        }
     }
 
     /**
@@ -132,8 +29,6 @@ public class Ficha extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         nombreLabel = new javax.swing.JLabel();
@@ -152,6 +47,9 @@ public class Ficha extends javax.swing.JPanel {
         tlfHabitText = new javax.swing.JTextField();
         emailLabel = new javax.swing.JLabel();
         emailText = new javax.swing.JTextField();
+        emailLabel1 = new javax.swing.JLabel();
+        emailText1 = new javax.swing.JTextField();
+        emailText2 = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         cargoLabel = new javax.swing.JLabel();
         cargoText = new javax.swing.JTextField();
@@ -175,9 +73,7 @@ public class Ficha extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -187,74 +83,89 @@ public class Ficha extends javax.swing.JPanel {
 
         nombreText.setText("jTextField1");
 
-        cedulaLabel.setText("Cédula:");
+        cedulaLabel.setText("Salario base");
 
         cedulaText.setText("jTextField1");
 
-        sexoLabel.setText("Sexo:");
+        sexoLabel.setText("Dias trabajados");
 
         sexoText.setText("jTextField1");
 
-        fechaNacLabel.setText("Fecha de Nacimiento:");
+        fechaNacLabel.setText("Ausencias");
 
         fechaNacText.setText("jTextField1");
 
-        direccionLabel.setText("Dirección:");
+        direccionLabel.setText("IVSS");
 
         direccionText.setText("jTextField1");
 
-        telefonoLabel.setText("Teléfono:");
+        telefonoLabel.setText("FAOV");
 
         telefonoText.setText("jTextField1");
 
-        tlfHabitLabel.setText("Teléfono de Habitación:");
+        tlfHabitLabel.setText("INCES");
 
         tlfHabitText.setText("jTextField1");
 
-        emailLabel.setText("Email:");
+        emailLabel.setText("Salario neto");
 
         emailText.setText("jTextField1");
+
+        emailLabel1.setText("BONIFICACIONES");
+
+        emailText1.setText("jTextField1");
+
+        emailText2.setText("jTextField1");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(nombreLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(nombreText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cedulaLabel)
-                            .addComponent(sexoLabel))
-                        .addGap(18, 18, 18)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(nombreLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(nombreText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cedulaLabel)
+                                    .addComponent(sexoLabel))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cedulaText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(sexoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(tlfHabitLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(tlfHabitText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(telefonoLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(telefonoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(direccionLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(direccionText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(fechaNacLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(fechaNacText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(emailLabel)
+                                .addGap(41, 41, 41)
+                                .addComponent(emailText2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(emailLabel1)
+                        .addGap(22, 22, 22)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cedulaText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(sexoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(emailLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(emailText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(tlfHabitLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(tlfHabitText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(telefonoLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(telefonoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(direccionLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(direccionText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(fechaNacLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(fechaNacText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(308, Short.MAX_VALUE))
+                            .addComponent(emailText1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(emailText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(326, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -279,19 +190,27 @@ public class Ficha extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(direccionLabel)
                     .addComponent(direccionText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(telefonoLabel)
-                    .addComponent(telefonoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tlfHabitLabel)
-                    .addComponent(tlfHabitText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(emailLabel)
-                    .addComponent(emailText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(telefonoLabel)
+                            .addComponent(telefonoText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tlfHabitLabel)
+                            .addComponent(tlfHabitText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(emailText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(emailLabel1)
+                            .addComponent(emailText1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addComponent(emailLabel))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(emailText2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos Laborales"));
@@ -424,7 +343,7 @@ public class Ficha extends javax.swing.JPanel {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Código:", javax.swing.border.TitledBorder.RIGHT, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Fecha", javax.swing.border.TitledBorder.RIGHT, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
         idText.setText("jTextField2");
 
@@ -447,7 +366,7 @@ public class Ficha extends javax.swing.JPanel {
 
         jLabel2.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/santabr.png"))); // NOI18N
-        jLabel2.setText("Ficha del Empleado");
+        jLabel2.setText("Datos de nomina");
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guardar.png"))); // NOI18N
         jButton1.setText("Guardar");
@@ -466,9 +385,9 @@ public class Ficha extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
                         .addComponent(jLabel2)
@@ -490,7 +409,7 @@ public class Ficha extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(25, 25, 25)
                         .addComponent(jLabel2)))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -500,8 +419,8 @@ public class Ficha extends javax.swing.JPanel {
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -510,22 +429,58 @@ public class Ficha extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
+
+        pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-    try {
-        // Obtener el ID del empleado desde el campo de texto
-        int idEmpleado = Integer.parseInt(idText.getText());  // Usar el JTextField que tiene el ID del empleado
+        try {
+            // Obtener el ID del empleado desde el campo de texto
+            int idEmpleado = Integer.parseInt(idText.getText());  // Usar el JTextField que tiene el ID del empleado
 
-        // Llamar al método generarFichaEmpleado con el ID del empleado
-        generarFichaEmpleado(idEmpleado);
+            // Llamar al método generarFichaEmpleado con el ID del empleado
+            generarFichaEmpleado(idEmpleado);
 
-    } catch (NumberFormatException ex) {
-        JOptionPane.showMessageDialog(this, "Por favor, ingrese un ID válido.", "Error", JOptionPane.ERROR_MESSAGE);
-    }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese un ID válido.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(fichaNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(fichaNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(fichaNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(fichaNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new fichaNomina().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel bancoLabel;
@@ -537,7 +492,10 @@ public class Ficha extends javax.swing.JPanel {
     private javax.swing.JLabel direccionLabel;
     private javax.swing.JTextField direccionText;
     private javax.swing.JLabel emailLabel;
+    private javax.swing.JLabel emailLabel1;
     private javax.swing.JTextField emailText;
+    private javax.swing.JTextField emailText1;
+    private javax.swing.JTextField emailText2;
     private javax.swing.JLabel fechaFCLabel;
     private javax.swing.JTextField fechaFCText;
     private javax.swing.JLabel fechaICLabel;
@@ -552,8 +510,6 @@ public class Ficha extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel nombreLabel;
     private javax.swing.JTextField nombreText;
     private javax.swing.JLabel numeroCuentaLabel;

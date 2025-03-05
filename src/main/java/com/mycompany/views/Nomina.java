@@ -6,8 +6,12 @@ package com.mycompany.views;
 
 import com.mycompany.ConexionBD;
 import com.mycompany.recibodePago;
+import com.mycompany.historialNomina;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,14 +26,10 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-
-
-
-
-
-/** PENDIENTE A REFACTORIZACION
+/**
+ * PENDIENTE A REFACTORIZACION
  *
- * 
+ *
  */
 public class Nomina extends javax.swing.JPanel {
 
@@ -38,58 +38,396 @@ public class Nomina extends javax.swing.JPanel {
      */
     public Nomina() {
         initComponents();
-        styles ();
+        styles();
     }
-    
-    //ESTILOS
-    
-     private void  styles () {
-    
-    tableTitle.setFont( UIManager.getFont( "h1.font" ) );
-    
-    }
-    
 
-        //VARIABLES
+    //ESTILOS
+    private void styles() {
+
+        tableTitle.setFont(UIManager.getFont("h1.font"));
+
+    }
+
+    //VARIABLES
     private double totalSueldoNeto = 0;
 
-
     //VALIDACIONES
+    public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin) {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
 
-public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin) {
+        try {
+            con = ConexionBD.obtenerConexion();
+
+            String fechaInicioStr = fechaInicio.toString();
+            String fechaFinStr = fechaFin.toString();
+
+            String sql = "SELECT COUNT(*) FROM nomina WHERE ("
+                    + "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR "
+                    + "(FECHA_INICIO_NOMINA BETWEEN ? AND ?) OR "
+                    + "(FECHA_FIN_NOMINA BETWEEN ? AND ?))";
+
+            pst = con.prepareStatement(sql);
+            pst.setString(1, fechaInicioStr);
+            pst.setString(2, fechaFinStr);
+            pst.setString(3, fechaInicioStr);
+            pst.setString(4, fechaFinStr);
+            pst.setString(5, fechaInicioStr);
+
+            rs = pst.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(null, "Las fechas seleccionadas se solapan con una nómina existente.");
+                return true;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al verificar solapamiento de fechas: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
+    private boolean confirmarAccionConPassword() {
+
+        JPasswordField pf = new JPasswordField();
+        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (okCxl == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(pf.getPassword());
+            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
+
+            if (inputPassword.equals(contraseñaValida)) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        return false;
+    }
+
+    //FIN//
+//CALCULOS Y ACCIONES
+    public void calcularNomina() {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+            String fechaFinStr = sdf.format(fechaFinNom.getDate());
+
+            LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
+            LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+
+            long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
+            if (diasDeDiferencia < 14) {
+                JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
+                return;
+            }
+            if (diasDeDiferencia > 30) {
+                JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
+                return;
+            }
+
+            if (validarFechasSolapadas(fechaInicio, fechaFin)) {
+                return;
+            }
+
+            con = ConexionBD.obtenerConexion();
+
+            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
+                    + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, "
+                    + "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - "
+                    + "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + "
+                    + "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL "
+                    + "FROM empleados e "
+                    + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
+                    + "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
+
+            pst = con.prepareStatement(sql);
+            pst.setString(1, fechaInicioStr);
+            pst.setString(2, fechaFinStr);
+            rs = pst.executeQuery();
+
+            DefaultTableModel model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            model.setColumnIdentifiers(new Object[]{
+                "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias",
+                "Horas Extras", "IVSS", "FAOV", "INCES", "Salarioadmin Neto"
+            });
+
+            tablaNomina.setModel(model);
+
+            double totalSalarioBase = 0;
+            totalSueldoNeto = 0;
+            double totalDeducciones = 0;
+            double totalFAOV = 0;
+            double totalIVSS = 0;
+            double totalInces = 0;
+
+            while (rs.next()) {
+                int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
+                int ausencias = rs.getInt("AUSENCIAS");
+                double horasExtras = rs.getDouble("HORAS_EXTRAS");
+                double sueldoNeto = rs.getDouble("SUELDO_FINAL");
+                double ivss = rs.getDouble("IVSS");
+                double faov = rs.getDouble("FAOV");
+                double inces = rs.getDouble("INCES");
+                double salarioBase = rs.getDouble("SALARIO_BASE");
+
+                if (rs.wasNull()) {
+                    diasTrabajados = 0;
+                    ausencias = 0;
+                    horasExtras = 0.0;
+                    sueldoNeto = 0.0;
+                    ivss = 0.0;
+                    faov = 0.0;
+                    inces = 0.0;
+                    salarioBase = 0.0;
+                }
+
+                model.addRow(new Object[]{
+                    rs.getInt("ID"),
+                    rs.getString("NOMBRE_COMPLETO"),
+                    String.format(Locale.US, "%.2f BS", salarioBase),
+                    diasTrabajados,
+                    ausencias,
+                    String.format(Locale.US, "%.2f", horasExtras),
+                    String.format(Locale.US, "%.2f BS", ivss),
+                    String.format(Locale.US, "%.2f BS", faov),
+                    String.format(Locale.US, "%.2f BS", inces),
+                    String.format(Locale.US, "%.2f BS", sueldoNeto),});
+
+                totalSalarioBase += salarioBase;
+                totalSueldoNeto += sueldoNeto;
+                totalDeducciones += (ivss + faov + inces);
+                totalFAOV += faov;
+                totalIVSS += ivss;
+                totalInces += inces;
+            }
+
+            if (model.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(null, "No se encontraron datos para el período seleccionado.");
+            }
+
+            montoBaseL.setText(String.format("%.2f BS", totalSalarioBase));
+            montoNetoL.setText(String.format("%.2f BS", totalSueldoNeto));
+            deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
+            faovLabel.setText(String.format("%.2f BS", totalFAOV));
+            ivssLabel.setText(String.format("%.2f BS", totalIVSS));
+            incesLabel.setText(String.format("%.2f BS", totalInces));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al calcular la nómina: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void registrarPagoNomina() {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+            String fechaFinStr = sdf.format(fechaFinNom.getDate());
+
+            LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
+            LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+            LocalDate fechaPago = LocalDate.now();
+
+            con = ConexionBD.obtenerConexion();
+
+            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
+                    + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, "
+                    + "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - "
+                    + "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + "
+                    + "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL "
+                    + "FROM empleados e "
+                    + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
+                    + "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
+
+            pst = con.prepareStatement(sql);
+            pst.setString(1, fechaInicioStr);
+            pst.setString(2, fechaFinStr);
+            rs = pst.executeQuery();
+
+            String insertSql = "INSERT INTO pagos_nomina (ID_EMPLEADO, NOMBRE_COMPLETO, SALARIO_BASE, DIAS_TRABAJADOS, "
+                    + "AUSENCIAS, HORAS_EXTRAS, IVSS, FAOV, INCES, SUELDO_FINAL, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_DE_PAGO) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            PreparedStatement insertPst = con.prepareStatement(insertSql);
+
+            while (rs.next()) {
+                insertPst.setInt(1, rs.getInt("ID"));
+                insertPst.setString(2, rs.getString("NOMBRE_COMPLETO"));
+                insertPst.setDouble(3, rs.getDouble("SALARIO_BASE"));
+                insertPst.setInt(4, rs.getInt("DIAS_TRABAJADOS"));
+                insertPst.setInt(5, rs.getInt("AUSENCIAS"));
+                insertPst.setDouble(6, rs.getDouble("HORAS_EXTRAS"));
+                insertPst.setDouble(7, rs.getDouble("IVSS"));
+                insertPst.setDouble(8, rs.getDouble("FAOV"));
+                insertPst.setDouble(9, rs.getDouble("INCES"));
+                insertPst.setDouble(10, rs.getDouble("SUELDO_FINAL"));
+                insertPst.setDate(11, java.sql.Date.valueOf(fechaInicio));
+                insertPst.setDate(12, java.sql.Date.valueOf(fechaFin));
+                insertPst.setDate(13, java.sql.Date.valueOf(fechaPago));
+
+                insertPst.addBatch();
+            }
+
+            insertPst.executeBatch();
+            JOptionPane.showMessageDialog(null, "Registro de pagos guardado exitosamente.");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al registrar los pagos: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void abrirVentanaPagos() {
+        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        ReportePagosDialog ventanaPagos = new ReportePagosDialog(frame);
+        ventanaPagos.setVisible(true);
+    }
+//VENTANA DE HISTORIAL DE NOMINAS DETALLE
+    
+    private void detalleNomina (int idNomina) {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Detalle de Nómina");  
+        dialog.setSize(800, 600);
+        dialog.setLocationRelativeTo(null); 
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new Object[] {
+            "Empleado", "Días Trabajados", "Ausencias", "Horas Extras",
+            "Sueldo Neto", "IVSS", "FAOV", "INCES", "Sueldo Final"
+        });
+
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+       
+        JPanel buttonPanel = new JPanel();
+        JButton btnGuardar = new JButton("Guardar");
+        JButton btnImprimir = new JButton("Imprimir");
+
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        btnImprimir.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnImprimir);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.add(panel);
+        dialog.setVisible(true);
+
         con = ConexionBD.obtenerConexion();
-
-        String fechaInicioStr = fechaInicio.toString();
-        String fechaFinStr = fechaFin.toString();        
-
-        String sql = "SELECT COUNT(*) FROM nomina WHERE (" +
-                     "(? BETWEEN FECHA_INICIO_NOMINA AND FECHA_FIN_NOMINA) OR " +    
-                     "(FECHA_INICIO_NOMINA BETWEEN ? AND ?) OR " +            
-                     "(FECHA_FIN_NOMINA BETWEEN ? AND ?))";                   
-
-        pst = con.prepareStatement(sql);
-        pst.setString(1, fechaInicioStr);
-        pst.setString(2, fechaFinStr);
-        pst.setString(3, fechaInicioStr);
-        pst.setString(4, fechaFinStr);
-        pst.setString(5, fechaInicioStr);
-      
-
+        String sqlFecha = "SELECT FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA FROM nomina WHERE ID_NOMINA = ?";
+        pst = con.prepareStatement(sqlFecha);
+        pst.setInt(1, idNomina);
         rs = pst.executeQuery();
 
-        if (rs.next() && rs.getInt(1) > 0) {
-            JOptionPane.showMessageDialog(null, "Las fechas seleccionadas se solapan con una nómina existente.");
-            return true; 
-        }
+        if (rs.next()) {
+            String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
+            String fechaFin = rs.getString("FECHA_FIN_NOMINA");
 
-    } catch (SQLException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al verificar solapamiento de fechas: " + e.getMessage());
+            calcularNominaDetalles(fechaInicio, fechaFin, model);
+        } else {
+            JOptionPane.showMessageDialog(null, "No se encontró la nómina seleccionada.");
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al obtener los datos de la nómina: " + ex.getMessage());
     } finally {
         try {
             if (rs != null) rs.close();
@@ -99,162 +437,57 @@ public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin)
             e.printStackTrace();
         }
     }
-
-    return false;
 }
-
-
-private boolean confirmarAccionConPassword() {
     
-   
-        JPasswordField pf = new JPasswordField();
-        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        
-        if (okCxl == JOptionPane.OK_OPTION) {
-            String inputPassword = new String(pf.getPassword());
-            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
-
-            if (inputPassword.equals(contraseñaValida)) {
-                return true; 
-            } else {
-                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    
-    return false; 
-}
-
-    //FIN//
-
-//CALCULOS Y ACCIONES
-public void calcularNomina() {
+    public void calcularNominaDetalles(String fechaInicioStr, String fechaFinStr, DefaultTableModel model) {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
-        String fechaFinStr = sdf.format(fechaFinNom.getDate());
-
-    
-        LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
-        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
-
-      
-        long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
-        if (diasDeDiferencia < 14) {
-            JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
-            return; 
-        }
-        if (diasDeDiferencia > 30) {
-            JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
-            return; 
-        }
-
-        if (validarFechasSolapadas(fechaInicio, fechaFin)) {
-            return; 
-        }
-
         con = ConexionBD.obtenerConexion();
 
-        String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
-                     "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
-                     "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
-                     "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, " +
-                     "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - " +
-                     "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + " +
-                     "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL " +
-                     "FROM empleados e " +
-                     "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? " +
-                     "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
+        // Realizar la consulta para calcular la nómina
+        String sql = "SELECT e.NOMBRE_COMPLETO, "
+                + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
+                + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
+                + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, "
+                + "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, "
+                + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, "
+                + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, "
+                + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, "
+                + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - "
+                + "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + "
+                + "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL "
+                + "FROM empleados e "
+                + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
+                + "GROUP BY e.NOMBRE_COMPLETO, e.SALARIO";
 
         pst = con.prepareStatement(sql);
         pst.setString(1, fechaInicioStr);
         pst.setString(2, fechaFinStr);
         rs = pst.executeQuery();
 
-       DefaultTableModel model = new DefaultTableModel() {
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return false;
-    }
-};
-
-model.setColumnIdentifiers(new Object[]{
-    "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias", 
-    "Horas Extras", "IVSS", "FAOV", "INCES", "Salarioadmin Neto"
-});
-
-tablaNomina.setModel(model);
-
-        double totalSalarioBase = 0;  
-        totalSueldoNeto = 0;  
-        double totalDeducciones = 0;
-        double totalFAOV = 0;
-        double totalIVSS = 0;
-        double totalInces = 0;
-
         while (rs.next()) {
-            int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
-            int ausencias = rs.getInt("AUSENCIAS");
-            double horasExtras = rs.getDouble("HORAS_EXTRAS");
-            double sueldoNeto = rs.getDouble("SUELDO_FINAL");
-            double ivss = rs.getDouble("IVSS");
-            double faov = rs.getDouble("FAOV");
-            double inces = rs.getDouble("INCES");
-            double salarioBase = rs.getDouble("SALARIO_BASE");
-
-            if (rs.wasNull()) {
-                diasTrabajados = 0;
-                ausencias = 0;
-                horasExtras = 0.0;
-                sueldoNeto = 0.0;
-                ivss = 0.0;
-                faov = 0.0;
-                inces = 0.0;
-                salarioBase = 0.0;
-            }
-
-           model.addRow(new Object[] {
-    rs.getInt("ID"),
-    rs.getString("NOMBRE_COMPLETO"),
-    String.format(Locale.US, "%.2f BS", salarioBase), 
-    diasTrabajados,
-    ausencias,
-    String.format(Locale.US, "%.2f", horasExtras),
-    String.format(Locale.US, "%.2f BS", ivss),
-    String.format(Locale.US, "%.2f BS", faov),
-    String.format(Locale.US, "%.2f BS", inces),
-    String.format(Locale.US, "%.2f BS", sueldoNeto),
-});
-
-            totalSalarioBase += salarioBase;  
-            totalSueldoNeto += sueldoNeto;
-            totalDeducciones += (ivss + faov + inces);
-            totalFAOV += faov;
-            totalIVSS += ivss;
-            totalInces += inces;
+            model.addRow(new Object[] {
+                rs.getString("NOMBRE_COMPLETO"),
+                rs.getInt("DIAS_TRABAJADOS"),
+                rs.getInt("AUSENCIAS"),
+                rs.getDouble("HORAS_EXTRAS"),
+                rs.getDouble("SUELDO_NETO"),
+                rs.getDouble("IVSS"),
+                rs.getDouble("FAOV"),
+                rs.getDouble("INCES"),
+                rs.getDouble("SUELDO_FINAL")
+            });
         }
 
         if (model.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No se encontraron datos para el período seleccionado.");
+            JOptionPane.showMessageDialog(null, "No se encontraron registros para la nómina.");
         }
-
-        montoBaseL.setText(String.format("%.2f BS", totalSalarioBase));
-        montoNetoL.setText(String.format("%.2f BS", totalSueldoNeto));
-        deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
-        faovLabel.setText(String.format("%.2f BS", totalFAOV));
-        ivssLabel.setText(String.format("%.2f BS", totalIVSS));
-        incesLabel.setText(String.format("%.2f BS", totalInces));
-
-    } catch (Exception ex) {
+    } catch (SQLException ex) {
         ex.printStackTrace();
         JOptionPane.showMessageDialog(null, "Error al calcular la nómina: " + ex.getMessage());
     } finally {
@@ -268,374 +501,318 @@ tablaNomina.setModel(model);
     }
 }
 
-public void registrarPagoNomina() {
-    Connection con = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
+    //VENTANA DE HISTORIAL DE NOMINAS DETALLE
 
-    try {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
-        String fechaFinStr = sdf.format(fechaFinNom.getDate());
+    private void guardarNomina(double totalSueldoNeto) {
+        int respuesta = JOptionPane.showConfirmDialog(
+                null,
+                "Una vez guardada, la nómina no podrá cambiarse. ¿Estás seguro de que deseas continuar?",
+                "Advertencia",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
 
-        LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
-        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
-        LocalDate fechaPago = LocalDate.now();
+        if (respuesta == JOptionPane.YES_OPTION) {
+            if (confirmarAccionConPassword()) {
+                Connection con = null;
+                PreparedStatement pst = null;
+                ResultSet rs = null;
 
-        con = ConexionBD.obtenerConexion();
-
-        String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
-                     "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
-                     "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
-                     "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, " +
-                     "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, " +
-                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - " +
-                     "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + " +
-                     "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL " +
-                     "FROM empleados e " +
-                     "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? " +
-                     "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
-
-        pst = con.prepareStatement(sql);
-        pst.setString(1, fechaInicioStr);
-        pst.setString(2, fechaFinStr);
-        rs = pst.executeQuery();
-
-        String insertSql = "INSERT INTO pagos_nomina (ID_EMPLEADO, NOMBRE_COMPLETO, SALARIO_BASE, DIAS_TRABAJADOS, " +
-                           "AUSENCIAS, HORAS_EXTRAS, IVSS, FAOV, INCES, SUELDO_FINAL, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_DE_PAGO) " +
-                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        PreparedStatement insertPst = con.prepareStatement(insertSql);
-
-        while (rs.next()) {
-            insertPst.setInt(1, rs.getInt("ID"));
-            insertPst.setString(2, rs.getString("NOMBRE_COMPLETO"));
-            insertPst.setDouble(3, rs.getDouble("SALARIO_BASE"));
-            insertPst.setInt(4, rs.getInt("DIAS_TRABAJADOS"));
-            insertPst.setInt(5, rs.getInt("AUSENCIAS"));
-            insertPst.setDouble(6, rs.getDouble("HORAS_EXTRAS"));
-            insertPst.setDouble(7, rs.getDouble("IVSS"));
-            insertPst.setDouble(8, rs.getDouble("FAOV"));
-            insertPst.setDouble(9, rs.getDouble("INCES"));
-            insertPst.setDouble(10, rs.getDouble("SUELDO_FINAL"));
-           insertPst.setDate(11, java.sql.Date.valueOf(fechaInicio));
-insertPst.setDate(12, java.sql.Date.valueOf(fechaFin));
-insertPst.setDate(13, java.sql.Date.valueOf(fechaPago));
-
-            insertPst.addBatch();
-        }
-
-        insertPst.executeBatch();
-        JOptionPane.showMessageDialog(null, "Registro de pagos guardado exitosamente.");
-
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al registrar los pagos: " + ex.getMessage());
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (pst != null) pst.close();
-            if (con != null) con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-}
-public void abrirVentanaPagos() {
-    // Obtener el JFrame que contiene el panel
-    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-    
-    // Crear el JDialog y mostrarlo
-    ReportePagosDialog ventanaPagos = new ReportePagosDialog(frame);
-    ventanaPagos.setVisible(true);
-}
-
-
-
-private void guardarNomina(double totalSueldoNeto) {
-    int respuesta = JOptionPane.showConfirmDialog(
-        null,
-        "Una vez guardada, la nómina no podrá cambiarse. ¿Estás seguro de que deseas continuar?",
-        "Advertencia",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.WARNING_MESSAGE
-    );
-
-    if (respuesta == JOptionPane.YES_OPTION) {
-        if (confirmarAccionConPassword()) {
-            Connection con = null;
-            PreparedStatement pst = null;
-            ResultSet rs = null;
-
-            try {
-                con = ConexionBD.obtenerConexion();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String fechaInicio = sdf.format(fechaInicioNom.getDate());
-                String fechaFin = sdf.format(fechaFinNom.getDate());
-                String fechaPago = sdf.format(new Date());
-
-                String sqlEmpleados = "SELECT COUNT(*) AS total FROM empleados";
-                pst = con.prepareStatement(sqlEmpleados);
-                rs = pst.executeQuery();
-
-                int totalEmpleados = 0;
-                if (rs.next()) {
-                    totalEmpleados = rs.getInt("total");
-                }
-
-                rs.close();
-                pst.close();
-
-                String sql = "INSERT INTO nomina (FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL) " +
-                             "VALUES (?, ?, ?, ?, ?)";
-                pst = con.prepareStatement(sql);
-                pst.setString(1, fechaInicio);
-                pst.setString(2, fechaFin);
-                pst.setString(3, fechaPago);
-                pst.setInt(4, totalEmpleados);
-                pst.setDouble(5, totalSueldoNeto);
-
-                int filasAfectadas = pst.executeUpdate();
-
-                if (filasAfectadas > 0) {
-                    JOptionPane.showMessageDialog(null, "Nómina guardada correctamente.");
-                    registrarPagoNomina();
-                } else {
-                    JOptionPane.showMessageDialog(null, "No se pudo guardar la nómina.");
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Error al guardar la nómina: " + ex.getMessage());
-            } finally {
                 try {
-                    if (rs != null) rs.close();
-                    if (pst != null) pst.close();
-                    if (con != null) con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                    con = ConexionBD.obtenerConexion();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String fechaInicio = sdf.format(fechaInicioNom.getDate());
+                    String fechaFin = sdf.format(fechaFinNom.getDate());
+                    String fechaPago = sdf.format(new Date());
+
+                    String sqlEmpleados = "SELECT COUNT(*) AS total FROM empleados";
+                    pst = con.prepareStatement(sqlEmpleados);
+                    rs = pst.executeQuery();
+
+                    int totalEmpleados = 0;
+                    if (rs.next()) {
+                        totalEmpleados = rs.getInt("total");
+                    }
+
+                    rs.close();
+                    pst.close();
+
+                    String sql = "INSERT INTO nomina (FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL) "
+                            + "VALUES (?, ?, ?, ?, ?)";
+                    pst = con.prepareStatement(sql);
+                    pst.setString(1, fechaInicio);
+                    pst.setString(2, fechaFin);
+                    pst.setString(3, fechaPago);
+                    pst.setInt(4, totalEmpleados);
+                    pst.setDouble(5, totalSueldoNeto);
+
+                    int filasAfectadas = pst.executeUpdate();
+
+                    if (filasAfectadas > 0) {
+                        JOptionPane.showMessageDialog(null, "Nómina guardada correctamente.");
+                        registrarPagoNomina();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "No se pudo guardar la nómina.");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al guardar la nómina: " + ex.getMessage());
+                } finally {
+                    try {
+                        if (rs != null) {
+                            rs.close();
+                        }
+                        if (pst != null) {
+                            pst.close();
+                        }
+                        if (con != null) {
+                            con.close();
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
     }
-}
 
-public void mostrarPagosNomina() {
-    JDialog dialog = new JDialog();
-    dialog.setTitle("Registro de Pagos de Nómina");
-    dialog.setSize(1200, 600);
-    dialog.setLocationRelativeTo(null);
+    public void mostrarPagosNomina() {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Registro de Pagos de Nómina");
+        dialog.setSize(1200, 600);
+        dialog.setLocationRelativeTo(null);
 
-    String[] columnas = {
-        "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago", 
-        "ID Empleado", "Nombre Completo", "Salario Base", 
-        "Días Trabajados", "Ausencias", "Horas Extras", 
-        "IVSS", "FAOV", "INCES", "Sueldo Final"
-    };
-
-    DefaultTableModel modelo = new DefaultTableModel();
-    modelo.setColumnIdentifiers(columnas);
-
-    JTable tabla = new JTable(modelo);
-    JScrollPane scrollPane = new JScrollPane(tabla);
-    dialog.add(scrollPane, BorderLayout.CENTER);
-
-    try (Connection con = ConexionBD.obtenerConexion();
-         PreparedStatement pst = con.prepareStatement("SELECT * FROM pagos_nomina");
-         ResultSet rs = pst.executeQuery()) {
-
-        while (rs.next()) {
-            modelo.addRow(new Object[]{
-                rs.getInt("ID_PAGO"),
-                rs.getDate("FECHA_INICIO_NOMINA"),
-                rs.getDate("FECHA_FIN_NOMINA"),
-                rs.getDate("FECHA_DE_PAGO"),
-                rs.getInt("ID_EMPLEADO"),
-                rs.getString("NOMBRE_COMPLETO"),
-                rs.getDouble("SALARIO_BASE"),
-                rs.getInt("DIAS_TRABAJADOS"),
-                rs.getInt("AUSENCIAS"),
-                rs.getDouble("HORAS_EXTRAS"),
-                rs.getDouble("IVSS"),
-                rs.getDouble("FAOV"),
-                rs.getDouble("INCES"),
-                rs.getDouble("SUELDO_FINAL")
-            });
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al obtener los registros de pagos de nómina: " + e.getMessage());
-    }
-
-    dialog.setVisible(true);
-}
-
-public void historialNomina() {
-    JFrame historialFrame = new JFrame("Historial de Nómina");
-    historialFrame.setSize(800, 400);
-    historialFrame.setLocationRelativeTo(null);
-    historialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-    JPanel panel = new JPanel();
-    panel.setLayout(new BorderLayout());
-
-    JTable tablaHistorialNomina = new JTable();
-    JScrollPane scrollPane = new JScrollPane(tablaHistorialNomina);
-    panel.add(scrollPane, BorderLayout.CENTER);
-
-    JButton btnCerrar = new JButton("Cerrar");
-    btnCerrar.addActionListener(e -> historialFrame.dispose());
-    panel.add(btnCerrar, BorderLayout.SOUTH);
-
-    historialFrame.add(panel);
-    historialFrame.setVisible(true);
-
-    Connection con = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-
-    try {
-        con = ConexionBD.obtenerConexion();
-        
-        String sql = "SELECT ID_NOMINA, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL FROM nomina";
-        pst = con.prepareStatement(sql);
-        rs = pst.executeQuery();
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; 
-            }
+        String[] columnas = {
+            "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago",
+            "ID Empleado", "Nombre Completo", "Salario Base",
+            "Días Trabajados", "Ausencias", "Horas Extras",
+            "IVSS", "FAOV", "INCES", "Sueldo Final"
         };
 
-        model.setColumnIdentifiers(new Object[]{
-            "ID Nómina", "Fecha Inicio", "Fecha Fin", "Fecha Pago", 
-            "Total Empleados", "Monto Total"
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(columnas);
+
+        JTable tabla = new JTable(modelo);
+        JScrollPane scrollPane = new JScrollPane(tabla);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement pst = con.prepareStatement("SELECT * FROM pagos_nomina"); ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
+                    rs.getInt("ID_PAGO"),
+                    rs.getDate("FECHA_INICIO_NOMINA"),
+                    rs.getDate("FECHA_FIN_NOMINA"),
+                    rs.getDate("FECHA_DE_PAGO"),
+                    rs.getInt("ID_EMPLEADO"),
+                    rs.getString("NOMBRE_COMPLETO"),
+                    rs.getDouble("SALARIO_BASE"),
+                    rs.getInt("DIAS_TRABAJADOS"),
+                    rs.getInt("AUSENCIAS"),
+                    rs.getDouble("HORAS_EXTRAS"),
+                    rs.getDouble("IVSS"),
+                    rs.getDouble("FAOV"),
+                    rs.getDouble("INCES"),
+                    rs.getDouble("SUELDO_FINAL")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al obtener los registros de pagos de nómina: " + e.getMessage());
+        }
+
+        dialog.setVisible(true);
+    }
+
+    public void historialNomina() {
+        JFrame historialFrame = new JFrame("Historial de Nómina");
+        historialFrame.setSize(800, 400);
+        historialFrame.setLocationRelativeTo(null);
+        historialFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        JTable tablaHistorialNomina = new JTable();
+        JScrollPane scrollPane = new JScrollPane(tablaHistorialNomina);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel panelBotones = new JPanel();
+        panelBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        JButton btnGuardar = new JButton("Guardar");
+
+        btnGuardar.addActionListener(e -> {
+            historialNomina.generarReporteNomina();
         });
 
-        tablaHistorialNomina.setModel(model);
+        panelBotones.add(btnGuardar);
 
-        while (rs.next()) {
-            String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
-            String fechaFin = rs.getString("FECHA_FIN_NOMINA");
-            String fechaPago = rs.getString("FECHA_PAGO_NOMINA");
+        JButton btnImprimir = new JButton("Imprimir");
+        panelBotones.add(btnImprimir);
+        
+JButton btnVerDetalle = new JButton("Ver detalle");
+btnVerDetalle.addActionListener(e -> {
+    int selectedRow = tablaHistorialNomina.getSelectedRow();
 
-            fechaInicio = (fechaInicio != null) ? fechaInicio : "N/A";
-            fechaFin = (fechaFin != null) ? fechaFin : "N/A";
-            fechaPago = (fechaPago != null) ? fechaPago : "N/A";
+    if (selectedRow != -1) {
+        int idNomina = (int) tablaHistorialNomina.getValueAt(selectedRow, 0); 
 
-            model.addRow(new Object[]{
-                rs.getInt("ID_NOMINA"),
-                fechaInicio,
-                fechaFin,
-                fechaPago,
-                rs.getInt("TOTAL_EMPLEADOS"),
-                String.format("%.2f BS", rs.getDouble("MONTO_TOTAL"))
-            });
-        }
+       detalleNomina ( idNomina);
+    } else {
+        JOptionPane.showMessageDialog(null, "Por favor, seleccione una nómina para ver los detalles.");
+    }
+});
+    panelBotones.add(btnVerDetalle);
 
-        if (model.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No se encontraron registros en el historial de nómina.");
-        }
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.addActionListener(e -> historialFrame.dispose());
+        panelBotones.add(btnCerrar);
 
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al mostrar el historial de nómina: " + ex.getMessage());
-    } finally {
+        panel.add(panelBotones, BorderLayout.SOUTH);
+
+        historialFrame.add(panel);
+        historialFrame.setVisible(true);
+
+        cargarDatosEnTabla(tablaHistorialNomina);
+    }
+
+    private void cargarDatosEnTabla(JTable tablaHistorialNomina) {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
         try {
-            if (rs != null) rs.close();
-            if (pst != null) pst.close();
-            if (con != null) con.close();
-        } catch (SQLException e) {
+            con = ConexionBD.obtenerConexion();
+
+            String sql = "SELECT ID_NOMINA, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL FROM nomina";
+            pst = con.prepareStatement(sql);
+            rs = pst.executeQuery();
+
+            DefaultTableModel model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            model.setColumnIdentifiers(new Object[]{
+                "ID Nómina", "Fecha Inicio", "Fecha Fin", "Fecha Pago",
+                "Total Empleados", "Monto Total"
+            });
+
+            tablaHistorialNomina.setModel(model);
+
+            while (rs.next()) {
+                String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
+                String fechaFin = rs.getString("FECHA_FIN_NOMINA");
+                String fechaPago = rs.getString("FECHA_PAGO_NOMINA");
+
+                fechaInicio = (fechaInicio != null) ? fechaInicio : "N/A";
+                fechaFin = (fechaFin != null) ? fechaFin : "N/A";
+                fechaPago = (fechaPago != null) ? fechaPago : "N/A";
+
+                model.addRow(new Object[]{
+                    rs.getInt("ID_NOMINA"),
+                    fechaInicio,
+                    fechaFin,
+                    fechaPago,
+                    rs.getInt("TOTAL_EMPLEADOS"),
+                    String.format("%.2f BS", rs.getDouble("MONTO_TOTAL"))
+                });
+            }
+
+            if (model.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(null, "No se encontraron registros en el historial de nómina.");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al mostrar el historial de nómina: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //FIN//
+//OTROS
+    public void calcularAportesEmpleador() {
+        DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.");
+            return;
+        }
+
+        double totalIVSS = 0;
+        double totalFAOV = 0;
+        double totalINCES = 0;
+
+        try {
+            for (int i = 0; i < model.getRowCount(); i++) {
+                String salarioBaseStr = model.getValueAt(i, 2).toString()
+                        .replace(" BS", "")
+                        .replace(",", ".") // Reemplazar comas por puntos
+                        .trim();
+
+                double salarioBase = Double.parseDouble(salarioBaseStr);
+
+                double ivssEmpleado = salarioBase * 0.09; // 9% IVSS
+                double faovEmpleado = salarioBase * 0.02; // 2% FAOV
+                double incesEmpleado = salarioBase * 0.02; // 2% INCES
+
+                totalIVSS += ivssEmpleado;
+                totalFAOV += faovEmpleado;
+                totalINCES += incesEmpleado;
+            }
+
+            double totalAportes = totalIVSS + totalFAOV + totalINCES;
+            mostrarAportesDialog(totalIVSS, totalFAOV, totalINCES, totalAportes);
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Error al convertir el salario base: formato incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al calcular los aportes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
-}
 
+    private void mostrarAportesDialog(double ivss, double faov, double inces, double total) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Aportes del Empleador");
+        dialog.setSize(350, 250);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel panelDatos = new JPanel(new GridLayout(4, 1, 10, 10));
+        panelDatos.add(new JLabel(String.format("IVSS (9%%): %.2f BS", ivss)));
+        panelDatos.add(new JLabel(String.format("FAOV (2%%): %.2f BS", faov)));
+        panelDatos.add(new JLabel(String.format("INCES (2%%): %.2f BS", inces)));
+        panelDatos.add(new JLabel(String.format("Total Aportes: %.2f BS", total)));
+
+        JButton cerrarButton = new JButton("Cerrar");
+        cerrarButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(panelDatos, BorderLayout.CENTER);
+        dialog.add(cerrarButton, BorderLayout.SOUTH);
+
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+    }
 
     //FIN//
-
-
-
-//OTROS
-
-public void calcularAportesEmpleador() {
-    DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
-    if (model.getRowCount() == 0) {
-        JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.");
-        return;
-    }
-
-    double totalIVSS = 0;
-    double totalFAOV = 0;
-    double totalINCES = 0;
-
-    try {
-        for (int i = 0; i < model.getRowCount(); i++) {
-            // Obtener el salario base de la tabla y formatearlo correctamente
-            String salarioBaseStr = model.getValueAt(i, 2).toString()
-                    .replace(" BS", "")
-                    .replace(",", ".")  // Reemplazar comas por puntos
-                    .trim();
-            
-            double salarioBase = Double.parseDouble(salarioBaseStr);
-            
-            // Cálculo de los aportes del empleador
-            double ivssEmpleado = salarioBase * 0.09; // 9% IVSS
-            double faovEmpleado = salarioBase * 0.02; // 2% FAOV
-            double incesEmpleado = salarioBase * 0.02; // 2% INCES
-
-            totalIVSS += ivssEmpleado;
-            totalFAOV += faovEmpleado;
-            totalINCES += incesEmpleado;
-        }
-
-        double totalAportes = totalIVSS + totalFAOV + totalINCES;
-        mostrarAportesDialog(totalIVSS, totalFAOV, totalINCES, totalAportes);
-
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(null, "Error al convertir el salario base: formato incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error al calcular los aportes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-    }
-}
-
-
-
-private void mostrarAportesDialog(double ivss, double faov, double inces, double total) {
-    JDialog dialog = new JDialog();
-    dialog.setTitle("Aportes del Empleador");
-    dialog.setSize(350, 250);
-    dialog.setLayout(new BorderLayout());
-
-    // Crear los labels con los datos
-    JPanel panelDatos = new JPanel(new GridLayout(4, 1, 10, 10));
-    panelDatos.add(new JLabel(String.format("IVSS (9%%): %.2f BS", ivss)));
-    panelDatos.add(new JLabel(String.format("FAOV (2%%): %.2f BS", faov)));
-    panelDatos.add(new JLabel(String.format("INCES (2%%): %.2f BS", inces)));
-    panelDatos.add(new JLabel(String.format("Total Aportes: %.2f BS", total)));
-
-    // Botón para cerrar el diálogo
-    JButton cerrarButton = new JButton("Cerrar");
-    cerrarButton.addActionListener(e -> dialog.dispose());
-
-    // Estructurar el diálogo
-    dialog.add(panelDatos, BorderLayout.CENTER);
-    dialog.add(cerrarButton, BorderLayout.SOUTH);
-
-    dialog.setLocationRelativeTo(null);
-    dialog.setVisible(true);
-}
-
-   //FIN//
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -678,9 +855,8 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
-        jButton9 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -768,7 +944,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 670, 160, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 620, 170, 40));
 
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/seo-report.png"))); // NOI18N
         jButton3.setText("Generar reporte");
@@ -777,7 +953,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                 jButton3ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 670, 150, 40));
+        jPanel1.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 620, 150, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -883,15 +1059,15 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 670, 170, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 670, 180, 40));
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton6.setText("Liquidación");
-        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 670, 140, 40));
+        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 620, 140, 40));
 
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
         jButton7.setText("Vacaciones");
-        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 670, 130, 40));
+        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 670, 130, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -911,7 +1087,7 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
 
         jScrollPane2.setViewportView(jScrollPane1);
 
-        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 310, 950, 330));
+        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 310, 950, 280));
 
         jButton8.setText("Ver aportes de empleador");
         jButton8.addActionListener(new java.awt.event.ActionListener() {
@@ -921,24 +1097,16 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         });
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
-        jButton9.setText("Leyenda");
-        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 670, 120, 40));
-
-        jButton10.setText("jButton10");
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
-            }
-        });
-        jPanel1.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 240, -1, -1));
-
-        jButton11.setText("jButton11");
+        jButton11.setText("Historial pagos");
         jButton11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton11ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 250, -1, -1));
+        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 670, 170, 40));
+
+        jToggleButton1.setText("Ver detalle");
+        jPanel1.add(jToggleButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 620, 160, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -957,41 +1125,36 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-   
- int filaSeleccionada = tablaNomina.getSelectedRow();
-    if (filaSeleccionada == -1) {
-        JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla.");
-        return;
-    }
 
-    // Obtener el ID del empleado seleccionado
-    int idEmpleado = (int) tablaNomina.getValueAt(filaSeleccionada, 0);
+        int filaSeleccionada = tablaNomina.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla.");
+            return;
+        }
 
-    // Obtener las fechas de inicio y fin del período
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    String fechaInicio = sdf.format(fechaInicioNom.getDate());
-    String fechaFin = sdf.format(fechaFinNom.getDate());
+        int idEmpleado = (int) tablaNomina.getValueAt(filaSeleccionada, 0);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String fechaInicio = sdf.format(fechaInicioNom.getDate());
+        String fechaFin = sdf.format(fechaFinNom.getDate());
 
-    // Validar que las fechas no sean nulas
-    if (fechaInicio == null || fechaFin == null) {
-        JOptionPane.showMessageDialog(this, "Seleccione un período válido.");
-        return;
-    }
+        if (fechaInicio == null || fechaFin == null) {
+            JOptionPane.showMessageDialog(this, "Seleccione un período válido.");
+            return;
+        }
 
-    // Generar el recibo de pago
-    recibodePago.generarRecibo(idEmpleado, fechaInicio, fechaFin);        
+        recibodePago.generarRecibo(idEmpleado, fechaInicio, fechaFin);
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        
+
         guardarNomina(totalSueldoNeto);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         // TODO add your handling code here:
-        
+
         historialNomina();
     }//GEN-LAST:event_jButton5ActionPerformed
 
@@ -1002,16 +1165,12 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
         // TODO add your handling code here:
-        
+
         calcularAportesEmpleador();
     }//GEN-LAST:event_jButton8ActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-mostrarPagosNomina();        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton10ActionPerformed
-
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-abrirVentanaPagos();        // TODO add your handling code here:
+        abrirVentanaPagos();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton11ActionPerformed
 
 
@@ -1023,7 +1182,6 @@ abrirVentanaPagos();        // TODO add your handling code here:
     private javax.swing.JLabel incesLabel;
     private javax.swing.JLabel ivssLabel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
@@ -1032,7 +1190,6 @@ abrirVentanaPagos();        // TODO add your handling code here:
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1048,6 +1205,7 @@ abrirVentanaPagos();        // TODO add your handling code here:
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JLabel montoBaseL;
     private javax.swing.JLabel montoNetoL;
     private javax.swing.JTable tablaNomina;
