@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Recibo de Pago</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #2c3e50;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .empresa-info {
+            text-align: left;
+        }
+        .logo img {
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado con la empresa -->
+    <div class="encabezado">
+        <div class="empresa-info">
+            <h2>Santa Barbara</h2>
+            <p>RIF: J-00000</p>
+        </div>
+        <div class="logo">
+            <!-- Aquí se agrega el logo de la empresa, por ejemplo -->
+            <img src="" alt="Logo de la empresa" />
+        </div>
+    </div>
+
+    <h1>Recibo de Pago</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre del Empleado</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Fecha de Pago</th>
+                <th>Salario Base</th>
+                <th>Días Trabajados</th>
+                <th>Ausencias</th>
+                <th>Horas Extras</th>
+                <th>IVSS</th>
+                <th>FAOV</th>
+                <th>INCES</th>
+                <th>Sueldo Final</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{nombre}}</td>
+                <td>{{fechaInicio}}</td>
+                <td>{{fechaFin}}</td>
+                <td>{{fechaPago}}</td>
+                <td>{{salarioBase}}</td>
+                <td>{{diasTrabajados}}</td>
+                <td>{{ausencias}}</td>
+                <td>{{horasExtras}}</td>
+                <td>{{ivss}}</td>
+                <td>{{faov}}</td>
+                <td>{{inces}}</td>
+                <td>{{sueldoFinal}}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

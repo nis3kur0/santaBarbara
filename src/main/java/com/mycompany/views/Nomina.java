@@ -268,6 +268,92 @@ tablaNomina.setModel(model);
     }
 }
 
+public void registrarPagoNomina() {
+    Connection con = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+
+    try {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+        String fechaFinStr = sdf.format(fechaFinNom.getDate());
+
+        LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
+        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
+        LocalDate fechaPago = LocalDate.now();
+
+        con = ConexionBD.obtenerConexion();
+
+        String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
+                     "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
+                     "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
+                     "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
+                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, " +
+                     "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, " +
+                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, " +
+                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, " +
+                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, " +
+                     "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - " +
+                     "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + " +
+                     "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
+                     "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL " +
+                     "FROM empleados e " +
+                     "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? " +
+                     "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
+
+        pst = con.prepareStatement(sql);
+        pst.setString(1, fechaInicioStr);
+        pst.setString(2, fechaFinStr);
+        rs = pst.executeQuery();
+
+        String insertSql = "INSERT INTO pagos_nomina (ID_EMPLEADO, NOMBRE_COMPLETO, SALARIO_BASE, DIAS_TRABAJADOS, " +
+                           "AUSENCIAS, HORAS_EXTRAS, IVSS, FAOV, INCES, SUELDO_FINAL, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_DE_PAGO) " +
+                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        PreparedStatement insertPst = con.prepareStatement(insertSql);
+
+        while (rs.next()) {
+            insertPst.setInt(1, rs.getInt("ID"));
+            insertPst.setString(2, rs.getString("NOMBRE_COMPLETO"));
+            insertPst.setDouble(3, rs.getDouble("SALARIO_BASE"));
+            insertPst.setInt(4, rs.getInt("DIAS_TRABAJADOS"));
+            insertPst.setInt(5, rs.getInt("AUSENCIAS"));
+            insertPst.setDouble(6, rs.getDouble("HORAS_EXTRAS"));
+            insertPst.setDouble(7, rs.getDouble("IVSS"));
+            insertPst.setDouble(8, rs.getDouble("FAOV"));
+            insertPst.setDouble(9, rs.getDouble("INCES"));
+            insertPst.setDouble(10, rs.getDouble("SUELDO_FINAL"));
+           insertPst.setDate(11, java.sql.Date.valueOf(fechaInicio));
+insertPst.setDate(12, java.sql.Date.valueOf(fechaFin));
+insertPst.setDate(13, java.sql.Date.valueOf(fechaPago));
+
+            insertPst.addBatch();
+        }
+
+        insertPst.executeBatch();
+        JOptionPane.showMessageDialog(null, "Registro de pagos guardado exitosamente.");
+
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al registrar los pagos: " + ex.getMessage());
+    } finally {
+        try {
+            if (rs != null) rs.close();
+            if (pst != null) pst.close();
+            if (con != null) con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+public void abrirVentanaPagos() {
+    // Obtener el JFrame que contiene el panel
+    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+    
+    // Crear el JDialog y mostrarlo
+    ReportePagosDialog ventanaPagos = new ReportePagosDialog(frame);
+    ventanaPagos.setVisible(true);
+}
 
 
 
@@ -318,6 +404,7 @@ private void guardarNomina(double totalSueldoNeto) {
 
                 if (filasAfectadas > 0) {
                     JOptionPane.showMessageDialog(null, "Nómina guardada correctamente.");
+                    registrarPagoNomina();
                 } else {
                     JOptionPane.showMessageDialog(null, "No se pudo guardar la nómina.");
                 }
@@ -336,6 +423,56 @@ private void guardarNomina(double totalSueldoNeto) {
             }
         }
     }
+}
+
+public void mostrarPagosNomina() {
+    JDialog dialog = new JDialog();
+    dialog.setTitle("Registro de Pagos de Nómina");
+    dialog.setSize(1200, 600);
+    dialog.setLocationRelativeTo(null);
+
+    String[] columnas = {
+        "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago", 
+        "ID Empleado", "Nombre Completo", "Salario Base", 
+        "Días Trabajados", "Ausencias", "Horas Extras", 
+        "IVSS", "FAOV", "INCES", "Sueldo Final"
+    };
+
+    DefaultTableModel modelo = new DefaultTableModel();
+    modelo.setColumnIdentifiers(columnas);
+
+    JTable tabla = new JTable(modelo);
+    JScrollPane scrollPane = new JScrollPane(tabla);
+    dialog.add(scrollPane, BorderLayout.CENTER);
+
+    try (Connection con = ConexionBD.obtenerConexion();
+         PreparedStatement pst = con.prepareStatement("SELECT * FROM pagos_nomina");
+         ResultSet rs = pst.executeQuery()) {
+
+        while (rs.next()) {
+            modelo.addRow(new Object[]{
+                rs.getInt("ID_PAGO"),
+                rs.getDate("FECHA_INICIO_NOMINA"),
+                rs.getDate("FECHA_FIN_NOMINA"),
+                rs.getDate("FECHA_DE_PAGO"),
+                rs.getInt("ID_EMPLEADO"),
+                rs.getString("NOMBRE_COMPLETO"),
+                rs.getDouble("SALARIO_BASE"),
+                rs.getInt("DIAS_TRABAJADOS"),
+                rs.getInt("AUSENCIAS"),
+                rs.getDouble("HORAS_EXTRAS"),
+                rs.getDouble("IVSS"),
+                rs.getDouble("FAOV"),
+                rs.getDouble("INCES"),
+                rs.getDouble("SUELDO_FINAL")
+            });
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al obtener los registros de pagos de nómina: " + e.getMessage());
+    }
+
+    dialog.setVisible(true);
 }
 
 public void historialNomina() {
@@ -542,6 +679,8 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
+        jButton10 = new javax.swing.JButton();
+        jButton11 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -785,6 +924,22 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         jButton9.setText("Leyenda");
         jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 670, 120, 40));
 
+        jButton10.setText("jButton10");
+        jButton10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton10ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 240, -1, -1));
+
+        jButton11.setText("jButton11");
+        jButton11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton11ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 250, -1, -1));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -851,6 +1006,14 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
         calcularAportesEmpleador();
     }//GEN-LAST:event_jButton8ActionPerformed
 
+    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+mostrarPagosNomina();        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton10ActionPerformed
+
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
+abrirVentanaPagos();        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton11ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel deduccionesTotalesL;
@@ -860,6 +1023,8 @@ private void mostrarAportesDialog(double ivss, double faov, double inces, double
     private javax.swing.JLabel incesLabel;
     private javax.swing.JLabel ivssLabel;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton10;
+    private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
