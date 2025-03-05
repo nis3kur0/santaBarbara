@@ -6,10 +6,12 @@ com\mycompany\views\Empleados$16.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\views\Empleados$5.class
 com\mycompany\RoundedPanelShadow.class
+com\mycompany\views\Vacaciones$1.class
 com\mycompany\views\Asistencia$3.class
 com\mycompany\views\Asistencia.class
 com\mycompany\views\Empleados$8.class
 com\mycompany\views\Ficha.class
+com\mycompany\views\Vacaciones.class
 com\mycompany\views\Nomina$5.class
 com\mycompany\loginandsignup\Login.class
 com\mycompany\views\Empleados.class
@@ -40,6 +42,7 @@ com\mycompany\views\Empleados$1.class
 com\mycompany\views\Asistencia$2.class
 com\mycompany\views\Empleados$15.class
 com\mycompany\views\Empleados$LettersDocumentFilter.class
+com\mycompany\confirmarAccionConPassword.class
 com\mycompany\views\Empleados$18.class
 com\mycompany\views\Nomina.class
 com\mycompany\views\Asistencia$4.class
