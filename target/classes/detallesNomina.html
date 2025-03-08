@@ -1,65 +1,91 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>Reporte de Nómina</title>
     <style>
+        
+        @page {
+            size: A4;
+            margin: 20mm; 
+        }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
         }
+
         table {
             width: 100%;
+            table-layout: auto; 
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            word-wrap: break-word; 
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         h1 {
             text-align: center;
             color: #2C3E50;
+            margin-top: 0;
         }
+
         .fecha {
             text-align: center;
             margin-bottom: 20px;
             font-weight: bold;
         }
+
+        .content {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Reporte de Nómina</h1>
+    <div class="content">
+        <h1>Reporte de Nómina</h1>
 
-    <div class="fecha">
-        <p><strong>Fecha de Inicio:</strong> {FECHA_INICIO}</p>
-        <p><strong>Fecha de Fin:</strong> {FECHA_FIN}</p>
+        <div class="fecha">
+            <p><strong>Fecha de Inicio:</strong> {FECHA_INICIO}</p>
+            <p><strong>Fecha de Fin:</strong> {FECHA_FIN}</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>Días Trabajados</th>
+                    <th>Ausencias</th>
+                    <th>Horas Extras</th>
+                    <th>Sueldo Neto</th>
+                    <th>IVSS</th>
+                    <th>FAOV</th>
+                    <th>INCES</th>
+                    <th>Sueldo Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                {DETALLES_NOMINA}
+            </tbody>
+        </table>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre Completo</th>
-                <th>Días Trabajados</th>
-                <th>Ausencias</th>
-                <th>Horas Extras</th>
-                <th>Sueldo Neto</th>
-                <th>IVSS</th>
-                <th>FAOV</th>
-                <th>INCES</th>
-                <th>Sueldo Final</th>
-            </tr>
-        </thead>
-        <tbody>
-            {DETALLES_NOMINA}
-        </tbody>
-    </table>
-
 </body>
 </html>

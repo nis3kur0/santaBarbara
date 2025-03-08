@@ -51,7 +51,6 @@ public class reportePagos {
             rs = pst.executeQuery();
 
             if (rs.next()) {
-                // Obtener los datos del empleado
                 String nombre = rs.getString("NOMBRE_COMPLETO");
                 double salarioBase = rs.getDouble("SALARIO_BASE");
                 int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
@@ -110,8 +109,8 @@ public class reportePagos {
                     try (OutputStream os = new FileOutputStream(pdfFile)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(plantilla, null);
-                        builder.toStream(os); // Definir el flujo de salida
-                        builder.run();  // Generar el PDF
+                        builder.toStream(os); 
+                        builder.run(); 
 
                         System.out.println("Recibo de pago generado con éxito en: " + pdfFile.getAbsolutePath());
                         abrirArchivoPDF(pdfFile);

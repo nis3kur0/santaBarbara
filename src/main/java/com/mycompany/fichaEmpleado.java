@@ -20,7 +20,6 @@ public class fichaEmpleado {
         try {
             con = ConexionBD.obtenerConexion();
 
-            // Consulta SQL para obtener los datos del empleado
             String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.TIPO_CEDULA, e.SEXO, e.FECHA_NACIMIENTO, "
                     + "e.DIRECCION, e.TELEFONO, e.TELEFONO_HABITACION, e.EMAIL, e.CARGO, e.INICIO_CONTRATO, "
                     + "e.FIN_CONTRATO, e.SALARIO, e.BANCO, e.NUMERO_CUENTA, e.TIPO_CUENTA, e.PAGO_MOVIL "
@@ -31,6 +30,7 @@ public class fichaEmpleado {
             rs = pst.executeQuery();
 
             if (rs.next()) {
+                int id = rs.getInt("ID");
                 String nombre = rs.getString("NOMBRE_COMPLETO");
                 String cedula = rs.getString("CEDULA");
                 String tipoCedula = rs.getString("TIPO_CEDULA");
@@ -58,6 +58,9 @@ public class fichaEmpleado {
                 }
 
                 plantilla = plantilla.replace("{{codigoEmpleado}}", String.valueOf(idEmpleado))
+                                             
+
+                        .replace("{{ID_EMPLEADO}}", String.valueOf(id))
         .replace("{{NOMBRE_COMPLETO}}", (nombre != null ? nombre : "No disponible"))
         .replace("{{TIPO_CEDULA}}", (tipoCedula != null ? tipoCedula : "No disponible"))
         .replace("{{CEDULA}}", (cedula != null ? cedula : "No disponible"))
@@ -90,7 +93,7 @@ public class fichaEmpleado {
                     try (OutputStream os = new FileOutputStream(pdfFile)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(plantilla, null);
-                        builder.toStream(os); // Definir el flujo de salida
+                        builder.toStream(os); 
                         builder.run();  
                         System.out.println("Ficha de empleado generada con éxito en: " + pdfFile.getAbsolutePath());
                         abrirArchivoPDF(pdfFile);
@@ -125,11 +128,10 @@ public class fichaEmpleado {
         try {
             if (pdfFile.exists()) {
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(pdfFile);  // Abrir el archivo PDF generado
+                    Desktop.getDesktop().open(pdfFile);  
                 } else {
-                    // Si el Desktop no está soportado, intentamos abrir el PDF en el navegador predeterminado
-                    String pdfPath = pdfFile.toURI().toURL().toString(); // Convertir archivo a URL
-                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  // Intentar abrir en el navegador
+                    String pdfPath = pdfFile.toURI().toURL().toString(); 
+                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  
                     System.out.println("El archivo se ha abierto en el navegador.");
                 }
             } else {

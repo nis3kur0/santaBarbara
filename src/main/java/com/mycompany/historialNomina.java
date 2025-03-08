@@ -48,7 +48,6 @@ public class historialNomina {
                 int totalEmpleados = rs.getInt("TOTAL_EMPLEADOS");
                 double montoTotal = rs.getDouble("MONTO_TOTAL");
 
-                // Crear una fila para cada registro
                 String fila = "<tr>"
                         + "<td>" + id + "</td>"
                         + "<td>" + fechaInicio + "</td>"
@@ -70,7 +69,6 @@ public class historialNomina {
                 return;
             }
 
-            // Guardar como PDF
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar Reporte de Nómina");
             fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));

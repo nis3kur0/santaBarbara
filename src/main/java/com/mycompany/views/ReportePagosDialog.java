@@ -4,6 +4,7 @@ import com.mycompany.ConexionBD;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import javax.swing.table.DefaultTableModel;
 
 public class ReportePagosDialog extends JDialog {
@@ -46,7 +47,13 @@ public class ReportePagosDialog extends JDialog {
         panelSuperior.add(btnCargarPagos);
 
        
-        tablaPagos = new JTable();
+       tablaPagos = new JTable() {
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+};
+
         scrollPane = new JScrollPane(tablaPagos);
 
        
@@ -135,43 +142,53 @@ btnGuardar.addActionListener(e -> {
         return -1;
     }
 
-        public void cargarPagosEmpleadoEnTabla(int idEmpleado) {
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.setColumnIdentifiers(new Object[]{
-            "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago", 
-            "Salario Base", "Días Trabajados", "Ausencias", 
-            "Horas Extras", "IVSS", "FAOV", "INCES", "Sueldo Final"
-        });
+       public void cargarPagosEmpleadoEnTabla(int idEmpleado) {
+    DefaultTableModel modelo = new DefaultTableModel();
+    modelo.setColumnIdentifiers(new Object[]{
+        "ID Pago", "Fecha Inicio", "Fecha Fin", "Fecha de Pago", 
+        "Salario Base", "Días Trabajados", "Ausencias", 
+        "Horas Extras", "IVSS", "FAOV", "INCES", "Sueldo Final"
+    });
 
-        String sql = "SELECT * FROM pagos_nomina WHERE ID_EMPLEADO = ?";
+    String sql = "SELECT * FROM pagos_nomina WHERE ID_EMPLEADO = ?";
 
-        try (Connection con = ConexionBD.obtenerConexion();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+    try (Connection con = ConexionBD.obtenerConexion();
+         PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setInt(1, idEmpleado);
+        pst.setInt(1, idEmpleado);
 
-            try (ResultSet rs = pst.executeQuery()) {
-                while (rs.next()) {
-                    modelo.addRow(new Object[]{
-                        rs.getInt("ID_PAGO"),
-                        rs.getDate("FECHA_INICIO_NOMINA"),
-                        rs.getDate("FECHA_FIN_NOMINA"),
-                        rs.getDate("FECHA_DE_PAGO"),
-                        rs.getDouble("SALARIO_BASE"),
-                        rs.getInt("DIAS_TRABAJADOS"),
-                        rs.getInt("AUSENCIAS"),
-                        rs.getDouble("HORAS_EXTRAS"),
-                        rs.getDouble("IVSS"),
-                        rs.getDouble("FAOV"),
-                        rs.getDouble("INCES"),
-                        rs.getDouble("SUELDO_FINAL")
-                    });
-                }
+        try (ResultSet rs = pst.executeQuery()) {
+            SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
+
+            while (rs.next()) {
+                String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
+                String fechaFin = rs.getString("FECHA_FIN_NOMINA");
+                String fechaPago = rs.getString("FECHA_DE_PAGO");
+
+                String fechaInicioFormateada = formatoFecha.format(Date.valueOf(fechaInicio));
+                String fechaFinFormateada = formatoFecha.format(Date.valueOf(fechaFin));
+                String fechaPagoFormateada = formatoFecha.format(Date.valueOf(fechaPago));
+
+                modelo.addRow(new Object[]{
+                    rs.getInt("ID_PAGO"),
+                    fechaInicioFormateada,
+                    fechaFinFormateada,
+                    fechaPagoFormateada,
+                    rs.getDouble("SALARIO_BASE"),
+                    rs.getInt("DIAS_TRABAJADOS"),
+                    rs.getInt("AUSENCIAS"),
+                    rs.getDouble("HORAS_EXTRAS"),
+                    rs.getDouble("IVSS"),
+                    rs.getDouble("FAOV"),
+                    rs.getDouble("INCES"),
+                    rs.getDouble("SUELDO_FINAL")
+                });
             }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar los pagos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        tablaPagos.setModel(modelo);
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar los pagos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
+
+    tablaPagos.setModel(modelo);
+}
 }

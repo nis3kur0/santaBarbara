@@ -7,12 +7,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class reporteEmpleados {
 
     public static void generarReporte() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        LocalDate fechaActual = LocalDate.now();
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+String fechaFormateada = fechaActual.format(formatter);
 
         try (Connection conn = ConexionBD.obtenerConexion();
              Statement stmt = conn.createStatement();
@@ -68,6 +73,8 @@ public class reporteEmpleados {
             }
 
             String plantilla;
+             
+             
             try (InputStream inputStream = reporteEmpleados.class.getClassLoader().getResourceAsStream("reporteEmpleados.html")) {
                 if (inputStream == null) {
                     throw new FileNotFoundException("Plantilla HTML no encontrada.");
@@ -75,7 +82,8 @@ public class reporteEmpleados {
                 plantilla = new String(inputStream.readAllBytes());
             }
 
-            plantilla = plantilla.replace("{{rows}}", filas.toString());
+            plantilla = plantilla.replace("{{rows}}", filas.toString())
+            .replace("{{fecha actual}}", fechaFormateada);
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar Reporte HTML");
@@ -93,8 +101,6 @@ public class reporteEmpleados {
                 }
 
                 System.out.println("Reporte HTML generado con éxito en: " + htmlFile.getAbsolutePath());
-
-                // Abrir el archivo HTML en el navegador predeterminado
                 abrirArchivoHTML(htmlFile);
             } else {
                 System.out.println("El usuario canceló la operación.");

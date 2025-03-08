@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Constancia de Trabajo</title>
     <style>
         @page {
-            size: A4;  /* Define el tamaño de la página como A4 */
-            margin: 20mm;  /* Establece los márgenes de la página */
+            size: A4;  
+             
         }
 
         body {
@@ -19,23 +19,22 @@
 
         .container {
             width: 100%;
-            max-width: 210mm; /* El ancho máximo de un A4 */
-            max-height: 297mm; /* El alto máximo de un A4 */
+            max-width: 210mm; 
+            max-height: 297mm; 
             margin: auto;
             background-color: white;
-            padding: 20px;
-            border: 1px solid #000;
-            box-sizing: border-box; /* Asegura que el padding se incluya en el tamaño */
+      
+            box-sizing: border-box;
         }
 
         h1, h2, p {
             text-align: center;
-            margin: 10px 0;
+       
         }
 
         .content {
             margin-top: 100px;
-            padding: 50px;
+            padding: 30px;
             text-align: justify;
         }
         .parrafo {
@@ -47,7 +46,7 @@
         
         .encabezado {
             margin-top: 100px;
-            margin-left: 50px;
+            margin-left: 30px;
         }
 
         .signature {
@@ -55,41 +54,41 @@
             text-align: center;
         }
       
-        /* Estilos para la visualización en pantalla */
+
         @media screen {
             .container {
                 width: 210mm;
                 height: 297mm;
-                padding: 10px;
+                
                 border: none;
             }
         }
 
-        /* Estilos de impresión */
-        @media print {
+
+/*        @media print {
             .container {
                 width: 210mm;
                 height: 297mm;
-                padding: 20px;
-                border: 1px solid #000;
             }
-        }
+        }*/
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Santa Barbara S.A</h1>
+        
         
         <div class ="encabezado">
+            <p class="parrafo"> <strong> Santa Barbara S.A</strong></p>
         <p class="parrafo" >Sector Ambrosio, Calle Chile</p>
-        <p class="parrafo" >[TELÉFONO DE CONTACTO]</p>
+       
+        <p class="parrafo" >XXXX-XXXXXX</p>
 
-        <p class="parrafo">Fecha: [DÍA/MES/AÑO]</p>
+        <p class="parrafo">Fecha: 06-03-2025</p>
 
-        <p class="parrafo">A quien pueda interesar:</p>
+        <p class="parrafo"><em>A quien pueda interesar:</em></p>
         </div>
         <div class="content">
-            <p class="parrafo">Por medio de la presente se hace constar que el/la señor/a [NOMBRE DEL TRABAJADOR], portador/a de la cédula de identidad N° [CÉDULA], labora en nuestra empresa desde el [FECHA DE INICIO], desempeñándose como [CARGO]. Su salario actual es de [SALARIO] bolívares.</p>
+            <p class="parrafo">Por medio de la presente se hace constar que el/la señor/a {{NOMBRE_COMPLETO}}, portador/a de la cédula de identidad N° {{CÉDULA}}, labora en nuestra empresa desde el {{FECHA_INICIO}}, desempeñándose como {{CARGO}}. Su salario actual es de {{SALARIO}} bolívares.</p>
 
             <p class="parrafo">Esta constancia se expide a solicitud del interesado para los fines que estime conveniente.</p>
         </div>
