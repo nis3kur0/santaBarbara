@@ -28,7 +28,7 @@ import java.awt.Toolkit;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
-import javax.swing.JPasswordField;
+import com.mycompany.confirmarAccionConPassword;
 import javax.swing.JTextField;
 
 /**
@@ -472,29 +472,6 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
     }
 }
     
-private boolean confirmarAccionConPassword() {
-    int confirm = JOptionPane.showConfirmDialog(
-        this,
-        "¿Estás seguro de que quieres hacer los cambios?",
-        "Confirmar acción",
-        JOptionPane.YES_NO_OPTION
-    );
-    
-    if (confirm == JOptionPane.YES_OPTION) {
-        JPasswordField pf = new JPasswordField();
-        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (okCxl == JOptionPane.OK_OPTION) {
-            String inputPassword = new String(pf.getPassword());
-            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
-            if (inputPassword.equals(contraseñaValida)) {
-                return true;
-            } else {
-                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-    return false;
-}
 
 //FIN//
 
@@ -1022,7 +999,7 @@ private boolean confirmarAccionConPassword() {
         return;
     }
     
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         actualizarEmpleado(selectedRow);
     }
 }                                         
@@ -1090,7 +1067,7 @@ private void actualizarEmpleado(int selectedRow) {
         return;
     }
     
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         int id = (int) jTable1.getValueAt(selectedRow, 0);
         try (Connection conn = ConexionBD.obtenerConexion(); 
              PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
@@ -1117,7 +1094,7 @@ private void actualizarEmpleado(int selectedRow) {
     }//GEN-LAST:event_limpiarBtnActionPerformed
 
     private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         agregarEmpleado();
     }
     }//GEN-LAST:event_agregarBtnActionPerformed

@@ -16,9 +16,6 @@ com\mycompany\views\Ficha.class
 com\mycompany\views\ReportePagosDialog.class
 com\mycompany\views\Empleados$20.class
 com\mycompany\views\Nomina$5.class
-com\mycompany\loginandsignup\Login.class
-com\mycompany\detalleNomina.class
-com\mycompany\EscanearQR$1.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Empleados$11.class
 com\mycompany\santabarbara\Dashborad$3.class
