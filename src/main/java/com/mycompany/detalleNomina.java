@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -8,7 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class detalleNomina {
@@ -19,13 +19,12 @@ public class detalleNomina {
         ResultSet rs = null;
         String fechaInicioStr = null;
         String fechaFinStr = null;
-        String plantilla = "";  // Inicialización de la variable plantilla
+        String plantilla = "";  
 
         try {
             con = ConexionBD.obtenerConexion();
 
-            // Consulta SQL para obtener las fechas de inicio y fin de la nómina
-            String sqlFechas = "SELECT FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA FROM nominas WHERE ID = ?";
+            String sqlFechas = "SELECT FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA FROM nomina WHERE ID_NOMINA = ?";
             pst = con.prepareStatement(sqlFechas);
             pst.setInt(1, idNomina);
             rs = pst.executeQuery();
@@ -35,18 +34,16 @@ public class detalleNomina {
                 fechaFinStr = rs.getString("FECHA_FIN_NOMINA");
             } else {
                 JOptionPane.showMessageDialog(null, "No se encontraron fechas para la nómina seleccionada.");
-                return; // Si no se encuentran fechas, terminamos la ejecución
+                return; 
             }
 
-            // Cargar la plantilla HTML desde el archivo recursos
             try (InputStream inputStream = detalleNomina.class.getClassLoader().getResourceAsStream("detallesNomina.html")) {
                 if (inputStream == null) {
                     throw new FileNotFoundException("Plantilla HTML no encontrada.");
                 }
-                plantilla = new String(inputStream.readAllBytes());  // Aquí se asigna a la variable plantilla
-            }
+                plantilla = new String(inputStream.readAllBytes());              }
 
-            // Realizamos la consulta para obtener los detalles de la nómina con las fechas
+  
             String sql = "SELECT e.NOMBRE_COMPLETO, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
@@ -64,17 +61,16 @@ public class detalleNomina {
                     + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
                     + "GROUP BY e.NOMBRE_COMPLETO, e.SALARIO";
 
-            // Realizamos la consulta con las fechas obtenidas
+       
             pst = con.prepareStatement(sql);
-            pst.setString(1, fechaInicioStr); // Fecha de inicio de la nómina
-            pst.setString(2, fechaFinStr); // Fecha de fin de la nómina
+            pst.setString(1, fechaInicioStr); 
+            pst.setString(2, fechaFinStr); 
             rs = pst.executeQuery();
 
-            // Reemplazamos las fechas en la plantilla HTML
             plantilla = plantilla.replace("{FECHA_INICIO}", fechaInicioStr)
                                  .replace("{FECHA_FIN}", fechaFinStr);
 
-            // Variable que almacenará la tabla de detalles de la nómina
+        
             String detallesNomina = "";
 
             while (rs.next()) {
@@ -91,11 +87,11 @@ public class detalleNomina {
                 detallesNomina += "</tr>";
             }
 
-            // Reemplazamos los detalles de la nómina en la plantilla HTML
             plantilla = plantilla.replace("{DETALLES_NOMINA}", detallesNomina);
-
-            // Si la plantilla tiene detalles, la guardamos en un PDF
+VistaPreviaHTML.mostrarVistaPrevia(plantilla);
             if (!detallesNomina.isEmpty()) {
+                                
+
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Reporte de Nómina");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));

@@ -436,10 +436,8 @@ public class fichaNomina extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         try {
-            // Obtener el ID del empleado desde el campo de texto
-            int idEmpleado = Integer.parseInt(idText.getText());  // Usar el JTextField que tiene el ID del empleado
+            int idEmpleado = Integer.parseInt(idText.getText());  
 
-            // Llamar al método generarFichaEmpleado con el ID del empleado
             generarFichaEmpleado(idEmpleado);
 
         } catch (NumberFormatException ex) {

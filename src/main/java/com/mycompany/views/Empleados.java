@@ -28,7 +28,8 @@ import java.awt.Toolkit;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
-import javax.swing.JPasswordField;
+import com.mycompany.confirmarAccionConPassword;
+import java.sql.Statement;
 import javax.swing.JTextField;
 
 /**
@@ -204,7 +205,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
     //FIN//
 
     //FUNCIONES PARA REALIZAR ACCIONES
-    public void agregarEmpleado() {
+  public void agregarEmpleado() {
 
         String nombre = textNombre.getText().trim();
         String cedulaTexto = textCedula.getText().trim();
@@ -326,6 +327,8 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             }
         }
     }
+  
+
     
     //FIN//
     
@@ -472,29 +475,6 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
     }
 }
     
-private boolean confirmarAccionConPassword() {
-    int confirm = JOptionPane.showConfirmDialog(
-        this,
-        "¿Estás seguro de que quieres hacer los cambios?",
-        "Confirmar acción",
-        JOptionPane.YES_NO_OPTION
-    );
-    
-    if (confirm == JOptionPane.YES_OPTION) {
-        JPasswordField pf = new JPasswordField();
-        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (okCxl == JOptionPane.OK_OPTION) {
-            String inputPassword = new String(pf.getPassword());
-            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
-            if (inputPassword.equals(contraseñaValida)) {
-                return true;
-            } else {
-                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-    return false;
-}
 
 //FIN//
 
@@ -557,6 +537,7 @@ private boolean confirmarAccionConPassword() {
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         javax.swing.GroupLayout jCalendarDemo1Layout = new javax.swing.GroupLayout(jCalendarDemo1.getContentPane());
         jCalendarDemo1.getContentPane().setLayout(jCalendarDemo1Layout);
@@ -915,6 +896,14 @@ private boolean confirmarAccionConPassword() {
 
         jScrollPane1.setViewportView(jScrollPane2);
 
+        jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/lupa.png"))); // NOI18N
+        jToggleButton1.setText("Constancia");
+        jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -929,14 +918,15 @@ private boolean confirmarAccionConPassword() {
                         .addComponent(tablaEmpleadosLabel))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(33, 33, 33)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 927, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 927, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(201, 201, 201)
+                        .addComponent(Ficha)
+                        .addGap(30, 30, 30)
+                        .addComponent(jButton1)
+                        .addGap(18, 18, 18)
+                        .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(Ficha)
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addGap(150, 150, 150))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -947,11 +937,15 @@ private boolean confirmarAccionConPassword() {
                 .addComponent(tablaEmpleadosLabel)
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(Ficha))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Ficha)
+                            .addComponent(jButton1))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1008,7 +1002,7 @@ private boolean confirmarAccionConPassword() {
         return;
     }
     
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         actualizarEmpleado(selectedRow);
     }
 }                                         
@@ -1076,7 +1070,7 @@ private void actualizarEmpleado(int selectedRow) {
         return;
     }
     
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         int id = (int) jTable1.getValueAt(selectedRow, 0);
         try (Connection conn = ConexionBD.obtenerConexion(); 
              PreparedStatement pstmt = conn.prepareStatement("DELETE FROM empleados WHERE ID = ?")) {
@@ -1103,7 +1097,7 @@ private void actualizarEmpleado(int selectedRow) {
     }//GEN-LAST:event_limpiarBtnActionPerformed
 
     private void agregarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarBtnActionPerformed
-    if (confirmarAccionConPassword()) {
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
         agregarEmpleado();
     }
     }//GEN-LAST:event_agregarBtnActionPerformed
@@ -1150,6 +1144,24 @@ private void actualizarEmpleado(int selectedRow) {
    // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow != -1) {
+        try {
+           
+            int idEmpleado = (int) jTable1.getValueAt(selectedRow, 0);
+
+            constanciaTrabajo.generarConstancia(idEmpleado);
+
+            JOptionPane.showMessageDialog(this, "Constancia generada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al generar la constancia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Selecciona un empleado de la tabla para generar la constancia.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+    }
+    }//GEN-LAST:event_jToggleButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Ficha;
@@ -1188,6 +1200,7 @@ private void actualizarEmpleado(int selectedRow) {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JButton limpiarBtn;
     private javax.swing.JComboBox<String> pagoMovilBox;
     private javax.swing.JComboBox<String> sexoBox;

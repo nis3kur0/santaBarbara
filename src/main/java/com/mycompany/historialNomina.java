@@ -1,6 +1,6 @@
 package com.mycompany;
 
-import com.mycompany.ConexionBD;
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -48,7 +48,6 @@ public class historialNomina {
                 int totalEmpleados = rs.getInt("TOTAL_EMPLEADOS");
                 double montoTotal = rs.getDouble("MONTO_TOTAL");
 
-                // Crear una fila para cada registro
                 String fila = "<tr>"
                         + "<td>" + id + "</td>"
                         + "<td>" + fechaInicio + "</td>"
@@ -69,14 +68,15 @@ public class historialNomina {
                 JOptionPane.showMessageDialog(null, "No se encontraron datos en la tabla de nóminas.");
                 return;
             }
-
-            // Guardar como PDF
+VistaPreviaHTML.mostrarVistaPrevia(plantilla);
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar Reporte de Nómina");
             fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
             int userSelection = fileChooser.showSaveDialog(null);
 
             if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                
+
                 File pdfFile = fileChooser.getSelectedFile();
                 if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
                     pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");

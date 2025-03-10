@@ -6,6 +6,7 @@ package com.mycompany.views;
 
 import com.mycompany.ConexionBD;
 import com.mycompany.recibodePago;
+import com.mycompany.detalleNomina;
 import com.mycompany.historialNomina;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -360,9 +361,25 @@ public class Nomina extends javax.swing.JPanel {
         ReportePagosDialog ventanaPagos = new ReportePagosDialog(frame);
         ventanaPagos.setVisible(true);
     }
+    
+    private void limpiar() {
+    montoBaseL.setText("");
+    montoNetoL.setText("");
+    deduccionesTotalesL.setText("");
+    faovLabel.setText("");
+    ivssLabel.setText("");
+    incesLabel.setText("");
+
+    fechaInicioNom.setDate(null);
+    fechaFinNom.setDate(null);
+
+    DefaultTableModel modelo = (DefaultTableModel) tablaNomina.getModel();
+    modelo.setRowCount(0);
+}
+
 //VENTANA DE HISTORIAL DE NOMINAS DETALLE
     
-    private void detalleNomina (int idNomina) {
+    private void detalleNomina(int idNomina) {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
@@ -377,7 +394,13 @@ public class Nomina extends javax.swing.JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        DefaultTableModel model = new DefaultTableModel();
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
+        
         model.setColumnIdentifiers(new Object[] {
             "Empleado", "Días Trabajados", "Ausencias", "Horas Extras",
             "Sueldo Neto", "IVSS", "FAOV", "INCES", "Sueldo Final"
@@ -387,7 +410,6 @@ public class Nomina extends javax.swing.JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-       
         JPanel buttonPanel = new JPanel();
         JButton btnGuardar = new JButton("Guardar");
         JButton btnImprimir = new JButton("Imprimir");
@@ -395,6 +417,8 @@ public class Nomina extends javax.swing.JPanel {
         btnGuardar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int idNominaSeleccionada = idNomina;  
+                detalleNomina.generarDetalleNomina(idNominaSeleccionada);
             }
         });
 
@@ -438,6 +462,7 @@ public class Nomina extends javax.swing.JPanel {
         }
     }
 }
+
     
     public void calcularNominaDetalles(String fechaInicioStr, String fechaFinStr, DefaultTableModel model) {
     Connection con = null;
@@ -447,7 +472,6 @@ public class Nomina extends javax.swing.JPanel {
     try {
         con = ConexionBD.obtenerConexion();
 
-        // Realizar la consulta para calcular la nómina
         String sql = "SELECT e.NOMBRE_COMPLETO, "
                 + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
                 + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
@@ -764,14 +788,14 @@ btnVerDetalle.addActionListener(e -> {
             for (int i = 0; i < model.getRowCount(); i++) {
                 String salarioBaseStr = model.getValueAt(i, 2).toString()
                         .replace(" BS", "")
-                        .replace(",", ".") // Reemplazar comas por puntos
+                        .replace(",", ".") 
                         .trim();
 
                 double salarioBase = Double.parseDouble(salarioBaseStr);
 
-                double ivssEmpleado = salarioBase * 0.09; // 9% IVSS
-                double faovEmpleado = salarioBase * 0.02; // 2% FAOV
-                double incesEmpleado = salarioBase * 0.02; // 2% INCES
+                double ivssEmpleado = salarioBase * 0.09; 
+                double faovEmpleado = salarioBase * 0.02;
+                double incesEmpleado = salarioBase * 0.02; 
 
                 totalIVSS += ivssEmpleado;
                 totalFAOV += faovEmpleado;
@@ -831,8 +855,8 @@ btnVerDetalle.addActionListener(e -> {
         jLabel7 = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         tableTitle = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -856,7 +880,6 @@ btnVerDetalle.addActionListener(e -> {
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
-        jToggleButton1 = new javax.swing.JToggleButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -888,6 +911,14 @@ btnVerDetalle.addActionListener(e -> {
             }
         });
 
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/clean.png"))); // NOI18N
+        jButton3.setText("Limpiar Campos");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -908,9 +939,11 @@ btnVerDetalle.addActionListener(e -> {
                             .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(46, Short.MAX_VALUE))
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(41, 41, 41)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
                 .addGap(54, 54, 54))
         );
@@ -929,9 +962,10 @@ btnVerDetalle.addActionListener(e -> {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(23, 23, 23)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -944,16 +978,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 620, 170, 40));
-
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/seo-report.png"))); // NOI18N
-        jButton3.setText("Generar reporte");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-        jPanel1.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 620, 150, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 610, 170, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -1059,15 +1084,15 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 670, 180, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 610, 180, 40));
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton6.setText("Liquidación");
-        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 620, 140, 40));
+        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 660, 150, 40));
 
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
         jButton7.setText("Vacaciones");
-        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 670, 130, 40));
+        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 610, 130, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1097,16 +1122,14 @@ btnVerDetalle.addActionListener(e -> {
         });
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
+        jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/historial-de-transacciones.png"))); // NOI18N
         jButton11.setText("Historial pagos");
         jButton11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton11ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 670, 170, 40));
-
-        jToggleButton1.setText("Ver detalle");
-        jPanel1.add(jToggleButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 620, 160, 40));
+        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 660, 170, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1116,13 +1139,9 @@ btnVerDetalle.addActionListener(e -> {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
 
@@ -1173,6 +1192,10 @@ btnVerDetalle.addActionListener(e -> {
         abrirVentanaPagos();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton11ActionPerformed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+limpiar();        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton3ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel deduccionesTotalesL;
@@ -1205,7 +1228,6 @@ btnVerDetalle.addActionListener(e -> {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JLabel montoBaseL;
     private javax.swing.JLabel montoNetoL;
     private javax.swing.JTable tablaNomina;

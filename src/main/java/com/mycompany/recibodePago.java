@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -9,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Locale;
+
 
 public class recibodePago {
 
@@ -20,7 +22,7 @@ public class recibodePago {
         try {
             con = ConexionBD.obtenerConexion();
 
-            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.SALARIO AS SALARIO_BASE, "
+            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.CARGO, e.SALARIO AS SALARIO_BASE, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
                     + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
@@ -45,7 +47,6 @@ public class recibodePago {
             rs = pst.executeQuery();
 
             if (rs.next()) {
-                // Obtener los datos del empleado
                 String nombre = rs.getString("NOMBRE_COMPLETO");
                 double salarioBase = rs.getDouble("SALARIO_BASE");
                 int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
@@ -60,8 +61,8 @@ public class recibodePago {
                 double salarioBaseDiario = salarioBase / 30;
                 int cedula = rs.getInt("CEDULA");
                 String tipoCedula = "V";
+                String cargo = rs.getString("CARGO");
 
-                // Cargar plantilla HTML
                 String plantilla;
                 try (InputStream inputStream = recibodePago.class.getClassLoader().getResourceAsStream("recibodepago.html")) {
                     if (inputStream == null) {
@@ -70,7 +71,6 @@ public class recibodePago {
                     plantilla = new String(inputStream.readAllBytes());
                 }
 
-                // Reemplazar los valores en la plantilla HTML
                plantilla = plantilla.replace("{{nombre}}", nombre)
                      .replace("{{fechaInicio}}", fechaInicio)
                      .replace("{{fechaFin}}", fechaFin)
@@ -84,28 +84,29 @@ public class recibodePago {
                      .replace("{{sueldoNeto}}", String.format(Locale.US, "%.2f BS", sueldoNeto))
                      .replace("{{sueldoFinal}}", String.format(Locale.US, "%.2f BS", sueldoFinal))
                      .replace("{{totalDeducciones}}", String.format(Locale.US, "%.2f BS", totalDeducciones))
-                     .replace("{{tipoCedula}}", tipoCedula)  // Se cambia el formateo numérico por un simple reemplazo de cadena
+                     .replace("{{tipoCedula}}", tipoCedula)  
                      .replace("{{salarioBaseDia}}", String.format(Locale.US, "%.2f BS", salarioBaseDiario))
-                     .replace("{{cedula}}", String.valueOf(cedula));
+                     .replace("{{cedula}}", String.valueOf(cedula))
+                       .replace("{cargo}", cargo);
 
-                // Elegir la ubicación para guardar el archivo PDF
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Recibo de Pago");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
                 int userSelection = fileChooser.showSaveDialog(null);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                    VistaPreviaHTML.mostrarVistaPrevia(plantilla);
+
                     File pdfFile = fileChooser.getSelectedFile();
                     if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
                         pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");
                     }
 
-                    // Convertir HTML a PDF
                     try (OutputStream os = new FileOutputStream(pdfFile)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(plantilla, null);
-                        builder.toStream(os); // Definir el flujo de salida
-                        builder.run();  // Generar el PDF
+                        builder.toStream(os); 
+                        builder.run();  
 
                         System.out.println("Recibo de pago generado con éxito en: " + pdfFile.getAbsolutePath());
                         abrirArchivoPDF(pdfFile);
@@ -140,11 +141,10 @@ public class recibodePago {
         try {
             if (pdfFile.exists()) {
                 if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(pdfFile);  // Abrir el archivo PDF generado
+                    Desktop.getDesktop().open(pdfFile);  
                 } else {
-                    // Si el Desktop no está soportado, intentamos abrir el PDF en el navegador predeterminado
-                    String pdfPath = pdfFile.toURI().toURL().toString(); // Convertir archivo a URL
-                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  // Intentar abrir en el navegador
+                    String pdfPath = pdfFile.toURI().toURL().toString(); 
+                    Desktop.getDesktop().browse(new java.net.URI(pdfPath));  
                     System.out.println("El archivo se ha abierto en el navegador.");
                 }
             } else {
