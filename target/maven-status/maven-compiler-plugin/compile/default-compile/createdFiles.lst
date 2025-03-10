@@ -1,5 +1,4 @@
 com\mycompany\views\Empleados$2.class
-com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
 com\mycompany\views\Nomina$8.class
 com\mycompany\views\Empleados$16.class
@@ -34,7 +33,6 @@ com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Nomina$6.class
 com\mycompany\reporteEmpleados.class
 com\mycompany\views\fichaNomina$2.class
-com\mycompany\views\Asistencia$7.class
 com\mycompany\fichaEmpleado.class
 com\mycompany\views\Nomina$1.class
 com\mycompany\santabarbara\Dashborad$1.class
@@ -49,7 +47,6 @@ com\mycompany\loginandsignup\Login$2.class
 com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\views\reportePagos.class
 com\mycompany\views\Empleados$17.class
-com\mycompany\views\Asistencia$5.class
 com\mycompany\views\Empleados$NumericDocumentFilter.class
 com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class

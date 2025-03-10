@@ -9,13 +9,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalTime;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.ConexionBD;
 import javax.swing.JDialog;
 import javax.swing.UIManager;
+import com.mycompany.RoundedPanel;
 
 /**
  *PENDIENTE A RE DISEÑO Y RECONSTRUCCION
@@ -29,9 +29,18 @@ public class Asistencia extends javax.swing.JPanel {
     public Asistencia() {
         initComponents();
         model = (DefaultTableModel) this.jTable1.getModel();
-        cargarEmpleadosEnComboBox();
         cargarDatosAsistenciasEnTabla();
         styles();
+        
+        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fechaFormateada = fechaActual.format(formatter);
+
+        fechaLabel.setText(fechaFormateada);
+        
+        jTable1.getColumnModel().getColumn(5).setMinWidth(0);
+        jTable1.getColumnModel().getColumn(5).setMaxWidth(0);
+        jTable1.getColumnModel().getColumn(5).setPreferredWidth(0);        
 
     }
     DefaultTableModel model;
@@ -41,6 +50,7 @@ public class Asistencia extends javax.swing.JPanel {
     
     tablaTitle.setFont( UIManager.getFont( "h1.font" ) );
     
+
     }
 
     //FUNCIONES PARA CARGAR LOS DATOS
@@ -72,13 +82,35 @@ public class Asistencia extends javax.swing.JPanel {
             model.addColumn("Estado");
             model.addColumn("Observaciones");
 
-            while (rs.next()) {
-                Object[] rowData = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    rowData[i - 1] = rs.getObject(i);
+    while (rs.next()) {
+        Object[] rowData = new Object[columnCount];
+        for (int i = 1; i <= columnCount; i++) {
+            Object value = rs.getObject(i);
+            if (i == 3 || i == 4) { // Columnas HORA_ENTRADA y HORA_SALIDA
+                if (value == null) {
+                    rowData[i - 1] = null;
+                    continue;
                 }
-                model.addRow(rowData);
+                LocalTime time = null;
+                if (value instanceof java.sql.Time) {
+                    time = ((java.sql.Time) value).toLocalTime();
+                } else if (value instanceof String) {
+                    try {
+                        time = LocalTime.parse((String) value);
+                    } catch (Exception e) {
+                    }
+                }
+                if (time != null) {
+                    rowData[i - 1] = String.format("%02d:%02d", time.getHour(), time.getMinute());
+                } else {
+                    rowData[i - 1] = value.toString();
+                }
+            } else {
+                rowData[i - 1] = value;
             }
+        }
+        model.addRow(rowData);
+    }
         }
 
     } catch (SQLException e) {
@@ -109,13 +141,35 @@ public class Asistencia extends javax.swing.JPanel {
 
            
 
-            while (rs.next()) {
-                Object[] rowData = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    rowData[i - 1] = rs.getObject(i);
+    while (rs.next()) {
+        Object[] rowData = new Object[columnCount];
+        for (int i = 1; i <= columnCount; i++) {
+            Object value = rs.getObject(i);
+            if (i == 3 || i == 4) {
+                if (value == null) {
+                    rowData[i - 1] = null;
+                    continue;
                 }
-                model.addRow(rowData);
+                LocalTime time = null;
+                if (value instanceof java.sql.Time) {
+                    time = ((java.sql.Time) value).toLocalTime();
+                } else if (value instanceof String) {
+                    try {
+                        time = LocalTime.parse((String) value);
+                    } catch (Exception e) {
+                    }
+                }
+                if (time != null) {
+                    rowData[i - 1] = String.format("%02d:%02d", time.getHour(), time.getMinute());
+                } else {
+                    rowData[i - 1] = value.toString();
+                }
+            } else {
+                rowData[i - 1] = value;
             }
+        }
+        model.addRow(rowData);
+    }
         }
 
     } catch (SQLException e) {
@@ -124,23 +178,7 @@ public class Asistencia extends javax.swing.JPanel {
 }
 
 
-    public void cargarEmpleadosEnComboBox() {
 
-        jComboBox1.removeAllItems();
-        jComboBox1.addItem("Selecciona un empleado");
-        String query = "SELECT NOMBRE_COMPLETO FROM empleados";
-
-        try (Connection con = ConexionBD.obtenerConexion(); Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                String nombreEmpleado = rs.getString("NOMBRE_COMPLETO");
-                jComboBox1.addItem(nombreEmpleado);
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al cargar empleados: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
     private int obtenerIdEmpleadoPorNombre(String nombre) {
         String sql = "SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?";
@@ -196,168 +234,6 @@ public class Asistencia extends javax.swing.JPanel {
     
       //FIN//
 
-    //FUNCIONES PARA ACCIONES
-    
-   public void registrarEntrada() {
-    String nombreEmpleado = (String) jComboBox1.getSelectedItem();
-
-    if (nombreEmpleado == null || nombreEmpleado.equals("Selecciona un empleado")) {
-        JOptionPane.showMessageDialog(null, "Debe seleccionar un empleado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
-
-    if (idEmpleado == -1) {
-        JOptionPane.showMessageDialog(null, "No se pudo encontrar el ID del empleado.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-
-    if (verificarRegistroExistente(idEmpleado)) {
-        JOptionPane.showMessageDialog(null, "Ya existe un registro de entrada para este empleado en el día de hoy.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-
-    LocalTime horaActual = LocalTime.now();
-    LocalTime horaDeEntrada = LocalTime.of(8, 0);
-    String estado = horaActual.isAfter(horaDeEntrada) ? "Tarde" : "Presente";
-
-    
-    String observaciones = observacionesText.getText().trim();
- 
-    if (!observaciones.isEmpty() && observaciones.contains("\n")) {
-        JOptionPane.showMessageDialog(null, "Solo se permite una observación en una línea.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    if (observaciones.isEmpty()) {
-        observaciones = null;
-    }
-
-    String query = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO, OBSERVACIONES) VALUES (?, date('now'), ?, ?, ?)";
-    
-    try (Connection con = ConexionBD.obtenerConexion(); 
-         PreparedStatement stmt = con.prepareStatement(query)) {
-
-        stmt.setInt(1, idEmpleado);
-        stmt.setString(2, horaActual.toString());
-        stmt.setString(3, estado);
-        if (observaciones != null) {
-            stmt.setString(4, observaciones);
-        } else {
-            stmt.setNull(4, java.sql.Types.VARCHAR);
-        }
-
-        int filasInsertadas = stmt.executeUpdate();
-        if (filasInsertadas > 0) {
-            JOptionPane.showMessageDialog(null, "Entrada registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            jComboBox1.setSelectedIndex(0);
-            actualizarTabla();
-            observacionesText.setText("");  
-        }
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Error al registrar la entrada: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-
-    public void registrarSalida() {
-        String nombreEmpleado = (String) jComboBox1.getSelectedItem();
-
-        if (nombreEmpleado == null || nombreEmpleado.equals("Selecciona un empleado")) {
-            JOptionPane.showMessageDialog(null, "Debe seleccionar un empleado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
-
-        if (idEmpleado == -1) {
-            JOptionPane.showMessageDialog(null, "No se pudo encontrar el ID del empleado.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-     
-        if (!verificarRegistroExistente(idEmpleado)) {
-            JOptionPane.showMessageDialog(null, "No se puede registrar la salida sin haber registrado previamente la entrada.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-       
-        if (verificarSalidaRegistrada(idEmpleado)) {
-            JOptionPane.showMessageDialog(null, "Ya se ha registrado la salida para este empleado en el día de hoy.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        
-        String horaSalida = LocalTime.now().toString();
-
-        
-        String sql = "UPDATE asistencias SET HORA_SALIDA = ?, ESTADO = 'Presente' WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
-
-        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, horaSalida); 
-            stmt.setInt(2, idEmpleado); 
-
-            int filasActualizadas = stmt.executeUpdate();
-            if (filasActualizadas > 0) {
-                JOptionPane.showMessageDialog(null, "Salida registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                jComboBox1.setSelectedIndex(0);
-
-                actualizarTabla();
-            } else {
-                JOptionPane.showMessageDialog(null, "No se pudo registrar la salida. Asegúrese de que haya una entrada registrada previamente.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al registrar la salida: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public void registrarAusencia() {
-      
-        String nombreEmpleado = (String) jComboBox1.getSelectedItem();
-
-        if (nombreEmpleado == null || nombreEmpleado.equals("Selecciona un empleado")) {
-            JOptionPane.showMessageDialog(null, "Debe seleccionar un empleado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
-
-        if (idEmpleado == -1) {
-            JOptionPane.showMessageDialog(null, "No se pudo encontrar el ID del empleado.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-    
-        if (verificarRegistroExistente(idEmpleado)) {
-            JOptionPane.showMessageDialog(null, "Ya existe un registro de asistencia para este empleado en el día de hoy.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        
-        String sql = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, HORA_SALIDA, ESTADO) VALUES (?, date('now'), '00:00:00', '00:00:00', 'Ausente')";
-
-        try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setInt(1, idEmpleado);
-
-            int filasInsertadas = stmt.executeUpdate();
-            if (filasInsertadas > 0) {
-                JOptionPane.showMessageDialog(null, "Ausencia registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-              
-                jComboBox1.setSelectedIndex(0);
-
-               
-                actualizarTabla();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al registrar la ausencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-      //FIN//
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -368,93 +244,117 @@ public class Asistencia extends javax.swing.JPanel {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
-        jButton7 = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        reporteAsistencias = new javax.swing.JButton();
+        historialAsistencias = new javax.swing.JButton();
+        jPanel2 = new RoundedPanel(20);
+        vacacionesButton = new javax.swing.JButton();
+        incapacidadButton = new javax.swing.JButton();
+        permisoButton = new javax.swing.JButton();
+        fechaLabel = new javax.swing.JLabel();
+        jPanel3 = new RoundedPanel(20);
+        tablaTitle = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jPanel5 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        observacionesText = new javax.swing.JTextArea();
-        jLabel2 = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        vacacionesButton = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
-        tablaTitle = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
 
+        setBackground(new java.awt.Color(248, 247, 247));
         setMaximumSize(new java.awt.Dimension(1010, 720));
         setMinimumSize(new java.awt.Dimension(1010, 720));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBackground(new java.awt.Color(250, 250, 250));
         jPanel1.setAutoscrolls(true);
         jPanel1.setMinimumSize(new java.awt.Dimension(1010, 720));
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Entrada/Salida"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Más acciones"));
+        jPanel4.setToolTipText("");
 
-        jButton1.setText("Registrar entrada");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 165, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 206, Short.MAX_VALUE)
+        );
+
+        reporteAsistencias.setIcon(new javax.swing.ImageIcon(getClass().getResource("/reporte.png"))); // NOI18N
+        reporteAsistencias.setText("Reporte de Asistencias");
+        reporteAsistencias.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                reporteAsistenciasActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Registrar salida");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        historialAsistencias.setIcon(new javax.swing.ImageIcon(getClass().getResource("/historial.png"))); // NOI18N
+        historialAsistencias.setText("Historial de Asistencias");
+        historialAsistencias.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                historialAsistenciasActionPerformed(evt);
             }
         });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel1.setText("Seleccionar empleado");
-
-        jButton7.setText("Registrar ausencia");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
+        vacacionesButton.setBackground(new java.awt.Color(239, 246, 255));
+        vacacionesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
+        vacacionesButton.setText("Vacaciones");
+        vacacionesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
+                vacacionesButtonActionPerformed(evt);
             }
         });
+
+        incapacidadButton.setBackground(new java.awt.Color(240, 253, 244));
+        incapacidadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/incapacidad1.png"))); // NOI18N
+        incapacidadButton.setText("Incapacidad");
+
+        permisoButton.setBackground(new java.awt.Color(250, 245, 255));
+        permisoButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/permiso1.png"))); // NOI18N
+        permisoButton.setText("Permiso");
+        permisoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                permisoButtonActionPerformed(evt);
+            }
+        });
+
+        fechaLabel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        fechaLabel.setForeground(new java.awt.Color(102, 102, 102));
+        fechaLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/calendario.png"))); // NOI18N
+        fechaLabel.setText("jLabel1");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(32, 32, 32)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(47, 47, 47))
+                .addGap(33, 33, 33)
+                .addComponent(fechaLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 396, Short.MAX_VALUE)
+                .addComponent(vacacionesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(incapacidadButton)
+                .addGap(18, 18, 18)
+                .addComponent(permisoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(98, 98, 98))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(34, 34, 34)
+                .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
-                .addComponent(jButton7)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(incapacidadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(permisoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vacacionesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fechaLabel))
+                .addContainerGap(8, Short.MAX_VALUE))
         );
+
+        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+
+        tablaTitle.setText("ASISTENCIA DE HOY:");
 
         jTable1.setAutoCreateRowSorter(true);
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -472,113 +372,24 @@ public class Asistencia extends javax.swing.JPanel {
         jTable1.setSurrendersFocusOnKeystroke(true);
         jScrollPane1.setViewportView(jTable1);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Observaciones"));
-
-        observacionesText.setColumns(20);
-        observacionesText.setRows(5);
-        jScrollPane2.setViewportView(observacionesText);
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/lupa.png"))); // NOI18N
-        jLabel2.setText("¿Desea añadir observaciones?");
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
-
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Más acciones"));
-        jPanel4.setToolTipText("");
-
-        vacacionesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
-        vacacionesButton.setText("Vacaciones");
-        vacacionesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vacacionesButtonActionPerformed(evt);
-            }
-        });
-
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Incapacidad.png"))); // NOI18N
-        jButton4.setText("Incapacidad");
-
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/permiso.png"))); // NOI18N
-        jButton5.setText("Permiso");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
-        jButton6.setText("Editar");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(vacacionesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(vacacionesButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(23, Short.MAX_VALUE))
-        );
-
-        jButton8.setText("Reporte de asistencia");
-        jButton8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton8ActionPerformed(evt);
-            }
-        });
-
-        tablaTitle.setText("ASISTENCIA DE HOY:");
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Registros anteriores"));
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 232, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tablaTitle)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 983, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 15, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tablaTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -588,41 +399,33 @@ public class Asistencia extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGap(583, 583, 583)
-                            .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(tablaTitle)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(35, 35, 35)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 675, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(26, 26, 26)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(316, 316, 316)
+                .addComponent(reporteAsistencias)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(historialAsistencias)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(46, 46, 46)
-                .addComponent(tablaTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
-                .addGap(106, 106, 106)
-                .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(reporteAsistencias)
+                    .addComponent(historialAsistencias))
+                .addGap(179, 179, 179))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -637,18 +440,9 @@ public class Asistencia extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-       
-    }//GEN-LAST:event_jButton7ActionPerformed
-
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void permisoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_permisoButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton5ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
-
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_permisoButtonActionPerformed
 
     private void vacacionesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vacacionesButtonActionPerformed
         // TODO add your handling code here:
@@ -665,39 +459,49 @@ public class Asistencia extends javax.swing.JPanel {
         
     }//GEN-LAST:event_vacacionesButtonActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-      
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void reporteAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporteAsistenciasActionPerformed
+        int filaSeleccionada = jTable1.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this,
+                "Seleccione un empleado de la tabla primero",
+                "Advertencia",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton8ActionPerformed
+        int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        JDialog dialog = new JDialog();
+        Ficha ficha = new Ficha();
+        ficha.cargarDatosEmpleado(idEmpleado);
+        dialog.add(ficha);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setTitle("Ficha del Empleado");
+        dialog.setModal(true);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_reporteAsistenciasActionPerformed
+
+    private void historialAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historialAsistenciasActionPerformed
+
+
+        //
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton6ActionPerformed
+    }//GEN-LAST:event_historialAsistenciasActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel fechaLabel;
+    private javax.swing.JButton historialAsistencias;
+    private javax.swing.JButton incapacidadButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea observacionesText;
+    private javax.swing.JButton permisoButton;
+    private javax.swing.JButton reporteAsistencias;
     private javax.swing.JLabel tablaTitle;
     private javax.swing.JButton vacacionesButton;
     // End of variables declaration//GEN-END:variables
