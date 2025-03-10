@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -78,13 +79,14 @@ public class fichaEmpleado {
         .replace("{{NUMERO_CUENTA}}", (numeroCuenta != null ? numeroCuenta : "No disponible"))
         .replace("{{TIPO_CUENTA}}", (tipoCuenta != null ? tipoCuenta : "No disponible"))
         .replace("{{PAGO_MOVIL}}", (pagoMovil != null ? pagoMovil : "No disponible"));
-
+VistaPreviaHTML.mostrarVistaPrevia(plantilla);
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Ficha de Empleado");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
                 int userSelection = fileChooser.showSaveDialog(null);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
+
                     File pdfFile = fileChooser.getSelectedFile();
                     if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
                         pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");

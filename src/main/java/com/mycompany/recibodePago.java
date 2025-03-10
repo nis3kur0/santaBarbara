@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -9,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Locale;
+
 
 public class recibodePago {
 
@@ -93,6 +95,8 @@ public class recibodePago {
                 int userSelection = fileChooser.showSaveDialog(null);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                    VistaPreviaHTML.mostrarVistaPrevia(plantilla);
+
                     File pdfFile = fileChooser.getSelectedFile();
                     if (!pdfFile.getName().toLowerCase().endsWith(".pdf")) {
                         pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");

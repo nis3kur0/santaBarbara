@@ -54,6 +54,9 @@ public class constanciaTrabajo {
                          .replace("{{FECHA_INICIO}}", fechaInicio != null ? fechaInicio : "")
                          .replace("{{FECHA_FIN}}", fechaFin != null ? fechaFin : "")
                         .replace("{{FECHA_ACTUAL}}", fechaActualFormateada);
+                 
+                       VistaPreviaHTML.mostrarVistaPrevia(plantilla);
+
 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Constancia de Trabajo");

@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
 import java.awt.Desktop;
@@ -8,7 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class detalleNomina {
@@ -88,8 +88,10 @@ public class detalleNomina {
             }
 
             plantilla = plantilla.replace("{DETALLES_NOMINA}", detallesNomina);
-
+VistaPreviaHTML.mostrarVistaPrevia(plantilla);
             if (!detallesNomina.isEmpty()) {
+                                
+
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Reporte de Nómina");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));

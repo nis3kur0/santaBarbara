@@ -3,17 +3,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.views;
-
 import com.mycompany.ConexionBD;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import javax.swing.*;
-import java.awt.Desktop;
+import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Locale;
+import com.mycompany.views.VistaPreviaHTML;
+
+
 
 public class reportePagos {
 
@@ -25,7 +27,6 @@ public class reportePagos {
         try {
             con = ConexionBD.obtenerConexion();
 
-           
             String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.CEDULA, e.SALARIO AS SALARIO_BASE, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
                     + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
@@ -66,7 +67,6 @@ public class reportePagos {
                 int cedula = rs.getInt("CEDULA");
                 String tipoCedula = "V"; 
 
-          
                 String plantilla;
                 try (InputStream inputStream = reportePagos.class.getClassLoader().getResourceAsStream("reportePagos.html")) {
                     if (inputStream == null) {
@@ -75,7 +75,6 @@ public class reportePagos {
                     plantilla = new String(inputStream.readAllBytes());
                 }
 
-               
                 plantilla = plantilla.replace("{{idPago}}", String.valueOf(idEmpleado))
                         .replace("{{fechaInicio}}", fechaInicio)
                         .replace("{{fechaFin}}", fechaFin)
@@ -93,7 +92,8 @@ public class reportePagos {
                         .replace("{{salarioBaseDia}}", String.format(Locale.US, "%.2f BS", salarioBaseDiario))
                         .replace("{{cedula}}", String.valueOf(cedula));
 
-                
+                VistaPreviaHTML.mostrarVistaPrevia(plantilla);
+
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar Recibo de Pago");
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
@@ -105,9 +105,9 @@ public class reportePagos {
                         pdfFile = new File(pdfFile.getParentFile(), pdfFile.getName() + ".pdf");
                     }
 
-              
                     try (OutputStream os = new FileOutputStream(pdfFile)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
+                        builder.withUri("classpath:/");
                         builder.withHtmlContent(plantilla, null);
                         builder.toStream(os); 
                         builder.run(); 
@@ -147,7 +147,6 @@ public class reportePagos {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().open(pdfFile);  
                 } else {
-                   
                     String pdfPath = pdfFile.toURI().toURL().toString(); 
                     Desktop.getDesktop().browse(new java.net.URI(pdfPath));  
                     System.out.println("El archivo se ha abierto en el navegador.");

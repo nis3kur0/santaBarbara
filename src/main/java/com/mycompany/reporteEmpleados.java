@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import com.mycompany.views.VistaPreviaHTML;
 import java.awt.Desktop;
 import javax.swing.*;
 import java.io.*;
@@ -84,7 +85,7 @@ String fechaFormateada = fechaActual.format(formatter);
 
             plantilla = plantilla.replace("{{rows}}", filas.toString())
             .replace("{{fecha actual}}", fechaFormateada);
-
+VistaPreviaHTML.mostrarVistaPrevia(plantilla);
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar Reporte HTML");
             fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos HTML (*.html)", "html"));

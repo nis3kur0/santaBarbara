@@ -1,6 +1,7 @@
 package com.mycompany.views;
 
 import com.mycompany.ConexionBD;
+import com.mycompany.views.reportePagos;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
