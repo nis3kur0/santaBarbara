@@ -32,7 +32,7 @@ public class ReportePagosDialog extends JDialog {
             if (!nombreEmpleado.equals("Selecciona un empleado")) {
                 int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
                 if (idEmpleado != -1) {
-                    cargarPagosEmpleadoEnTabla(idEmpleado);  // Cargar pagos en la tabla
+                    cargarPagosEmpleadoEnTabla(idEmpleado);  
                 } else {
                     JOptionPane.showMessageDialog(this, "Empleado no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
