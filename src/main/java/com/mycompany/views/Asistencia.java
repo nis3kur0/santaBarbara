@@ -661,8 +661,7 @@ public class Asistencia extends javax.swing.JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     
-    // Actualizar la tabla después de cerrar el diálogo
-    cargarDatosAsistenciasEnTabla();
+ cargarDatosAsistenciasEnTabla();
         
     }//GEN-LAST:event_vacacionesButtonActionPerformed
 

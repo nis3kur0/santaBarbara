@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
 import com.mycompany.confirmarAccionConPassword;
+import java.sql.Statement;
 import javax.swing.JTextField;
 
 /**
@@ -204,7 +205,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
     //FIN//
 
     //FUNCIONES PARA REALIZAR ACCIONES
-    public void agregarEmpleado() {
+  public void agregarEmpleado() {
 
         String nombre = textNombre.getText().trim();
         String cedulaTexto = textCedula.getText().trim();
@@ -326,6 +327,8 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             }
         }
     }
+  
+
     
     //FIN//
     

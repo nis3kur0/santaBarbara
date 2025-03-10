@@ -5,8 +5,7 @@
 package com.mycompany.views;
 
 /**
- *
- * @author gabo
+
  */
 import javax.swing.*;
 import java.awt.*;

@@ -18,10 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import com.mycompany.confirmarAccionConPassword;
 
-/**
- *
- * @author Nattitor
- */
+
 public class Vacaciones extends javax.swing.JPanel {
 
     /**
@@ -170,7 +167,7 @@ public class Vacaciones extends javax.swing.JPanel {
         // TODO add your handling code here:
         
         if (!confirmarAccionConPassword.confirmarAccion(this)) {
-        return; // Salir si no se confirma o la contraseña es incorrecta
+        return; 
         }
             
                 String nombreEmpleado = (String) seleccionarEmpleado.getSelectedItem();
@@ -205,14 +202,12 @@ public class Vacaciones extends javax.swing.JPanel {
             for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
                 String fechaStr = date.toString();
 
-                // Verificar si ya existe un registro
                 String checkSql = "SELECT COUNT(*) FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = ?";
                 try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
                     checkStmt.setInt(1, idEmpleado);
                     checkStmt.setString(2, fechaStr);
                     ResultSet rs = checkStmt.executeQuery();
                     if (rs.next() && rs.getInt(1) > 0) {
-                        // Actualizar estado
                         String updateSql = "UPDATE asistencias SET ESTADO = 'Vacaciones' WHERE ID_EMPLEADO = ? AND FECHA = ?";
                         try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
                             updateStmt.setInt(1, idEmpleado);
@@ -220,7 +215,6 @@ public class Vacaciones extends javax.swing.JPanel {
                             updateStmt.executeUpdate();
                         }
                     } else {
-                        // Insertar nuevo registro
                         String insertSql = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, HORA_SALIDA, ESTADO) VALUES (?, ?, '00:00:00', '00:00:00', 'Vacaciones')";
                         try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                             insertStmt.setInt(1, idEmpleado);
@@ -233,7 +227,6 @@ public class Vacaciones extends javax.swing.JPanel {
 
             JOptionPane.showMessageDialog(this, "Vacaciones registradas exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             
-            // Cerrar la ventana
             Window parentWindow = SwingUtilities.getWindowAncestor(this);
             if (parentWindow != null) {
                 parentWindow.dispose();

@@ -7,6 +7,7 @@ com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\views\Empleados$5.class
 com\mycompany\EscanearQR.class
 com\mycompany\RoundedPanelShadow.class
+com\mycompany\views\Vacaciones$1.class
 com\mycompany\views\VistaPreviaHTML.class
 com\mycompany\views\Asistencia$3.class
 com\mycompany\views\Asistencia.class
@@ -15,7 +16,11 @@ com\mycompany\views\Empleados$8.class
 com\mycompany\views\Ficha.class
 com\mycompany\views\ReportePagosDialog.class
 com\mycompany\views\Empleados$20.class
+com\mycompany\views\Vacaciones.class
 com\mycompany\views\Nomina$5.class
+com\mycompany\loginandsignup\Login.class
+com\mycompany\detalleNomina.class
+com\mycompany\EscanearQR$1.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Empleados$11.class
 com\mycompany\santabarbara\Dashborad$3.class
@@ -54,6 +59,7 @@ com\mycompany\views\Empleados$15.class
 com\mycompany\views\Empleados$LettersDocumentFilter.class
 com\mycompany\historialNomina.class
 com\mycompany\views\fichaNomina.class
+com\mycompany\confirmarAccionConPassword.class
 com\mycompany\views\Empleados$18.class
 com\mycompany\views\Nomina.class
 com\mycompany\views\Nomina$10.class
