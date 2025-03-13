@@ -11,6 +11,7 @@ com\mycompany\views\VistaPreviaHTML.class
 com\mycompany\views\Asistencia$3.class
 com\mycompany\views\Asistencia.class
 com\mycompany\views\fichaNomina$1.class
+com\mycompany\views\Inicio$1.class
 com\mycompany\views\Empleados$8.class
 com\mycompany\views\Ficha.class
 com\mycompany\views\ReportePagosDialog.class
@@ -48,6 +49,7 @@ com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\views\reportePagos.class
 com\mycompany\views\Empleados$17.class
 com\mycompany\views\Empleados$NumericDocumentFilter.class
+com\mycompany\santabarbara\Dashborad$7.class
 com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class
 com\mycompany\views\VistaPreviaHTML$1.class
@@ -67,6 +69,7 @@ com\mycompany\recibodePago.class
 com\mycompany\santabarbara\Dashborad.class
 com\mycompany\views\Nomina$2.class
 com\mycompany\santabarbara\Dashborad$6.class
+com\mycompany\views\Inicio$2.class
 com\mycompany\ConexionBD.class
 com\mycompany\santabarbara\Dashborad$5.class
 com\mycompany\views\Empleados$19.class

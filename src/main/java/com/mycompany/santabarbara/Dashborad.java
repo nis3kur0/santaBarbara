@@ -41,9 +41,10 @@ private void scaleIcons() {
     
     Object[][] iconos = {
         {inicioBtn, homeIcn, "/home.png"},
-        {empleBtn, nominaIcn, "/nomina.png"},
+        {empleBtn, employeeIcn, "/nomina.png"},
         {asistBtn, asistIcn, "/asistencia.png"},
-        {configBtn, confIcn, "/conf.png"},
+        {nominaBtn, nominaIcn, "/employee.png"},
+        {confBtn, confIcn, "/conf.png"},
         {salirBtn, salirIcn, "/salir.png"}
     };
 
@@ -76,7 +77,8 @@ private void scaleIcons() {
         empleBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         asistBtn.putClientProperty( "JButton.buttonType", "roundRect" );
         salirBtn.putClientProperty( "JButton.buttonType", "roundRect" );
-        configBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        nominaBtn.putClientProperty( "JButton.buttonType", "roundRect" );
+        confBtn.putClientProperty("JButton.buttonType", "roundRect");
 
     }
 
@@ -111,10 +113,11 @@ private void scaleIcons() {
         jTable1 = new javax.swing.JTable();
         background = new javax.swing.JPanel();
         menu = new javax.swing.JPanel();
-        salirIcn = new javax.swing.JLabel();
         confIcn = new javax.swing.JLabel();
-        asistIcn = new javax.swing.JLabel();
+        salirIcn = new javax.swing.JLabel();
         nominaIcn = new javax.swing.JLabel();
+        asistIcn = new javax.swing.JLabel();
+        employeeIcn = new javax.swing.JLabel();
         homeIcn = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -123,7 +126,8 @@ private void scaleIcons() {
         empleBtn = new javax.swing.JButton();
         asistBtn = new javax.swing.JButton();
         salirBtn = new javax.swing.JButton();
-        configBtn = new javax.swing.JButton();
+        nominaBtn = new javax.swing.JButton();
+        confBtn = new javax.swing.JButton();
         content = new javax.swing.JPanel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -140,7 +144,6 @@ private void scaleIcons() {
         jScrollPane1.setViewportView(jTable1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMaximumSize(new java.awt.Dimension(1440, 900));
         setMinimumSize(new java.awt.Dimension(1280, 720));
 
         background.setBackground(new java.awt.Color(255, 255, 255));
@@ -152,25 +155,30 @@ private void scaleIcons() {
         menu.setPreferredSize(new java.awt.Dimension(270, 640));
         menu.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        confIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
+        confIcn.setText("jLabel1");
+        confIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(confIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 460, 50, 50));
+
         salirIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
         salirIcn.setText("jLabel1");
         salirIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         menu.add(salirIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 590, 50, 40));
 
-        confIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/conf.png"))); // NOI18N
-        confIcn.setText("jLabel1");
-        confIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        menu.add(confIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, 50, 50));
+        nominaIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/employee.png"))); // NOI18N
+        nominaIcn.setText("jLabel1");
+        nominaIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(nominaIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, 50, 50));
 
         asistIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asistencia.png"))); // NOI18N
         asistIcn.setText("jLabel1");
         asistIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         menu.add(asistIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 340, 50, 50));
 
-        nominaIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/nomina.png"))); // NOI18N
-        nominaIcn.setText("jLabel1");
-        nominaIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        menu.add(nominaIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, 50, 50));
+        employeeIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/nomina.png"))); // NOI18N
+        employeeIcn.setText("jLabel1");
+        employeeIcn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        menu.add(employeeIcn, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, 50, 50));
 
         homeIcn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/home.png"))); // NOI18N
         homeIcn.setText("jLabel1");
@@ -223,14 +231,23 @@ private void scaleIcons() {
         });
         menu.add(salirBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 590, 270, 50));
 
-        configBtn.setBackground(new java.awt.Color(255, 102, 102));
-        configBtn.setText("Nomina");
-        configBtn.addActionListener(new java.awt.event.ActionListener() {
+        nominaBtn.setBackground(new java.awt.Color(255, 102, 102));
+        nominaBtn.setText("Nomina");
+        nominaBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configBtnActionPerformed(evt);
+                nominaBtnActionPerformed(evt);
             }
         });
-        menu.add(configBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
+        menu.add(nominaBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, 270, 50));
+
+        confBtn.setBackground(new java.awt.Color(255, 102, 102));
+        confBtn.setText("Configuración");
+        confBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confBtnActionPerformed(evt);
+            }
+        });
+        menu.add(confBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 460, 270, 50));
 
         content.setMaximumSize(new java.awt.Dimension(1000, 720));
         content.setMinimumSize(new java.awt.Dimension(1000, 720));
@@ -295,10 +312,14 @@ private void scaleIcons() {
     }      
     }//GEN-LAST:event_salirBtnActionPerformed
 
-    private void configBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configBtnActionPerformed
+    private void nominaBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nominaBtnActionPerformed
        Nomina nominaPanel = new Nomina();
         ShowJPanel(nominaPanel, "Nomina"); 
-    }//GEN-LAST:event_configBtnActionPerformed
+    }//GEN-LAST:event_nominaBtnActionPerformed
+
+    private void confBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_confBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -332,10 +353,11 @@ private void scaleIcons() {
     private javax.swing.JButton asistBtn;
     private javax.swing.JLabel asistIcn;
     private javax.swing.JPanel background;
+    private javax.swing.JButton confBtn;
     private javax.swing.JLabel confIcn;
-    private javax.swing.JButton configBtn;
     private javax.swing.JPanel content;
     private javax.swing.JButton empleBtn;
+    private javax.swing.JLabel employeeIcn;
     private javax.swing.JLabel homeIcn;
     private javax.swing.JButton inicioBtn;
     private javax.swing.JLabel jLabel2;
@@ -344,6 +366,7 @@ private void scaleIcons() {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel menu;
+    private javax.swing.JButton nominaBtn;
     private javax.swing.JLabel nominaIcn;
     private javax.swing.JButton salirBtn;
     private javax.swing.JLabel salirIcn;

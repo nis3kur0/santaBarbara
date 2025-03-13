@@ -56,7 +56,7 @@ public class Login extends javax.swing.JFrame {
         jPanel1.setPreferredSize(new java.awt.Dimension(800, 500));
         jPanel1.setLayout(null);
 
-        Right.setBackground(new java.awt.Color(200, 25, 25));
+        Right.setBackground(new java.awt.Color(192, 5, 0));
         Right.setPreferredSize(new java.awt.Dimension(400, 500));
 
         jLabel6.setFont(new java.awt.Font("Showcard Gothic", 1, 24)); // NOI18N
@@ -195,7 +195,7 @@ public class Login extends javax.swing.JFrame {
         );
 
         jPanel1.add(Left);
-        Left.setBounds(470, 20, 857, 502);
+        Left.setBounds(470, 20, 857, 500);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
