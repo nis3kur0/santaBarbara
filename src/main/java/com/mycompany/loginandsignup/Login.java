@@ -5,13 +5,16 @@ import com.mycompany.EscanearQR;
 import java.awt.Image;
 import javax.swing.*;
 import com.mycompany.santabarbara.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 
 
 
 public class Login extends javax.swing.JFrame {
     
     public static final String correoValido = "admin";
-    public static final String contraseñaValida = "admin1234";
+    public static final String contraseñaValida = "b06ee7514af261afa9bfaa868dbdb5e9140983c0b921bedc5ad3eafcd8192679";
 
   
     public Login() {
@@ -22,11 +25,43 @@ public class Login extends javax.swing.JFrame {
         setIconImage(getLogo());
         getRootPane().setDefaultButton(jButton1);
         
+        
+    }
+    
+        // Método para generar hash
+    private String hashPassword(String password) {
+    try {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        String salt = "santaBarbara2025";
+        
+        // Corrección: Concatenar sal + contraseña
+        String saltedPassword = salt + password;
+        byte[] hashedBytes = md.digest(saltedPassword.getBytes(StandardCharsets.UTF_8));
+        
+        return bytesToHex(hashedBytes);
+    } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException("Error al encriptar contraseña", e);
+    }
+    }
+    
+    // Conversión de bytes a hexadecimal
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
     
     private Image getLogo() {
         return new ImageIcon(getClass().getResource("/logo.jpg")).getImage();
     }
+    
+    public static void main(String[] args) {
+    Login login = new Login();
+    String nuevoHash = login.hashPassword("admin1234");
+    System.out.println("NUEVO HASH: " + nuevoHash);
+}
     
     
     @SuppressWarnings("unchecked")
@@ -56,7 +91,7 @@ public class Login extends javax.swing.JFrame {
         jPanel1.setPreferredSize(new java.awt.Dimension(800, 500));
         jPanel1.setLayout(null);
 
-        Right.setBackground(new java.awt.Color(200, 25, 25));
+        Right.setBackground(new java.awt.Color(192, 5, 0));
         Right.setPreferredSize(new java.awt.Dimension(400, 500));
 
         jLabel6.setFont(new java.awt.Font("Showcard Gothic", 1, 24)); // NOI18N
@@ -195,7 +230,7 @@ public class Login extends javax.swing.JFrame {
         );
 
         jPanel1.add(Left);
-        Left.setBounds(470, 20, 857, 502);
+        Left.setBounds(470, 20, 857, 500);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -217,8 +252,10 @@ public class Login extends javax.swing.JFrame {
         {
         String correo = jTextField1.getText();
         String contraseña = new String(jPasswordField1.getPassword());
+        String hashedInput = hashPassword(contraseña);
+    
 
-        if (correo.equals(correoValido) && contraseña.equals(contraseñaValida)) {
+        if (correo.equals(correoValido) && hashedInput.equals(contraseñaValida)) {
             JOptionPane.showMessageDialog(
                 this,
                 "Inicio de sesión exitoso.",
@@ -261,7 +298,6 @@ public class Login extends javax.swing.JFrame {
         this.repaint();
     }
 
-            
 
     /**
      * @param args the command line arguments
