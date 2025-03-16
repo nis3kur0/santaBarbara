@@ -31,6 +31,7 @@ import javax.swing.JDialog;
 import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
+import com.mycompany.GeneradorQR;
 
 /**
  *PENDIENTE A REFACTORIZACION
@@ -49,6 +50,8 @@ public class Empleados extends javax.swing.JPanel {
      */
     public Empleados() {
         initComponents();
+        checkAndAlterTable();
+        GeneradorQR.generateQRForExistingEmployees();
         Styles();
         jTable1.setModel(model);
         cargarDatosEnTabla();
@@ -103,6 +106,30 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
         tablaEmpleadosLabel.setFont( UIManager.getFont( "h1.font" ) );
 
     }
+ 
+ private void checkAndAlterTable() {
+    String checkSql = "PRAGMA table_info(empleados)";
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(checkSql);
+         ResultSet rs = pstmt.executeQuery()) {
+        
+        boolean columnExists = false;
+        while (rs.next()) {
+            if ("qr_code".equalsIgnoreCase(rs.getString("name"))) {
+                columnExists = true;
+                break;
+            }
+        }
+        
+        if (!columnExists) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE empleados ADD COLUMN qr_code BLOB");
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
     
     
 
@@ -314,6 +341,12 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
 
             int filasInsertadas = pstmt.executeUpdate();
             if (filasInsertadas > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int id = generatedKeys.getInt(1);
+                        GeneradorQR.updateQRInDatabase(id, nombre, cedulaTexto);
+                    }
+              }
                 JOptionPane.showMessageDialog(null, "Empleado registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
                 cargarDatosEnTabla();
