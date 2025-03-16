@@ -460,26 +460,7 @@ public class Asistencia extends javax.swing.JPanel {
     }//GEN-LAST:event_vacacionesButtonActionPerformed
 
     private void reporteAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporteAsistenciasActionPerformed
-        int filaSeleccionada = jTable1.getSelectedRow();
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this,
-                "Seleccione un empleado de la tabla primero",
-                "Advertencia",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
-
-        JDialog dialog = new JDialog();
-        Ficha ficha = new Ficha();
-        ficha.cargarDatosEmpleado(idEmpleado);
-        dialog.add(ficha);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.setTitle("Ficha del Empleado");
-        dialog.setModal(true);
-        dialog.setVisible(true);
+     
     }//GEN-LAST:event_reporteAsistenciasActionPerformed
 
     private void historialAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historialAsistenciasActionPerformed
