@@ -9,6 +9,11 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import com.mycompany.RoundedPanel;
 import com.mycompany.RoundedPanelShadow;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import javax.swing.BorderFactory;
 
 
 /**
@@ -128,6 +133,21 @@ private void setDate() {
         jLabel26 = new javax.swing.JLabel();
         jPanel6 = new RoundedPanelShadow(20); ;
         jLabel14 = new javax.swing.JLabel();
+        manualButton = manualButton = new javax.swing.JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20); // Radio de 20px
+                super.paintComponent(g);
+            }
+
+            @Override
+            public boolean contains(int x, int y) {
+                return new java.awt.geom.RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 20, 20).contains(x, y);
+            }
+        };
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -223,7 +243,7 @@ private void setDate() {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(10, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -358,6 +378,20 @@ private void setDate() {
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
+        manualButton.setBackground(java.awt.Color.red);
+        manualButton.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
+        manualButton.setForeground(new java.awt.Color(255, 255, 255));
+        manualButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/manual.png"))); // NOI18N
+        manualButton.setText("Manual de Usuario");
+        manualButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        manualButton.setContentAreaFilled(false);
+        manualButton.setOpaque(false);
+        manualButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manualButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout bgLayout = new javax.swing.GroupLayout(bg);
         bg.setLayout(bgLayout);
         bgLayout.setHorizontalGroup(
@@ -374,7 +408,10 @@ private void setDate() {
                                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(28, 28, 28)
                                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel12))))
+                            .addComponent(jLabel12)))
+                    .addGroup(bgLayout.createSequentialGroup()
+                        .addGap(372, 372, 372)
+                        .addComponent(manualButton, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         bgLayout.setVerticalGroup(
@@ -388,7 +425,9 @@ private void setDate() {
                 .addGroup(bgLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(216, Short.MAX_VALUE))
+                .addGap(79, 79, 79)
+                .addComponent(manualButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(84, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -404,6 +443,10 @@ private void setDate() {
             .addComponent(bg, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void manualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_manualButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -445,5 +488,6 @@ private void setDate() {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton manualButton;
     // End of variables declaration//GEN-END:variables
 }
