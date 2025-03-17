@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.time.LocalTime;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -135,64 +136,56 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
     }
     
     
-   private void registrarAsistencia(int idEmpleado) {
+  private void registrarAsistencia(int idEmpleado) {
     String nombreCompleto = obtenerNombreEmpleadoPorId(idEmpleado);
-
     if (nombreCompleto == null) {
         JOptionPane.showMessageDialog(this, "Empleado no encontrado para ID: " + idEmpleado, "Error", JOptionPane.ERROR_MESSAGE);
         return;
     }
 
     LocalTime horaActual = LocalTime.now();
-
-    if (verificarRegistroExistente(idEmpleado)) {
-        if (verificarSalidaRegistrada(idEmpleado)) {
-            JOptionPane.showMessageDialog(this, "La jornada de " + nombreCompleto + " ya ha sido completada hoy.", "Información", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            registrarSalida(idEmpleado, horaActual, nombreCompleto);
-        }
-    } else {
-        registrarEntrada(idEmpleado, horaActual, nombreCompleto);
-    }
-}
-
-   private void registrarEntrada(int idEmpleado, LocalTime horaActual, String nombreCompleto) {
     LocalTime horaDeEntrada = LocalTime.of(8, 0);
     String estado = horaActual.isAfter(horaDeEntrada) ? "Tarde" : "Presente";
 
-    String query = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, ?)";
+    String queryVerificar = "SELECT HORA_ENTRADA, HORA_SALIDA FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now')";
+    String queryEntrada = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, ?)";
+    String querySalida = "UPDATE asistencias SET HORA_SALIDA = ? WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
 
     try (Connection con = ConexionBD.obtenerConexion(); 
-         PreparedStatement stmt = con.prepareStatement(query)) {
+         PreparedStatement stmtVerificar = con.prepareStatement(queryVerificar)) {
 
-        stmt.setInt(1, idEmpleado);
-        stmt.setString(2, horaActual.toString());
-        stmt.setString(3, estado);
+        stmtVerificar.setInt(1, idEmpleado);
+        try (ResultSet rs = stmtVerificar.executeQuery()) {
+            if (rs.next()) {
+                // Ya existe una asistencia registrada hoy
+                Time horaEntrada = rs.getTime("HORA_ENTRADA");
+                Time horaSalida = rs.getTime("HORA_SALIDA");
 
-        int filasInsertadas = stmt.executeUpdate();
-        if (filasInsertadas > 0) {
-            JOptionPane.showMessageDialog(this, "Entrada registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                if (horaSalida != null) {
+                    JOptionPane.showMessageDialog(this, "La jornada de " + nombreCompleto + " ya ha sido completada hoy.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                // Si no tiene salida, registrarla
+                try (PreparedStatement stmtSalida = con.prepareStatement(querySalida)) {
+                    stmtSalida.setString(1, horaActual.toString());
+                    stmtSalida.setInt(2, idEmpleado);
+                    stmtSalida.executeUpdate();
+                    JOptionPane.showMessageDialog(this, "Salida registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else {
+                // No tiene asistencia hoy, registrar entrada
+                try (PreparedStatement stmtEntrada = con.prepareStatement(queryEntrada)) {
+                    stmtEntrada.setInt(1, idEmpleado);
+                    stmtEntrada.setString(2, horaActual.toString());
+                    stmtEntrada.setString(3, estado);
+                    stmtEntrada.executeUpdate();
+                    JOptionPane.showMessageDialog(this, "Entrada registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
         }
     } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al registrar la entrada: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-private void registrarSalida(int idEmpleado, LocalTime horaActual, String nombreCompleto) {
-    String query = "UPDATE asistencias SET HORA_SALIDA = ? WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
-
-    try (Connection con = ConexionBD.obtenerConexion(); 
-         PreparedStatement stmt = con.prepareStatement(query)) {
-
-        stmt.setString(1, horaActual.toString());
-        stmt.setInt(2, idEmpleado);
-
-        int filasActualizadas = stmt.executeUpdate();
-        if (filasActualizadas > 0) {
-            JOptionPane.showMessageDialog(this, "Salida registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        }
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al registrar la salida: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Error al registrar asistencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
 

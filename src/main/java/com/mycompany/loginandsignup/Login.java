@@ -28,13 +28,11 @@ public class Login extends javax.swing.JFrame {
         
     }
     
-        // Método para generar hash
     private String hashPassword(String password) {
     try {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         String salt = "santaBarbara2025";
         
-        // Corrección: Concatenar sal + contraseña
         String saltedPassword = salt + password;
         byte[] hashedBytes = md.digest(saltedPassword.getBytes(StandardCharsets.UTF_8));
         
@@ -44,7 +42,6 @@ public class Login extends javax.swing.JFrame {
     }
     }
     
-    // Conversión de bytes a hexadecimal
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
@@ -284,9 +281,8 @@ public class Login extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
   EscanearQR escanearQR = new EscanearQR();
-    escanearQR.setVisible(true); // Mostrar la ventana de escaneo
+    escanearQR.setVisible(true); 
 
-    // Iniciar el escaneo en un hilo separado
     escanearQR.executor.execute(escanearQR);        
     
     

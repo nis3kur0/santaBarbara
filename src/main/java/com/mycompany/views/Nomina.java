@@ -813,7 +813,14 @@ btnVerDetalle.addActionListener(e -> {
             e.printStackTrace();
         }
     }
-
+//INSERTAR LOS APORTES EN GENERAL DEL EMPLEADOR
+    private void insertarAportesEmpleador () {
+    
+    
+    
+    }
+    
+    //INSERTAR LOS APORTES EN GENERAL DEL EMPLEADOR
     private void mostrarAportesDialog(double ivss, double faov, double inces, double total) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Aportes del Empleador");
@@ -880,6 +887,8 @@ btnVerDetalle.addActionListener(e -> {
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
+        jButton10 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -978,7 +987,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 610, 170, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 610, 170, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -1084,15 +1093,15 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 610, 180, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 610, -1, 40));
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
-        jButton6.setText("Liquidación");
-        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 660, 150, 40));
+        jButton6.setText("Bonificaciones");
+        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 610, 150, 40));
 
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
         jButton7.setText("Vacaciones");
-        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 610, 130, 40));
+        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 610, 150, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1129,7 +1138,20 @@ btnVerDetalle.addActionListener(e -> {
                 jButton11ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 660, 170, 40));
+        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 670, 170, 40));
+
+        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
+        jButton9.setText("Liquidación");
+        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 670, 170, 40));
+
+        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
+        jButton10.setText("Prestaciones");
+        jButton10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton10ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 670, 150, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1196,6 +1218,10 @@ btnVerDetalle.addActionListener(e -> {
 limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton10ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel deduccionesTotalesL;
@@ -1205,6 +1231,7 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JLabel incesLabel;
     private javax.swing.JLabel ivssLabel;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
@@ -1213,6 +1240,7 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

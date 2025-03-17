@@ -16,6 +16,9 @@ import com.mycompany.ConexionBD;
 import javax.swing.JDialog;
 import javax.swing.UIManager;
 import com.mycompany.RoundedPanel;
+import com.mycompany.VerAsistencias;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  *PENDIENTE A RE DISEÑO Y RECONSTRUCCION
@@ -199,6 +202,14 @@ public class Asistencia extends javax.swing.JPanel {
     }
     
    //FIN//
+    
+    
+     public void abrirVentanaAsistencia() {
+        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        VerAsistencias verAsistencias = new VerAsistencias(frame);
+        verAsistencias.setVisible(true);
+    }
 
     //VERIFICACIONES
     private boolean verificarRegistroExistente(int idEmpleado) {
@@ -464,7 +475,7 @@ public class Asistencia extends javax.swing.JPanel {
     }//GEN-LAST:event_reporteAsistenciasActionPerformed
 
     private void historialAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historialAsistenciasActionPerformed
-
+abrirVentanaAsistencia();
 
         //
         // TODO add your handling code here:

@@ -32,6 +32,7 @@ import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
+import com.mycompany.GenerarCarnet;
 
 /**
  *PENDIENTE A REFACTORIZACION
@@ -51,7 +52,7 @@ public class Empleados extends javax.swing.JPanel {
     public Empleados() {
         initComponents();
         checkAndAlterTable();
-        GeneradorQR.generateQRForExistingEmployees();
+  
         Styles();
         jTable1.setModel(model);
         cargarDatosEnTabla();
@@ -348,7 +349,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                     }
               }
                 JOptionPane.showMessageDialog(null, "Empleado registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
+//GenerarCarnet.generarCarnetEmpleado(idEmpleado);
                 cargarDatosEnTabla();
                 limpiarCamposEmpleado();
             }
