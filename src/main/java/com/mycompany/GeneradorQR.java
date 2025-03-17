@@ -16,29 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 public class GeneradorQR {
     
-    public static void generateQRForExistingEmployees() {
-        String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA FROM empleados WHERE qr_code IS NULL";
-        try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                int id = rs.getInt("ID");
-                String nombre = rs.getString("NOMBRE_COMPLETO");
-                String cedula = rs.getString("CEDULA");
-                updateQRInDatabase(id, nombre, cedula);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     
-    public static void updateQRInDatabase(int empleadoId, String nombre, String cedula) {
-        String qrContent = "ID: " + empleadoId + "\nNombre: " + nombre + "\nCédula: " + cedula;
+    public static void updateQRInDatabase(int empleadoId) {
+        String qrContent = "ID: " + empleadoId;
         String filePath = "qr_e/qr_" + empleadoId + ".png";
         
         try {

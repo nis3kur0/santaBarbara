@@ -28,19 +28,17 @@ public class Login extends javax.swing.JFrame {
         
     }
     
-    private String hashPassword(String password) {
+    public static String hashPassword(String password) {
     try {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         String salt = "santaBarbara2025";
-        
-        String saltedPassword = salt + password;
-        byte[] hashedBytes = md.digest(saltedPassword.getBytes(StandardCharsets.UTF_8));
-        
+        md.update(salt.getBytes(StandardCharsets.UTF_8));
+        byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
         return bytesToHex(hashedBytes);
     } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException("Error al encriptar contraseña", e);
     }
-    }
+}
     
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
