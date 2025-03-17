@@ -1,5 +1,6 @@
 com\mycompany\views\Empleados$2.class
 com\mycompany\views\Reportes.class
+com\mycompany\views\Configuracion$6.class
 com\mycompany\views\Nomina$8.class
 com\mycompany\views\Empleados$16.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
@@ -9,6 +10,7 @@ com\mycompany\RoundedPanelShadow.class
 com\mycompany\views\Vacaciones$1.class
 com\mycompany\views\VistaPreviaHTML.class
 com\mycompany\views\Asistencia$3.class
+com\mycompany\views\Configuracion$3.class
 com\mycompany\views\Asistencia.class
 com\mycompany\views\fichaNomina$1.class
 com\mycompany\views\Inicio$1.class
@@ -20,6 +22,7 @@ com\mycompany\views\Vacaciones.class
 com\mycompany\views\Nomina$5.class
 com\mycompany\VerAsistencias.class
 com\mycompany\loginandsignup\Login.class
+com\mycompany\views\Configuracion$1.class
 com\mycompany\detalleNomina.class
 com\mycompany\EscanearQR$1.class
 com\mycompany\views\Empleados.class
@@ -36,6 +39,7 @@ com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Nomina$6.class
 com\mycompany\reporteEmpleados.class
 com\mycompany\views\fichaNomina$2.class
+com\mycompany\views\Configuracion$2.class
 com\mycompany\fichaEmpleado.class
 com\mycompany\views\Nomina$1.class
 com\mycompany\santabarbara\Dashborad$1.class
@@ -57,6 +61,7 @@ com\mycompany\views\Empleados$12.class
 com\mycompany\views\Empleados$1.class
 com\mycompany\views\VistaPreviaHTML$1.class
 com\mycompany\views\Asistencia$2.class
+com\mycompany\views\Configuracion$4.class
 com\mycompany\views\Empleados$15.class
 com\mycompany\views\Empleados$LettersDocumentFilter.class
 com\mycompany\historialNomina.class
@@ -78,6 +83,7 @@ com\mycompany\ConexionBD.class
 com\mycompany\santabarbara\Dashborad$5.class
 com\mycompany\views\Empleados$19.class
 com\mycompany\views\ReportePagosDialog$1.class
+com\mycompany\views\Configuracion$5.class
 com\mycompany\views\Nomina$9.class
 com\mycompany\loginandsignup\Login$1.class
 com\mycompany\views\Empleados$3.class
