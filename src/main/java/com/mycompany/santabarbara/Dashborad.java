@@ -319,6 +319,8 @@ private void scaleIcons() {
 
     private void confBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confBtnActionPerformed
         // TODO add your handling code here:
+        Configuracion confPanel = new Configuracion();
+        ShowJPanel(confPanel, "Configuración");
     }//GEN-LAST:event_confBtnActionPerformed
 
     /**
