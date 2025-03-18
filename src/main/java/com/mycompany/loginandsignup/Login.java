@@ -5,18 +5,49 @@ import com.mycompany.EscanearQR;
 import java.awt.Image;
 import javax.swing.*;
 import com.mycompany.santabarbara.*;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 
 public class Login extends javax.swing.JFrame {
     
     public static final String correoValido = "admin";
-    public static final String contraseñaValida = "b06ee7514af261afa9bfaa868dbdb5e9140983c0b921bedc5ad3eafcd8192679";
-
-  
+    private static final String PASSWORD_FILE = "password.hash";
+    public static String contraseñaValida;
+    
+        static {
+        cargarContraseña();
+    }
+        
+        private static void cargarContraseña() {
+        try {
+            Path path = Paths.get(PASSWORD_FILE);
+            if (Files.exists(path)) {
+                contraseñaValida = new String(Files.readAllBytes(path));
+            } else {
+                // Contraseña por defecto
+                contraseñaValida = "b06ee7514af261afa9bfaa868dbdb5e9140983c0b921bedc5ad3eafcd8192679";
+                guardarContraseña(contraseñaValida);
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "Error cargando contraseña: " + ex.getMessage());
+        }
+    }
+    
+    public static void guardarContraseña(String hash) {
+        try {
+            Files.write(Paths.get(PASSWORD_FILE), hash.getBytes());
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "Error guardando contraseña: " + ex.getMessage());
+        }
+    }
+            
     public Login() {
         initComponents();
         this.setLocationRelativeTo(null);

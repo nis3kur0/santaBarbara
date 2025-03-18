@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import com.mycompany.confirmarAccionConPassword;
 
 /**
  * PENDIENTE A REFACTORIZACION
@@ -105,24 +106,6 @@ public class Nomina extends javax.swing.JPanel {
         return false;
     }
 
-    private boolean confirmarAccionConPassword() {
-
-        JPasswordField pf = new JPasswordField();
-        int okCxl = JOptionPane.showConfirmDialog(this, pf, "Ingresa la contraseña", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (okCxl == JOptionPane.OK_OPTION) {
-            String inputPassword = new String(pf.getPassword());
-            String contraseñaValida = com.mycompany.loginandsignup.Login.contraseñaValida;
-
-            if (inputPassword.equals(contraseñaValida)) {
-                return true;
-            } else {
-                JOptionPane.showMessageDialog(this, "Contraseña incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-
-        return false;
-    }
 
     //FIN//
 //CALCULOS Y ACCIONES
@@ -537,7 +520,7 @@ public class Nomina extends javax.swing.JPanel {
         );
 
         if (respuesta == JOptionPane.YES_OPTION) {
-            if (confirmarAccionConPassword()) {
+            if (confirmarAccionConPassword.confirmarAccion(jPanel1)) {
                 Connection con = null;
                 PreparedStatement pst = null;
                 ResultSet rs = null;

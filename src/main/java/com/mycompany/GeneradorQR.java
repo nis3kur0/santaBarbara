@@ -16,12 +16,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
 public class GeneradorQR {
     
+
     
     public static void updateQRInDatabase(int empleadoId) {
-        String qrContent = "ID: " + empleadoId;
+        String qrContent = String.valueOf(empleadoId);
         String filePath = "qr_e/qr_" + empleadoId + ".png";
         
         try {
@@ -39,6 +42,7 @@ public class GeneradorQR {
             e.printStackTrace();
         }
     }
+    
     
     private static byte[] generateQRCodeImage(String text, int width, int height, String filePath) 
             throws WriterException, IOException {

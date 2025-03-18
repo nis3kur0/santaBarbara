@@ -25,6 +25,7 @@ com\mycompany\loginandsignup\Login.class
 com\mycompany\views\Configuracion$1.class
 com\mycompany\detalleNomina.class
 com\mycompany\EscanearQR$1.class
+com\mycompany\views\Configuracion$8.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Empleados$11.class
 com\mycompany\views\Nomina$13.class
@@ -33,6 +34,8 @@ com\mycompany\views\Asistencia$1.class
 com\mycompany\views\Empleados$7.class
 com\mycompany\views\Nomina$7.class
 com\mycompany\RoundedPanel.class
+com\mycompany\views\Configuracion$HourSpinnerModel.class
+com\mycompany\views\Configuracion$9.class
 com\mycompany\views\Empleados$10.class
 com\mycompany\views\Empleados$6.class
 com\mycompany\santabarbara\Dashborad$2.class
@@ -68,8 +71,10 @@ com\mycompany\historialNomina.class
 com\mycompany\views\fichaNomina.class
 com\mycompany\GenerarCarnet.class
 com\mycompany\confirmarAccionConPassword.class
+com\mycompany\views\Configuracion$7.class
 com\mycompany\views\Empleados$18.class
 com\mycompany\views\Nomina.class
+com\mycompany\views\Configuracion$11.class
 com\mycompany\views\Nomina$10.class
 com\mycompany\views\Asistencia$4.class
 com\mycompany\views\Empleados$14.class
@@ -84,6 +89,7 @@ com\mycompany\santabarbara\Dashborad$5.class
 com\mycompany\views\Empleados$19.class
 com\mycompany\views\ReportePagosDialog$1.class
 com\mycompany\views\Configuracion$5.class
+com\mycompany\views\Configuracion$10.class
 com\mycompany\views\Nomina$9.class
 com\mycompany\loginandsignup\Login$1.class
 com\mycompany\views\Empleados$3.class
