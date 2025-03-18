@@ -345,7 +345,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         int id = generatedKeys.getInt(1);
-                        GeneradorQR.updateQRInDatabase(id, nombre, cedulaTexto);
+                        GeneradorQR.updateQRInDatabase(id);
                     }
               }
                 JOptionPane.showMessageDialog(null, "Empleado registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
