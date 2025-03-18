@@ -880,7 +880,6 @@ btnVerDetalle.addActionListener(e -> {
         incesLabel = new javax.swing.JLabel();
         jButton5 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
-        jButton7 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1093,15 +1092,10 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 610, -1, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 610, -1, 40));
 
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton6.setText("Bonificaciones");
         jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 610, 150, 40));
-
-        jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/vacaciones.png"))); // NOI18N
-        jButton7.setText("Vacaciones");
-        jPanel1.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 610, 150, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1138,13 +1132,11 @@ btnVerDetalle.addActionListener(e -> {
                 jButton11ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 670, 170, 40));
+        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 670, 170, 40));
 
-        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton9.setText("Liquidación");
-        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 670, 170, 40));
+        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 610, 170, 40));
 
-        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/precaucion.png"))); // NOI18N
         jButton10.setText("Prestaciones");
         jButton10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1238,7 +1230,6 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;

@@ -23,11 +23,13 @@ com\mycompany\loginandsignup\Login.class
 com\mycompany\detalleNomina.class
 com\mycompany\EscanearQR$1.class
 com\mycompany\views\Empleados.class
+com\mycompany\views\Permisos.class
 com\mycompany\views\Empleados$11.class
 com\mycompany\views\Nomina$13.class
 com\mycompany\santabarbara\Dashborad$3.class
+com\mycompany\views\Incapacidad$1.class
 com\mycompany\views\Asistencia$1.class
-com\mycompany\AsistenciaObserver.class
+com\mycompany\views\Permisos$1.class
 com\mycompany\views\Empleados$7.class
 com\mycompany\views\Nomina$7.class
 com\mycompany\RoundedPanel.class
@@ -48,10 +50,12 @@ com\mycompany\views\constanciaTrabajo.class
 com\mycompany\views\Configuracion.class
 com\mycompany\views\Nomina$4.class
 com\mycompany\views\Nomina$12.class
+com\mycompany\views\Incapacidad.class
 com\mycompany\loginandsignup\Login$2.class
 com\mycompany\santabarbara\SantaBarbara.class
 com\mycompany\views\reportePagos.class
 com\mycompany\views\Empleados$17.class
+com\mycompany\views\Asistencia$5.class
 com\mycompany\views\Empleados$NumericDocumentFilter.class
 com\mycompany\santabarbara\Dashborad$7.class
 com\mycompany\views\Empleados$12.class

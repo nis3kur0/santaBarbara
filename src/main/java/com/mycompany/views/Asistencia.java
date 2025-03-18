@@ -321,6 +321,11 @@ public class Asistencia extends javax.swing.JPanel {
         incapacidadButton.setBackground(new java.awt.Color(240, 253, 244));
         incapacidadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/incapacidad1.png"))); // NOI18N
         incapacidadButton.setText("Incapacidad");
+        incapacidadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                incapacidadButtonActionPerformed(evt);
+            }
+        });
 
         permisoButton.setBackground(new java.awt.Color(250, 245, 255));
         permisoButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/permiso1.png"))); // NOI18N
@@ -360,7 +365,7 @@ public class Asistencia extends javax.swing.JPanel {
                     .addComponent(permisoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(vacacionesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(fechaLabel))
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
@@ -452,7 +457,16 @@ public class Asistencia extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void permisoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_permisoButtonActionPerformed
-        // TODO add your handling code here:
+  Permisos PermisosPanel = new Permisos();
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Registrar permiso");
+        dialog.setModal(true);
+        dialog.getContentPane().add(PermisosPanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    
+ cargarDatosAsistenciasEnTabla();        // TODO add your handling code here:
     }//GEN-LAST:event_permisoButtonActionPerformed
 
     private void vacacionesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vacacionesButtonActionPerformed
@@ -480,6 +494,20 @@ abrirVentanaAsistencia();
         //
         // TODO add your handling code here:
     }//GEN-LAST:event_historialAsistenciasActionPerformed
+
+    private void incapacidadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incapacidadButtonActionPerformed
+
+Incapacidad IncapacidadPanel = new Incapacidad();
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Registrar Incapacidad");
+        dialog.setModal(true);
+        dialog.getContentPane().add(IncapacidadPanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+        // TODO add your handling code here:
+        cargarDatosAsistenciasEnTabla();
+    }//GEN-LAST:event_incapacidadButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

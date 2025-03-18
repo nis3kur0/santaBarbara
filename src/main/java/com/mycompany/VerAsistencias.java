@@ -1,187 +1,178 @@
 package com.mycompany;
 
 import com.mycompany.ConexionBD;
-import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import javax.swing.table.DefaultTableModel;
 
 public class VerAsistencias extends JDialog {
 
     private JTable tablaAsistencias;
     private JScrollPane scrollPane;
-    private JComboBox<String> jComboBox1;
-    private JDateChooser dateChooserInicio;
-    private JDateChooser dateChooserFin;
     private JButton btnCerrar;
+    private JButton btnGuardar;
+    private JButton btnCargar;
+    private JComboBox<String> comboEmpleados; 
+    private JTextField txtFechaInicio; 
+    private JTextField txtFechaFin;   
+    private JLabel lblEmpleado; 
+    private JLabel lblFechaInicio;
+    private JLabel lblFechaFin;
 
     public VerAsistencias(Frame parent) {
-        super(parent, "Reporte de Asistencias", true);
+        super(parent, "Ver Asistencias", true); 
         setLayout(new BorderLayout());
-        setSize(800, 500);
-        setLocationRelativeTo(parent);
+        setSize(1000, 500);
+        setLocationRelativeTo(parent); 
 
-        // ComboBox para seleccionar empleados
-        jComboBox1 = new JComboBox<>();
-        cargarEmpleadosEnComboBox();
+        comboEmpleados = new JComboBox<>();
+        cargarEmpleados();  
 
-        // DateChooser para seleccionar fecha de inicio y fecha final
-        dateChooserInicio = new JDateChooser();
-        dateChooserInicio.setDateFormatString("dd/MM/yyyy");
-        dateChooserFin = new JDateChooser();
-        dateChooserFin.setDateFormatString("dd/MM/yyyy");
+        lblEmpleado = new JLabel("Seleccione un empleado:");
 
-        // Botón para cargar asistencias
-        JButton btnCargarAsistencias = new JButton("Cargar Asistencias");
-        btnCargarAsistencias.addActionListener(e -> {
-            String nombreEmpleado = (String) jComboBox1.getSelectedItem();
-            if (!nombreEmpleado.equals("Selecciona un empleado")) {
-                int idEmpleado = obtenerIdEmpleadoPorNombre(nombreEmpleado);
-                if (idEmpleado != -1) {
-                    java.util.Date fechaInicio = dateChooserInicio.getDate();
-                    java.util.Date fechaFin = dateChooserFin.getDate();
-                    if (fechaInicio != null && fechaFin != null) {
-                        cargarAsistenciasEmpleadoEnTabla(idEmpleado, fechaInicio, fechaFin);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Selecciona ambas fechas.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this, "Empleado no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Selecciona un empleado.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        lblFechaInicio = new JLabel("Fecha Inicio (yyyy-MM-dd):");
+        txtFechaInicio = new JTextField(10);
 
-        // Panel superior con ComboBox, DateChooser y botón de cargar
+        lblFechaFin = new JLabel("Fecha Fin (yyyy-MM-dd):");
+        txtFechaFin = new JTextField(10);
+
+        btnCargar = new JButton("Cargar Asistencias");
+        btnCargar.addActionListener(e -> cargarAsistencias());
+
         JPanel panelSuperior = new JPanel();
-        panelSuperior.add(new JLabel("Selecciona un empleado:"));
-        panelSuperior.add(jComboBox1);
-        panelSuperior.add(new JLabel("Fecha Inicio:"));
-        panelSuperior.add(dateChooserInicio);
-        panelSuperior.add(new JLabel("Fecha Fin:"));
-        panelSuperior.add(dateChooserFin);
-        panelSuperior.add(btnCargarAsistencias);
+        panelSuperior.add(lblEmpleado);
+        panelSuperior.add(comboEmpleados);
+        panelSuperior.add(lblFechaInicio);
+        panelSuperior.add(txtFechaInicio);
+        panelSuperior.add(lblFechaFin);
+        panelSuperior.add(txtFechaFin);
+        panelSuperior.add(btnCargar);
 
-        // Tabla para mostrar las asistencias
         tablaAsistencias = new JTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; 
             }
         };
         scrollPane = new JScrollPane(tablaAsistencias);
 
-        // Panel de botones
         JPanel panelBotones = new JPanel();
         panelBotones.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-        // Botón para cerrar el diálogo
         btnCerrar = new JButton("Cerrar");
-        btnCerrar.addActionListener(e -> dispose());
+        btnCerrar.addActionListener(e -> dispose()); 
+        btnGuardar = new JButton("Guardar");
+        btnGuardar.addActionListener(e -> dispose()); 
 
-        // Agregar botones al panel
         panelBotones.add(btnCerrar);
 
-        // Agregar componentes al diálogo
         add(panelSuperior, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
     }
 
-    public void cargarEmpleadosEnComboBox() {
-        jComboBox1.removeAllItems();
-        jComboBox1.addItem("Selecciona un empleado");
-        String query = "SELECT NOMBRE_COMPLETO FROM empleados";
+    private void cargarEmpleados() {
+        String sql = "SELECT NOMBRE_COMPLETO FROM empleados";
+        
+        try (Connection con = ConexionBD.obtenerConexion();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            comboEmpleados.removeAllItems();
 
-        try (Connection con = ConexionBD.obtenerConexion(); Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            comboEmpleados.addItem("Todos los empleados");
+
             while (rs.next()) {
-                String nombreEmpleado = rs.getString("NOMBRE_COMPLETO");
-                jComboBox1.addItem(nombreEmpleado);
+                String nombreCompleto = rs.getString("NOMBRE_COMPLETO");
+                comboEmpleados.addItem(nombreCompleto);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar empleados: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar los empleados: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
-    private int obtenerIdEmpleadoPorNombre(String nombre) {
-        String sql = "SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?";
+    public void cargarAsistencias() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.setColumnIdentifiers(new Object[]{
+            "ID Empleado", "Nombre Completo", "Fecha", "Hora Entrada", "Hora Salida", "Estado", "Observaciones"
+        });
 
-        try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, nombre);
+        String empleadoSeleccionado = (String) comboEmpleados.getSelectedItem();
+        String fechaInicio = txtFechaInicio.getText();
+        String fechaFin = txtFechaFin.getText();
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("ID");
+        if (!isValidDate(fechaInicio) || !isValidDate(fechaFin)) {
+            JOptionPane.showMessageDialog(this, "Las fechas no son válidas. Por favor, use el formato yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String sql = "SELECT a.ID_EMPLEADO, e.NOMBRE_COMPLETO, a.FECHA, a.HORA_ENTRADA, a.HORA_SALIDA, a.ESTADO, a.OBSERVACIONES "
+                + "FROM asistencias a "
+                + "JOIN empleados e ON a.ID_EMPLEADO = e.ID "
+                + "WHERE a.FECHA BETWEEN ? AND ?";
+
+        if (!"Todos los empleados".equals(empleadoSeleccionado)) {
+            sql += " AND e.NOMBRE_COMPLETO = ?";
+        }
+
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, fechaInicio);
+            stmt.setString(2, fechaFin);
+
+            if (!"Todos los empleados".equals(empleadoSeleccionado)) {
+                stmt.setString(3, empleadoSeleccionado);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                while (rs.next()) {
+                    int idEmpleado = rs.getInt("ID_EMPLEADO");
+                    String nombreCompleto = rs.getString("NOMBRE_COMPLETO");
+
+                    String fechaStr = rs.getString("FECHA");
+                    LocalDate fecha = LocalDate.parse(fechaStr, formatter);
+
+                    String horaEntrada = rs.getString("HORA_ENTRADA");
+                    String horaSalida = rs.getString("HORA_SALIDA");
+                    String estado = rs.getString("ESTADO");
+                    String observaciones = rs.getString("OBSERVACIONES");
+
+                    DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    String fechaFormateada = fecha.format(outputFormatter);
+
+                    modelo.addRow(new Object[]{
+                            idEmpleado, nombreCompleto, fechaFormateada, horaEntrada, horaSalida, estado, observaciones
+                    });
+                }
+
+                tablaAsistencias.setModel(modelo);
+
+                if (modelo.getRowCount() == 0) {
+                    JOptionPane.showMessageDialog(this, "No se encontraron asistencias.", "Información", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al obtener el ID del empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar las asistencias: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-        return -1;
     }
 
-    public void cargarAsistenciasEmpleadoEnTabla(int idEmpleado, java.util.Date fechaInicio, java.util.Date fechaFin) {
-    DefaultTableModel modelo = new DefaultTableModel();
-    modelo.setColumnIdentifiers(new Object[]{
-        "ID Asistencia", "Fecha", "Hora Entrada", "Hora Salida", "Estado", "Observaciones"
-    });
-
-    // Consulta SQL para obtener las asistencias en el rango de fechas
-    String sql = "SELECT * FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA BETWEEN ? AND ?";
-
-    try (Connection con = ConexionBD.obtenerConexion();
-         PreparedStatement pst = con.prepareStatement(sql)) {
-
-        // Convertir java.util.Date a java.sql.Date
-        java.sql.Date fechaInicioSQL = new java.sql.Date(fechaInicio.getTime());
-        java.sql.Date fechaFinSQL = new java.sql.Date(fechaFin.getTime());
-
-        // Establecer parámetros en la consulta
-        pst.setInt(1, idEmpleado);
-        pst.setDate(2, fechaInicioSQL);
-        pst.setDate(3, fechaFinSQL);
-
-        // Ejecutar la consulta
-        try (ResultSet rs = pst.executeQuery()) {
-            SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
-
-            // Recorrer el ResultSet y agregar filas al modelo de la tabla
-            while (rs.next()) {
-                String fecha = rs.getString("FECHA");
-                String horaEntrada = rs.getString("HORA_ENTRADA");
-                String horaSalida = rs.getString("HORA_SALIDA");
-                String estado = rs.getString("ESTADO");
-                String observaciones = rs.getString("OBSERVACIONES");
-
-                // Formatear la fecha
-                String fechaFormateada = formatoFecha.format(rs.getDate("FECHA"));
-
-                // Agregar fila al modelo
-                modelo.addRow(new Object[]{
-                    rs.getInt("ID_ASISTENCIA"),
-                    fechaFormateada,
-                    horaEntrada,
-                    horaSalida,
-                    estado,
-                    observaciones
-                });
-            }
+    private boolean isValidDate(String date) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate.parse(date, formatter);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-    } catch (SQLException e) {
-        // Mostrar mensaje de error si ocurre una excepción
-        JOptionPane.showMessageDialog(this, "Error al cargar las asistencias: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace(); // Imprimir la traza de la excepción para depuración
-    }
-
-    // Establecer el modelo en la tabla
-    tablaAsistencias.setModel(modelo);
-
-    // Verificar si la tabla está vacía
-    if (modelo.getRowCount() == 0) {
-        JOptionPane.showMessageDialog(this, "No se encontraron asistencias en el rango de fechas seleccionado.", "Información", JOptionPane.INFORMATION_MESSAGE);
     }
 }
-}
+
