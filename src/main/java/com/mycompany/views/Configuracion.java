@@ -4,6 +4,7 @@
  */
 package com.mycompany.views;
 
+import com.mycompany.ConexionBD;
 import com.mycompany.RoundedPanelShadow;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -11,6 +12,27 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPasswordField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import com.mycompany.loginandsignup.Login;
+import com.mycompany.confirmarAccionConPassword;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerDateModel;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
 /**
  *
  * 
@@ -25,6 +47,11 @@ public class Configuracion extends javax.swing.JPanel {
      */
     public Configuracion() {
         initComponents();
+        
+        configurePasswordField(contraActualField, "Tu contraseña actual");
+        configurePasswordField(nuevaContraField, "Nueva contraseña");
+        configurePasswordField(confContraField, "Confirmar nueva contraseña");
+        
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0)); 
         
         horarioButton.setPreferredSize(new java.awt.Dimension(97, 41));
@@ -43,14 +70,39 @@ public class Configuracion extends javax.swing.JPanel {
             jPanel4.getBorder()
         ));
 
+        guardarButton1.addActionListener(this::guardarActionPerformed);
+        cancelarButton1.addActionListener(this::cancelarActionPerformed);
+        
+        jSpinner1.setModel(new HourSpinnerModel());
+        jSpinner2.setModel(new HourSpinnerModel());
+    
+        JSpinner.DateEditor editor1 = new JSpinner.DateEditor(jSpinner1, "HH:mm");
+        JSpinner.DateEditor editor2 = new JSpinner.DateEditor(jSpinner2, "HH:mm");
+    
+        jSpinner1.setEditor(editor1);
+        jSpinner2.setEditor(editor2);
+    
+        ((JSpinner.DefaultEditor) jSpinner1.getEditor()).getTextField().setFormatterFactory(
+            new DefaultFormatterFactory(new DateFormatter(
+            new SimpleDateFormat("HH:mm")
+            ))
+        );
+    
+        ((JSpinner.DefaultEditor) jSpinner2.getEditor()).getTextField().setFormatterFactory(
+            new DefaultFormatterFactory(new DateFormatter(
+                new SimpleDateFormat("HH:mm")
+            ))
+        );
+        
+        cargarHorariosPorDefecto();
     }
 
     private void setActiveButtonStyle(javax.swing.JButton button) {
-    // Restablecer el estilo del botón anterior
+
     if (activeButton != null) {
         activeButton.setForeground(java.awt.Color.BLACK);
         activeButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 3, 0));
-        // Revertir ícono del botón anterior
+
         if (activeButton == horarioButton) {
             activeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/reloj.png")));
         } else if (activeButton == seguridadButton) {
@@ -68,6 +120,265 @@ public class Configuracion extends javax.swing.JPanel {
     }
     activeButton = button;
 }
+    
+    private void configurePasswordField(JPasswordField field, String placeholder) {
+    field.setText(placeholder);
+    field.setForeground(new Color(102, 102, 102));
+    field.setEchoChar((char) 0); // Mostrar placeholder como texto plano
+
+    field.addFocusListener(new java.awt.event.FocusAdapter() {
+        public void focusGained(java.awt.event.FocusEvent evt) {
+            if (String.valueOf(field.getPassword()).equals(placeholder)) {
+                field.setText("");
+                field.setForeground(Color.BLACK);
+                field.setEchoChar('•'); // Carácter de contraseña
+            }
+        }
+
+        public void focusLost(java.awt.event.FocusEvent evt) {
+            if (field.getPassword().length == 0) {
+                field.setEchoChar((char) 0);
+                field.setText(placeholder);
+                field.setForeground(new Color(102, 102, 102));
+            }
+        }
+    });
+
+    // Listener para cambiar color al modificar texto
+    field.getDocument().addDocumentListener(new DocumentListener() {
+        public void insertUpdate(DocumentEvent e) { updateColor(); }
+        public void removeUpdate(DocumentEvent e) { updateColor(); }
+        public void changedUpdate(DocumentEvent e) { updateColor(); }
+
+        private void updateColor() {
+            if (!String.valueOf(field.getPassword()).isEmpty() && 
+                !String.valueOf(field.getPassword()).equals(placeholder)) {
+                field.setForeground(Color.BLACK);
+            }
+        }
+    });
+}
+    
+    private void togglePasswordVisibility(JPasswordField field, JButton button) {
+    if (field.getEchoChar() == '•') {
+        field.setEchoChar((char) 0);
+        button.setIcon(new javax.swing.ImageIcon(getClass().getResource("/visible_icon.png")));
+    } else {
+        field.setEchoChar('•');
+        button.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png")));
+    }
+}
+    
+    private void cancelarActionPerformed(java.awt.event.ActionEvent evt) {                                         
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "¿Estás seguro de que deseas descartar los cambios?",
+        "Confirmar cancelación",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE
+    );
+    
+    if (confirm == JOptionPane.YES_OPTION) {
+        resetPasswordFields();
+    }
+}                                        
+
+private void guardarActionPerformed(java.awt.event.ActionEvent evt) {                                        
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
+        String nuevaContra = new String(nuevaContraField.getPassword());
+        String confirmacion = new String(confContraField.getPassword());
+        String contraActual = new String(contraActualField.getPassword());
+        
+        // Validar campos
+        if (!validarCampos(contraActual, nuevaContra, confirmacion)) {
+            return;
+        }
+        
+        // Generar nuevo hash
+        Login login = new Login();
+        String nuevoHash = login.hashPassword(nuevaContra);
+        
+        // Actualizar y guardar
+        Login.guardarContraseña(nuevoHash);
+        Login.contraseñaValida = nuevoHash;
+        
+        JOptionPane.showMessageDialog(this, 
+            "Contraseña actualizada exitosamente", 
+            "Éxito", 
+            JOptionPane.INFORMATION_MESSAGE);
+        
+        resetPasswordFields();
+    }
+}
+
+private boolean validarCampos(String actual, String nueva, String confirmacion) {
+    if (actual.isEmpty() || nueva.isEmpty() || confirmacion.isEmpty()) {
+        mostrarError("Todos los campos son obligatorios");
+        return false;
+    }
+    
+    if (!nueva.equals(confirmacion)) {
+        mostrarError("Las nuevas contraseñas no coinciden");
+        return false;
+    }
+    
+    if (nueva.length() < 8) {
+        mostrarError("La contraseña debe tener al menos 8 caracteres");
+        return false;
+    }
+    
+    // Validar contraseña actual
+    Login login = new Login();
+    if (!login.hashPassword(actual).equals(Login.contraseñaValida)) {
+        mostrarError("La contraseña actual es incorrecta");
+        return false;
+    }
+    
+    return true;
+}
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, 
+          mensaje, 
+          "Error", 
+          JOptionPane.ERROR_MESSAGE);
+    }                                     
+
+    private void resetPasswordFields() {
+        contraActualField.setText("Tu contraseña actual");
+        nuevaContraField.setText("Nueva contraseña");
+        confContraField.setText("Confirmar nueva contraseña");
+    
+        Arrays.fill(contraActualField.getPassword(), '\0');
+        Arrays.fill(nuevaContraField.getPassword(), '\0');
+        Arrays.fill(confContraField.getPassword(), '\0');
+    
+        contraActualField.setForeground(new Color(102, 102, 102));
+        nuevaContraField.setForeground(new Color(102, 102, 102));
+        confContraField.setForeground(new Color(102, 102, 102));
+    
+        contraActualField.setEchoChar((char) 0);
+        nuevaContraField.setEchoChar((char) 0);
+        confContraField.setEchoChar((char) 0);
+}
+    
+
+
+public class HourSpinnerModel extends SpinnerDateModel {
+    
+    public HourSpinnerModel() {
+        super(new Date(), null, null, Calendar.HOUR_OF_DAY);
+        ajustarHoraActual();
+    }
+    
+    private void ajustarHoraActual() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) getValue());
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        setValue(cal.getTime());
+    }
+
+    @Override
+    public Object getNextValue() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) super.getNextValue());
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        return cal.getTime();
+    }
+
+    @Override
+    public Object getPreviousValue() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) super.getPreviousValue());
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        return cal.getTime();
+    }
+}
+
+private void guardarHorarios() {
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+    
+    try {
+        String horaEntradaStr = sdf.format(jSpinner1.getValue());
+        String horaSalidaStr = sdf.format(jSpinner2.getValue());
+        
+        String sql = "INSERT OR REPLACE INTO config_horarios (id, hora_entrada, hora_salida) VALUES (1, ?, ?)";
+        
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, horaEntradaStr);
+            pstmt.setString(2, horaSalidaStr);
+            pstmt.executeUpdate();
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error guardando horarios: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Formato de hora inválido: Use HH:mm", 
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private boolean validarHorarios(Date entrada, Date salida) {
+    if (salida.before(entrada)) {
+        JOptionPane.showMessageDialog(this, 
+            "La hora de salida debe ser posterior a la de entrada", 
+            "Error", JOptionPane.ERROR_MESSAGE);
+        return false;
+    }
+    return true;
+}
+
+private void cargarHorariosPorDefecto() {
+    String sql = "SELECT hora_entrada, hora_salida FROM config_horarios WHERE id = 1";
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            // Leer como String en lugar de Time
+            String horaEntradaStr = rs.getString("hora_entrada");
+            String horaSalidaStr = rs.getString("hora_salida");
+            
+            // Formateador para convertir String a Date
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+            
+            // Establecer valores en los spinners
+            jSpinner1.setValue(sdf.parse(horaEntradaStr));
+            jSpinner2.setValue(sdf.parse(horaSalidaStr));
+            
+        } else {
+            // Insertar valores por defecto si no existen
+            insertarHorariosPorDefecto();
+            cargarHorariosPorDefecto(); // Recargar después de insertar
+        }
+    } catch (SQLException | ParseException e) {
+        JOptionPane.showMessageDialog(this, "Error cargando horarios: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private void insertarHorariosPorDefecto() {
+    String sql = "INSERT INTO config_horarios (id, hora_entrada, hora_salida) VALUES (1, '08:00', '17:00')";
+    
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        pstmt.executeUpdate();
+        
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error creando horarios iniciales: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -131,11 +442,8 @@ public class Configuracion extends javax.swing.JPanel {
         };
         jPanel6 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        contraActualField = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        nuevaContraField = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        confContraField = new javax.swing.JTextField();
         guardarButton1 = guardarButton1 = new javax.swing.JButton() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -174,9 +482,12 @@ public class Configuracion extends javax.swing.JPanel {
                 return new java.awt.geom.RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 20, 20).contains(x, y);
             }
         };
-        l = new javax.swing.JButton();
-        l1 = new javax.swing.JButton();
-        l2 = new javax.swing.JButton();
+        ver1 = new javax.swing.JButton();
+        ver2 = new javax.swing.JButton();
+        ver3 = new javax.swing.JButton();
+        contraActualField = new javax.swing.JPasswordField();
+        nuevaContraField = new javax.swing.JPasswordField();
+        confContraField = new javax.swing.JPasswordField();
 
         jPanel1.setBackground(new java.awt.Color(250, 250, 250));
 
@@ -273,6 +584,11 @@ public class Configuracion extends javax.swing.JPanel {
         guardarButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         guardarButton.setContentAreaFilled(false);
         guardarButton.setOpaque(false);
+        guardarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guardarButtonActionPerformed(evt);
+            }
+        });
 
         cancelarButton.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         cancelarButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/x.png"))); // NOI18N
@@ -280,6 +596,11 @@ public class Configuracion extends javax.swing.JPanel {
         cancelarButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         cancelarButton.setContentAreaFilled(false);
         cancelarButton.setOpaque(false);
+        cancelarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelarButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -323,21 +644,11 @@ public class Configuracion extends javax.swing.JPanel {
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setText("Contraseña Actual");
 
-        contraActualField.setForeground(new java.awt.Color(102, 102, 102));
-        contraActualField.setText("Tu contraseña actual");
-        contraActualField.setPreferredSize(new java.awt.Dimension(131, 22));
-
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setText("Nueva Contraseña");
 
-        nuevaContraField.setForeground(new java.awt.Color(102, 102, 102));
-        nuevaContraField.setText("Nueva contraseña");
-
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel7.setText("Confirmar Contraseña");
-
-        confContraField.setForeground(new java.awt.Color(102, 102, 102));
-        confContraField.setText("Confirmar nueva contraseña");
 
         guardarButton1.setBackground(java.awt.Color.red);
         guardarButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -347,6 +658,11 @@ public class Configuracion extends javax.swing.JPanel {
         guardarButton1.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         guardarButton1.setContentAreaFilled(false);
         guardarButton1.setOpaque(false);
+        guardarButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guardarButton1ActionPerformed(evt);
+            }
+        });
 
         cancelarButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         cancelarButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/x.png"))); // NOI18N
@@ -355,11 +671,20 @@ public class Configuracion extends javax.swing.JPanel {
         cancelarButton1.setContentAreaFilled(false);
         cancelarButton1.setOpaque(false);
 
-        l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver1.addActionListener(e -> togglePasswordVisibility(contraActualField, ver1));
 
-        l1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver2.addActionListener(e -> togglePasswordVisibility(nuevaContraField, ver2));
 
-        l2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/contraseña.png"))); // NOI18N
+        ver3.addActionListener(e -> togglePasswordVisibility(confContraField, ver3));
+
+        contraActualField.setText("Tu contraseña actual");
+
+        nuevaContraField.setText("jPasswordField1");
+
+        confContraField.setText("jPasswordField1");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -375,26 +700,26 @@ public class Configuracion extends javax.swing.JPanel {
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addGap(17, 17, 17)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                                .addComponent(contraActualField)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ver1))
                             .addGroup(jPanel6Layout.createSequentialGroup()
                                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(contraActualField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(nuevaContraField))
-                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(confContraField)
                                     .addGroup(jPanel6Layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(l))
-                                    .addGroup(jPanel6Layout.createSequentialGroup()
-                                        .addGap(6, 6, 6)
-                                        .addComponent(l1))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                                .addComponent(confContraField)
+                                        .addComponent(jLabel7)
+                                        .addGap(0, 0, Short.MAX_VALUE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(l2))
+                                .addComponent(ver3))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                                .addComponent(nuevaContraField)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ver2))
                             .addGroup(jPanel6Layout.createSequentialGroup()
                                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel5)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jLabel7))
+                                    .addComponent(jLabel6))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addGap(42, 42, 42))
         );
@@ -405,21 +730,21 @@ public class Configuracion extends javax.swing.JPanel {
                 .addComponent(jLabel5)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(l, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
-                    .addComponent(contraActualField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
+                    .addComponent(ver1, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
+                    .addComponent(contraActualField))
+                .addGap(29, 29, 29)
                 .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(l1, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
-                    .addComponent(nuevaContraField))
                 .addGap(18, 18, 18)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(nuevaContraField, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ver2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
                 .addComponent(jLabel7)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(l2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(confContraField, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(confContraField, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ver3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(guardarButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelarButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -494,12 +819,55 @@ public class Configuracion extends javax.swing.JPanel {
         setActiveButtonStyle(horarioButton);
     }//GEN-LAST:event_horarioButtonActionPerformed
 
+    private void guardarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarButtonActionPerformed
+        // TODO add your handling code here:
+    if (confirmarAccionConPassword.confirmarAccion(this)) {
+        try {
+            guardarHorarios();
+            JOptionPane.showMessageDialog(
+                this, 
+                "Horarios actualizados exitosamente", 
+                "Éxito", 
+                JOptionPane.INFORMATION_MESSAGE
+            );
+            cargarHorariosPorDefecto(); // Actualizar con los nuevos valores
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                this, 
+                "Error al guardar horarios: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+    }//GEN-LAST:event_guardarButtonActionPerformed
+
+    private void cancelarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelarButtonActionPerformed
+        // TODO add your handling code here:
+            int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "¿Estás seguro de que deseas descartar los cambios?",
+            "Confirmar cancelación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            cargarHorariosPorDefecto();
+        }                                             
+    
+    }//GEN-LAST:event_cancelarButtonActionPerformed
+
+    private void guardarButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_guardarButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelarButton;
     private javax.swing.JButton cancelarButton1;
-    private javax.swing.JTextField confContraField;
-    private javax.swing.JTextField contraActualField;
+    private javax.swing.JPasswordField confContraField;
+    private javax.swing.JPasswordField contraActualField;
     private javax.swing.JButton guardarButton;
     private javax.swing.JButton guardarButton1;
     private javax.swing.JButton horarioButton;
@@ -518,11 +886,11 @@ public class Configuracion extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JSpinner jSpinner2;
-    private javax.swing.JButton l;
-    private javax.swing.JButton l1;
-    private javax.swing.JButton l2;
-    private javax.swing.JTextField nuevaContraField;
+    private javax.swing.JPasswordField nuevaContraField;
     private javax.swing.JPanel panelcambiante;
     private javax.swing.JButton seguridadButton;
+    private javax.swing.JButton ver1;
+    private javax.swing.JButton ver2;
+    private javax.swing.JButton ver3;
     // End of variables declaration//GEN-END:variables
 }

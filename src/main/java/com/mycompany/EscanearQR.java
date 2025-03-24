@@ -20,6 +20,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -144,12 +146,25 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
     }
 
     LocalTime horaActual = LocalTime.now();
-    LocalTime horaDeEntrada = LocalTime.of(8, 0);
-    String estado = horaActual.isAfter(horaDeEntrada) ? "Tarde" : "Presente";
+    LocalTime[] horarios = obtenerHorariosConfigurados();
+    LocalTime horaDeEntrada = horarios[0];
+    LocalTime horaDeSalida = horarios[1];
+    String estado;
+    if (horaActual.isAfter(horaDeEntrada)) {
+        estado = "Tarde";
+    } else if (horaActual.isBefore(horaDeEntrada.minusMinutes(15))) {
+        estado = "Temprano";
+    } else {
+        estado = "Presente";
+    }
+    
+                    
 
     String queryVerificar = "SELECT HORA_ENTRADA, HORA_SALIDA FROM asistencias WHERE ID_EMPLEADO = ? AND FECHA = date('now')";
     String queryEntrada = "INSERT INTO asistencias (ID_EMPLEADO, FECHA, HORA_ENTRADA, ESTADO) VALUES (?, date('now'), ?, ?)";
     String querySalida = "UPDATE asistencias SET HORA_SALIDA = ? WHERE ID_EMPLEADO = ? AND FECHA = date('now') AND HORA_SALIDA IS NULL";
+
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"); // Formato de 24h
 
     try (Connection con = ConexionBD.obtenerConexion(); 
          PreparedStatement stmtVerificar = con.prepareStatement(queryVerificar)) {
@@ -157,35 +172,65 @@ public class EscanearQR extends JFrame implements Runnable, ThreadFactory {
         stmtVerificar.setInt(1, idEmpleado);
         try (ResultSet rs = stmtVerificar.executeQuery()) {
             if (rs.next()) {
-                // Ya existe una asistencia registrada hoy
-                Time horaEntrada = rs.getTime("HORA_ENTRADA");
-                Time horaSalida = rs.getTime("HORA_SALIDA");
+                // Leer como String en lugar de Time
+                String horaEntradaStr = rs.getString("HORA_ENTRADA");
+                String horaSalidaStr = rs.getString("HORA_SALIDA");
 
-                if (horaSalida != null) {
-                    JOptionPane.showMessageDialog(this, "La jornada de " + nombreCompleto + " ya ha sido completada hoy.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                LocalTime horaEntrada = null;
+                LocalTime horaSalida = null;
+
+                try {
+                    horaEntrada = LocalTime.parse(horaEntradaStr);
+                    if (horaSalidaStr != null) {
+                        horaSalida = LocalTime.parse(horaSalidaStr);
+                    }
+                } catch (DateTimeParseException e) {
+                    JOptionPane.showMessageDialog(this, "Error al leer horarios almacenados: " + e.getMessage(), 
+                        "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                // Si no tiene salida, registrarla
+                if (horaSalida != null) {
+                    JOptionPane.showMessageDialog(this, "La jornada de " + nombreCompleto + " ya ha sido completada hoy.", 
+                        "Información", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                // Registrar salida
                 try (PreparedStatement stmtSalida = con.prepareStatement(querySalida)) {
-                    stmtSalida.setString(1, horaActual.toString());
+                    stmtSalida.setString(1, horaActual.format(timeFormatter)); // Formatear la hora
                     stmtSalida.setInt(2, idEmpleado);
                     stmtSalida.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Salida registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    
+                        if (horaActual.isBefore(horaDeSalida)) {
+                            JOptionPane.showMessageDialog(this, 
+                                "¡Atención! Salida registrada antes de la hora configurada", 
+                                "Advertencia", JOptionPane.WARNING_MESSAGE);
+                        }
+                    
+                        if (horaActual.isAfter(horaDeSalida.plusHours(2))) {
+                            JOptionPane.showMessageDialog(this, 
+                                "Horas extras detectadas: " + nombreCompleto, 
+                                "Registro Especial", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    JOptionPane.showMessageDialog(this, "Salida registrada correctamente para " + nombreCompleto, 
+                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                // No tiene asistencia hoy, registrar entrada
+                // Registrar entrada
                 try (PreparedStatement stmtEntrada = con.prepareStatement(queryEntrada)) {
                     stmtEntrada.setInt(1, idEmpleado);
-                    stmtEntrada.setString(2, horaActual.toString());
+                    stmtEntrada.setString(2, horaActual.format(timeFormatter)); // Formatear la hora
                     stmtEntrada.setString(3, estado);
                     stmtEntrada.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Entrada registrada correctamente para " + nombreCompleto, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Entrada registrada correctamente para " + nombreCompleto, 
+                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
     } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al registrar asistencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Error al registrar asistencia: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
 
@@ -242,6 +287,45 @@ private boolean verificarSalidaRegistrada(int idEmpleado) {
     return false;
 }
 
+private LocalTime[] obtenerHorariosConfigurados() {
+    String sql = "SELECT hora_entrada, hora_salida FROM config_horarios WHERE id = 1";
+    LocalTime[] horarios = new LocalTime[2];
+    
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+        
+        if (rs.next()) {
+            String entradaStr = rs.getString("hora_entrada");
+            String salidaStr = rs.getString("hora_salida");
+            
+            try {
+                // Parsear los String a LocalTime
+                horarios[0] = LocalTime.parse(entradaStr);
+                horarios[1] = LocalTime.parse(salidaStr);
+            } catch (DateTimeParseException e) {
+                JOptionPane.showMessageDialog(this, "Formato de hora inválido: " + e.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                // Valores por defecto si hay error de formato
+                horarios[0] = LocalTime.of(8, 0);
+                horarios[1] = LocalTime.of(17, 0);
+            }
+        } else {
+            // Si no hay registros, usar valores por defecto
+            horarios[0] = LocalTime.of(8, 0);
+            horarios[1] = LocalTime.of(17, 0);
+        }
+        
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error obteniendo horarios: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+        // Valores por defecto si hay error
+        horarios[0] = LocalTime.of(8, 0);
+        horarios[1] = LocalTime.of(17, 0);
+    }
+    
+    return horarios;
+}
    
 
 
