@@ -53,6 +53,12 @@
     <artifactId>sqlite-jdbc</artifactId>
     <version>3.42.0.0</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-pdf -->
+<dependency>
+    <groupId>org.xhtmlrenderer</groupId>
+    <artifactId>flying-saucer-pdf</artifactId>
+    <version>9.11.4</version>
+</dependency>
 
         <dependency>
             <groupId>com.formdev</groupId>

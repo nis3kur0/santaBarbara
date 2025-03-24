@@ -4,6 +4,7 @@
  */
 package com.mycompany.views;
 
+import com.mycompany.CarnetEmpleado;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +33,11 @@ import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
-import com.mycompany.GenerarCarnet;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 /**
  *PENDIENTE A REFACTORIZACION
@@ -572,6 +577,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jToggleButton1 = new javax.swing.JToggleButton();
+        jButton2 = new javax.swing.JButton();
 
         javax.swing.GroupLayout jCalendarDemo1Layout = new javax.swing.GroupLayout(jCalendarDemo1.getContentPane());
         jCalendarDemo1.getContentPane().setLayout(jCalendarDemo1Layout);
@@ -938,6 +944,14 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             }
         });
 
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tarjeta-de-identificacion.png"))); // NOI18N
+        jButton2.setText("Carnet");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -954,12 +968,14 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                         .addGap(33, 33, 33)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 927, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(201, 201, 201)
+                        .addGap(81, 81, 81)
                         .addComponent(Ficha)
-                        .addGap(30, 30, 30)
+                        .addGap(40, 40, 40)
                         .addComponent(jButton1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(33, 33, 33)
+                        .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -973,12 +989,11 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Ficha)
-                            .addComponent(jButton1))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton1)
+                        .addComponent(Ficha)))
                 .addContainerGap())
         );
 
@@ -1196,6 +1211,102 @@ private void actualizarEmpleado(int selectedRow) {
     }
     }//GEN-LAST:event_jToggleButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    int filaSeleccionada = jTable1.getSelectedRow();
+    
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this, 
+            "Seleccione un empleado de la tabla primero", 
+            "Advertencia", 
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    try {
+        // Obtener el ID del empleado
+        int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
+        
+        // Obtener datos BLOB directamente de la base de datos
+        byte[] qrImage = obtenerQRDesdeBD(idEmpleado);
+        
+        // Obtener otros datos de la tabla
+        String nombre = jTable1.getValueAt(filaSeleccionada, 1).toString();
+        String tipoCedula = jTable1.getValueAt(filaSeleccionada, 2).toString();
+        String cedula = jTable1.getValueAt(filaSeleccionada, 3).toString();
+        String cargo = jTable1.getValueAt(filaSeleccionada, 10).toString();
+        
+        // Crear y mostrar el diálogo del carnet
+        JDialog dialog = new JDialog();
+    CarnetEmpleado carnet = new CarnetEmpleado();
+    carnet.cargarDatosEmpleado(nombre, tipoCedula, cedula, cargo, qrImage);
+    
+    // Botón de impresión pequeño
+    JButton btnImprimir = new JButton("Imprimir");
+    btnImprimir.setPreferredSize(new Dimension(80, 25)); // Tamaño pequeño
+    btnImprimir.addActionListener(e -> carnet.imprimirCarnet());
+    
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(carnet, BorderLayout.CENTER);
+    
+    // Panel para el botón para centrarlo
+    JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    panelBoton.add(btnImprimir);
+    panel.add(panelBoton, BorderLayout.SOUTH);
+    
+    dialog.add(panel);
+    dialog.setModal(true);
+    dialog.setResizable(false);
+    
+    // Ajustar el diálogo al tamaño preferido del carnet
+    dialog.pack();
+    
+    // Obtener el tamaño preferido del carnet y ajustar el diálogo
+    Dimension carnetSize = carnet.getPreferredSize();
+    dialog.setSize(new Dimension(carnetSize.width, carnetSize.height + 40)); // +40 para el botón
+    
+    dialog.setLocationRelativeTo(null);
+    dialog.setVisible(true);
+        
+        
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al generar el carnet: " + e.getMessage(), 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
+
+// Método para obtener el QR directamente desde la base de datos
+private byte[] obtenerQRDesdeBD(int idEmpleado) {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    byte[] qrImage = null;
+    
+    try {
+        conn =  ConexionBD.obtenerConexion();
+        String sql = "SELECT qr_code FROM empleados WHERE ID = ?";
+        stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, idEmpleado);
+        rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            qrImage = rs.getBytes("qr_code");
+            System.out.println("QR obtenido de BD: " + (qrImage != null ? qrImage.length + " bytes" : "null"));
+        }
+    } catch (SQLException e) {
+        System.err.println("Error al obtener QR de BD: " + e.getMessage());
+    } finally {
+        // Cerrar recursos
+        try { if (rs != null) rs.close(); } catch (SQLException e) {}
+        try { if (stmt != null) stmt.close(); } catch (SQLException e) {}
+        try { if (conn != null) conn.close(); } catch (SQLException e) {}
+    }
+    
+    return qrImage;
+    }//GEN-LAST:event_jButton2ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Ficha;
@@ -1208,6 +1319,7 @@ private void actualizarEmpleado(int selectedRow) {
     private javax.swing.JButton editarBtn;
     private javax.swing.JButton eliminarBtn;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private com.toedter.calendar.demo.JCalendarDemo jCalendarDemo1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
