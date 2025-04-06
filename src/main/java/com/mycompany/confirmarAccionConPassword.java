@@ -5,10 +5,8 @@
 package com.mycompany;
 
 import java.awt.Component;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
-import com.mycompany.loginandsignup.Login;
 
 /**
  *
@@ -36,11 +34,9 @@ public class confirmarAccionConPassword {
             
             if (okCxl == JOptionPane.OK_OPTION) {
                 String inputPassword = new String(pf.getPassword());
-                // Obtener instancia de Login para acceder al método de hashing
                 com.mycompany.loginandsignup.Login login = new com.mycompany.loginandsignup.Login();
                 String hashedInput = login.hashPassword(inputPassword);
                 
-                // Comparar con el hash almacenado
                 if (hashedInput.equals(com.mycompany.loginandsignup.Login.contraseñaValida)) {
                     return true;
                 } else {

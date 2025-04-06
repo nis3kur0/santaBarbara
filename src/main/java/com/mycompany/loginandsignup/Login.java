@@ -31,7 +31,6 @@ public class Login extends javax.swing.JFrame {
             if (Files.exists(path)) {
                 contraseñaValida = new String(Files.readAllBytes(path));
             } else {
-                // Contraseña por defecto
                 contraseñaValida = "b06ee7514af261afa9bfaa868dbdb5e9140983c0b921bedc5ad3eafcd8192679";
                 guardarContraseña(contraseñaValida);
             }
