@@ -89,7 +89,7 @@ public class Asistencia extends javax.swing.JPanel {
         Object[] rowData = new Object[columnCount];
         for (int i = 1; i <= columnCount; i++) {
             Object value = rs.getObject(i);
-            if (i == 3 || i == 4) { // Columnas HORA_ENTRADA y HORA_SALIDA
+            if (i == 3 || i == 4) { 
                 if (value == null) {
                     rowData[i - 1] = null;
                     continue;

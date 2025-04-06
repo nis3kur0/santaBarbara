@@ -13,14 +13,13 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
 
     public CarnetEmpleado() {
         initComponents();
-        setPreferredSize(new Dimension(450, 800)); // Tamaño preferido del carnet
-        qrLabel.setBorder(new LineBorder(Color.BLACK)); // Borde para el QR
+        setPreferredSize(new Dimension(450, 800));
+        qrLabel.setBorder(new LineBorder(Color.BLACK)); 
     }
 
     public void cargarDatosEmpleado(String nombre, String tipoCedula, String cedula, String cargo, byte[] qrImage) {
         nombreLabel.setText(nombre);
-        cedulaLabel.setText(tipoCedula + "-" + cedula);
-        cargoLabel.setText(cargo);
+       
         mostrarQR(qrImage);
         revalidate();
         repaint();
@@ -65,7 +64,6 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
         }
     }
 
-    // Implementación de Printable para la impresión
     @Override
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
         if (pageIndex > 0) {
@@ -75,14 +73,12 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
         Graphics2D g2d = (Graphics2D) graphics;
         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-        // Escalar para ajustar a la página
         double scale = Math.min(
             pageFormat.getImageableWidth() / this.getWidth(),
             pageFormat.getImageableHeight() / this.getHeight()
         );
         g2d.scale(scale, scale);
 
-        // Imprimir el componente
         this.printAll(g2d);
 
         return PAGE_EXISTS;
@@ -100,20 +96,18 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         nombreLabel = new javax.swing.JLabel();
-        cedulaLabel = new javax.swing.JLabel();
-        cargoLabel = new javax.swing.JLabel();
         qrLabel = new javax.swing.JLabel();
         tituloLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(400, 500));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
         jPanel1.setPreferredSize(new java.awt.Dimension(300, 400));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel2.setBackground(new java.awt.Color(204, 0, 0));
         jPanel2.setForeground(new java.awt.Color(153, 0, 0));
@@ -129,102 +123,33 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
             .addGap(0, 43, Short.MAX_VALUE)
         );
 
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(2, 297, 1217, -1));
+
         nombreLabel.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
-        nombreLabel.setText("jLabel1");
+        nombreLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        nombreLabel.setText("Nombre Completo");
         nombreLabel.setToolTipText("");
+        jPanel1.add(nombreLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, 322, -1));
 
-        cedulaLabel.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        cedulaLabel.setForeground(new java.awt.Color(204, 0, 0));
-        cedulaLabel.setText("ced");
-
-        cargoLabel.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        cargoLabel.setForeground(new java.awt.Color(153, 0, 0));
-        cargoLabel.setText("jLabel1");
-
-        qrLabel.setText("jLabel1");
         qrLabel.setToolTipText("");
+        jPanel1.add(qrLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 510, 211, 187));
 
         tituloLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logo.jpg"))); // NOI18N
         tituloLabel.setText("jLabel1");
-
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(204, 0, 0));
-        jLabel1.setText("CI");
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(204, 0, 0));
-        jLabel2.setText("Cargo");
+        jPanel1.add(tituloLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(14, 25, 60, 63));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel3.setText("Santa Barbara S.A");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 22, -1, -1));
 
-        jLabel4.setText("jLabel4");
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/usuario.png"))); // NOI18N
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(165, 79, -1, 163));
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(qrLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(125, 125, 125))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(tituloLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(36, 36, 36)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(nombreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(85, 85, 85))))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(144, 144, 144)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(178, 178, 178)
-                        .addComponent(jLabel1))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(158, 158, 158)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cargoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(37, 37, 37)
-                        .addComponent(cedulaLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addComponent(tituloLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 233, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(14, 14, 14)
-                        .addComponent(nombreLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(23, 23, 23)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cedulaLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2)
-                .addGap(23, 23, 23)
-                .addComponent(cargoLabel)
-                .addGap(18, 18, 18)
-                .addComponent(qrLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(49, Short.MAX_VALUE))
-        );
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(204, 0, 0));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Registre su asistencia");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 370, 220, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -236,15 +161,12 @@ public class CarnetEmpleado extends javax.swing.JPanel implements Printable {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel cargoLabel;
-    private javax.swing.JLabel cedulaLabel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

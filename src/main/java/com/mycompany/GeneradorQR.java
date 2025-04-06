@@ -50,15 +50,12 @@ public class GeneradorQR {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
         
-        // Crear directorio si no existe
         File directory = new File("qr_e");
         if (!directory.exists()) directory.mkdirs();
         
-        // Guardar archivo
         Path path = Paths.get(filePath);
         MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
         
-        // Convertir a byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
         return baos.toByteArray();

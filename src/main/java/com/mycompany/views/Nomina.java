@@ -6,7 +6,6 @@ package com.mycompany.views;
 
 import com.mycompany.BonificacionesDialog;
 import com.mycompany.ConexionBD;
-import com.mycompany.LiquidacionesDialog;
 import com.mycompany.recibodePago;
 import com.mycompany.detalleNomina;
 import com.mycompany.historialNomina;
@@ -113,221 +112,149 @@ public class Nomina extends javax.swing.JPanel {
 
     //FIN//
 //CALCULOS Y ACCIONES
-public void calcularNomina() {
-    Connection con = null;
-    PreparedStatement pstNomina = null;
-    PreparedStatement pstBonificaciones = null;
-    ResultSet rsNomina = null;
-    ResultSet rsBonificaciones = null;
+ public void calcularNomina() {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
 
-    try {
-        System.out.println("\n=== INICIO CÁLCULO NÓMINA ===");
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
-        String fechaFinStr = sdf.format(fechaFinNom.getDate());
-        
-        System.out.println("Fechas seleccionadas - Inicio: " + fechaInicioStr + ", Fin: " + fechaFinStr);
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+            String fechaFinStr = sdf.format(fechaFinNom.getDate());
 
-        // Validación de fechas
-        LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
-        LocalDate fechaFin = LocalDate.parse(fechaFinStr);
-        long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
-        
-        System.out.println("Días entre fechas: " + diasDeDiferencia);
+            LocalDate fechaInicio = LocalDate.parse(fechaInicioStr);
+            LocalDate fechaFin = LocalDate.parse(fechaFinStr);
 
-        if (diasDeDiferencia < 14) {
-            JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
-            return;
-        }
-        if (diasDeDiferencia > 30) {
-            JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
-            return;
-        }
-
-        if (validarFechasSolapadas(fechaInicio, fechaFin)) {
-            return;
-        }
-
-        con = ConexionBD.obtenerConexion();
-        System.out.println("Conexión a BD establecida: " + (con != null));
-
-     
-        System.out.println("\n--- BONIFICACIONES ---");
-        
-        // Consulta modificada para usar inicio_bon y fin_bon
-        String sqlBonificaciones = "SELECT id_empleado, SUM(monto) as total_bonificaciones " +
-                                 "FROM bonificaciones " +
-                                 "WHERE inicio_bon <= ? AND fin_bon >= ? " +
-                                 "GROUP BY id_empleado";
-        
-        pstBonificaciones = con.prepareStatement(sqlBonificaciones);
-        pstBonificaciones.setString(1, fechaFinStr);   // fin_bon >= fechaFinStr
-        pstBonificaciones.setString(2, fechaInicioStr); // inicio_bon <= fechaInicioStr
-        
-        System.out.println("\nConsulta SQL para bonificaciones:");
-        System.out.println(pstBonificaciones.toString());
-        
-        rsBonificaciones = pstBonificaciones.executeQuery();
-        
-        Map<Integer, Double> bonificacionesPorEmpleado = new HashMap<>();
-        int bonificacionesEncontradas = 0;
-        
-        System.out.println("\nBonificaciones encontradas en el período:");
-        while (rsBonificaciones.next()) {
-            int idEmp = rsBonificaciones.getInt("id_empleado");
-            double monto = rsBonificaciones.getDouble("total_bonificaciones");
-            bonificacionesPorEmpleado.put(idEmp, monto);
-            bonificacionesEncontradas++;
-            
-            System.out.println(String.format(
-                "Empleado %d: %.2f BS", 
-                idEmp, monto
-            ));
-        }
-        
-        System.out.println("Total bonificaciones encontradas: " + bonificacionesEncontradas);
-        System.out.println("Mapa de bonificaciones: " + bonificacionesPorEmpleado);
-
-       
-        System.out.println("\n--- NÓMINA PRINCIPAL ---");
-        
-        String sqlNomina = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, " +
-                "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, " +
-                "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, " +
-                "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 " +
-                "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, " +
-                "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, " +
-                "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, " +
-                "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, " +
-                "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES " +
-                "FROM empleados e " +
-                "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? " +
-                "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
-
-        pstNomina = con.prepareStatement(sqlNomina);
-        pstNomina.setString(1, fechaInicioStr);
-        pstNomina.setString(2, fechaFinStr);
-        
-        System.out.println("\nConsulta SQL para nómina:");
-        System.out.println(pstNomina.toString());
-        
-        rsNomina = pstNomina.executeQuery();
-
-        // Configurar modelo de tabla
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
+            long diasDeDiferencia = ChronoUnit.DAYS.between(fechaInicio, fechaFin);
+            if (diasDeDiferencia < 14) {
+                JOptionPane.showMessageDialog(null, "El período de la nómina debe ser de al menos 15 días.");
+                return;
             }
-        };
+            if (diasDeDiferencia > 30) {
+                JOptionPane.showMessageDialog(null, "El período de la nómina no puede exceder los 31 días.");
+                return;
+            }
 
-        model.setColumnIdentifiers(new Object[]{
-            "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias",
-            "Horas Extras", "Bonificaciones", "IVSS", "FAOV", "INCES", "Salario Neto"
-        });
+            if (validarFechasSolapadas(fechaInicio, fechaFin)) {
+                return;
+            }
 
-        tablaNomina.setModel(model);
+            con = ConexionBD.obtenerConexion();
 
-        // Variables para totales
-        double totalSalarioBase = 0;
-        totalSueldoNeto = 0;
-        double totalDeducciones = 0;
-        double totalFAOV = 0;
-        double totalIVSS = 0;
-        double totalInces = 0;
-        double totalBonificaciones = 0;
-        double totalHorasExtras = 0;
+            String sql = "SELECT e.ID, e.NOMBRE_COMPLETO, e.SALARIO AS SALARIO_BASE, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END) AS DIAS_TRABAJADOS, "
+                    + "COUNT(CASE WHEN a.ESTADO = 'Ausente' THEN 1 END) AS AUSENCIAS, "
+                    + "ROUND(SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS HORAS_EXTRAS, "
+                    + "ROUND((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END), 2) AS SUELDO_NETO, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.04, 2) AS IVSS, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS FAOV, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.01, 2) AS INCES, "
+                    + "ROUND(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) - "
+                    + "(((e.SALARIO / 30) * COUNT(CASE WHEN a.ESTADO = 'Presente' THEN 1 END)) * 0.05) + "
+                    + "SUM(CASE WHEN (strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 > 8 "
+                    + "THEN ((strftime('%s', a.HORA_SALIDA) - strftime('%s', a.HORA_ENTRADA)) / 3600 - 8) * (e.SALARIO / 30 / 8 * 1.5) ELSE 0 END), 2) AS SUELDO_FINAL "
+                    + "FROM empleados e "
+                    + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
+                    + "GROUP BY e.ID, e.NOMBRE_COMPLETO, e.SALARIO";
 
-        // Procesar resultados de nómina
-        System.out.println("\nProcesando empleados:");
-        while (rsNomina.next()) {
-            int idEmpleado = rsNomina.getInt("ID");
-            String nombre = rsNomina.getString("NOMBRE_COMPLETO");
-            double bonificaciones = bonificacionesPorEmpleado.getOrDefault(idEmpleado, 0.0);
-            
-            System.out.println("\nEmpleado ID: " + idEmpleado + ", Nombre: " + nombre);
-            System.out.println("Bonificaciones para este empleado: " + bonificaciones + " BS");
-            
-            int diasTrabajados = rsNomina.getInt("DIAS_TRABAJADOS");
-            int ausencias = rsNomina.getInt("AUSENCIAS");
-            double horasExtras = rsNomina.getDouble("HORAS_EXTRAS");
-            double sueldoNeto = rsNomina.getDouble("SUELDO_NETO");
-            double ivss = rsNomina.getDouble("IVSS");
-            double faov = rsNomina.getDouble("FAOV");
-            double inces = rsNomina.getDouble("INCES");
-            double salarioBase = rsNomina.getDouble("SALARIO_BASE");
-            
-            System.out.println(String.format(
-                "Datos base - Días: %d, Salario: %.2f, Horas extras: %.2f",
-                diasTrabajados, salarioBase, horasExtras
-            ));
-            
-            double sueldoFinal = sueldoNeto + bonificaciones + horasExtras - (ivss + faov + inces);
-            
-            System.out.println(String.format(
-                "Cálculo final: %.2f (base) + %.2f (bonif) + %.2f (horas extras) - %.2f (deducciones) = %.2f",
-                sueldoNeto, bonificaciones, horasExtras, (ivss + faov + inces), sueldoFinal
-            ));
+            pst = con.prepareStatement(sql);
+            pst.setString(1, fechaInicioStr);
+            pst.setString(2, fechaFinStr);
+            rs = pst.executeQuery();
 
-            model.addRow(new Object[]{
-                idEmpleado,
-                nombre,
-                String.format(Locale.US, "%.2f BS", salarioBase),
-                diasTrabajados,
-                ausencias,
-                String.format(Locale.US, "%.2f", horasExtras),
-                String.format(Locale.US, "%.2f BS", bonificaciones),
-                String.format(Locale.US, "%.2f BS", ivss),
-                String.format(Locale.US, "%.2f BS", faov),
-                String.format(Locale.US, "%.2f BS", inces),
-                String.format(Locale.US, "%.2f BS", sueldoFinal)
+            DefaultTableModel model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            model.setColumnIdentifiers(new Object[]{
+                "ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias",
+                "Horas Extras", "IVSS", "FAOV", "INCES", "Salarioadmin Neto"
             });
 
-            totalSalarioBase += salarioBase;
-            totalSueldoNeto += sueldoFinal;
-            totalDeducciones += (ivss + faov + inces);
-            totalFAOV += faov;
-            totalIVSS += ivss;
-            totalInces += inces;
-            totalBonificaciones += bonificaciones;
-            totalHorasExtras += horasExtras;
-        }
+            tablaNomina.setModel(model);
 
-        System.out.println("\n=== RESUMEN FINAL ===");
-        System.out.println("Total empleados procesados: " + model.getRowCount());
-        System.out.println("Total bonificaciones aplicadas: " + totalBonificaciones + " BS");
-        System.out.println("Total sueldo neto: " + totalSueldoNeto + " BS");
+            double totalSalarioBase = 0;
+            totalSueldoNeto = 0;
+            double totalDeducciones = 0;
+            double totalFAOV = 0;
+            double totalIVSS = 0;
+            double totalInces = 0;
 
-        if (model.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No se encontraron datos para el período seleccionado.");
-        }
+            while (rs.next()) {
+                int diasTrabajados = rs.getInt("DIAS_TRABAJADOS");
+                int ausencias = rs.getInt("AUSENCIAS");
+                double horasExtras = rs.getDouble("HORAS_EXTRAS");
+                double sueldoNeto = rs.getDouble("SUELDO_FINAL");
+                double ivss = rs.getDouble("IVSS");
+                double faov = rs.getDouble("FAOV");
+                double inces = rs.getDouble("INCES");
+                double salarioBase = rs.getDouble("SALARIO_BASE");
 
-        montoBaseL.setText(String.format("%.2f BS", totalSalarioBase));
-        montoNetoL.setText(String.format("%.2f BS", totalSueldoNeto));
-        deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
-        faovLabel.setText(String.format("%.2f BS", totalFAOV));
-        ivssLabel.setText(String.format("%.2f BS", totalIVSS));
-        incesLabel.setText(String.format("%.2f BS", totalInces));
-        
-        System.out.println("=== CÁLCULO FINALIZADO ===\n");
+                if (rs.wasNull()) {
+                    diasTrabajados = 0;
+                    ausencias = 0;
+                    horasExtras = 0.0;
+                    sueldoNeto = 0.0;
+                    ivss = 0.0;
+                    faov = 0.0;
+                    inces = 0.0;
+                    salarioBase = 0.0;
+                }
 
-    } catch (Exception ex) {
-        System.err.println("ERROR en calcularNomina: " + ex.getMessage());
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al calcular la nómina: " + ex.getMessage());
-    } finally {
-        try {
-            if (rsNomina != null) rsNomina.close();
-            if (rsBonificaciones != null) rsBonificaciones.close();
-            if (pstNomina != null) pstNomina.close();
-            if (pstBonificaciones != null) pstBonificaciones.close();
-            if (con != null) con.close();
-        } catch (SQLException e) {
-            System.err.println("Error cerrando recursos: " + e.getMessage());
+                model.addRow(new Object[]{
+                    rs.getInt("ID"),
+                    rs.getString("NOMBRE_COMPLETO"),
+                    String.format(Locale.US, "%.2f BS", salarioBase),
+                    diasTrabajados,
+                    ausencias,
+                    String.format(Locale.US, "%.2f", horasExtras),
+                    String.format(Locale.US, "%.2f BS", ivss),
+                    String.format(Locale.US, "%.2f BS", faov),
+                    String.format(Locale.US, "%.2f BS", inces),
+                    String.format(Locale.US, "%.2f BS", sueldoNeto),});
+
+                totalSalarioBase += salarioBase;
+                totalSueldoNeto += sueldoNeto;
+                totalDeducciones += (ivss + faov + inces);
+                totalFAOV += faov;
+                totalIVSS += ivss;
+                totalInces += inces;
+            }
+
+            if (model.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(null, "No se encontraron datos para el período seleccionado.");
+            }
+
+            montoBaseL.setText(String.format("%.2f BS", totalSalarioBase));
+            montoNetoL.setText(String.format("%.2f BS", totalSueldoNeto));
+            deduccionesTotalesL.setText(String.format("%.2f BS", totalDeducciones));
+            faovLabel.setText(String.format("%.2f BS", totalFAOV));
+            ivssLabel.setText(String.format("%.2f BS", totalIVSS));
+            incesLabel.setText(String.format("%.2f BS", totalInces));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al calcular la nómina: " + ex.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pst != null) {
+                    pst.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
     public void registrarPagoNomina() {
         Connection con = null;
@@ -1280,18 +1207,7 @@ limpiar();        // TODO add your handling code here:
     bonificacionesDialog.setVisible(true);    }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-          try {
-        // Obtener el JFrame padre
-        java.awt.Frame parentFrame = (java.awt.Frame) SwingUtilities.getWindowAncestor(this);
-        
-        // Crear y mostrar el diálogo de liquidaciones
-        LiquidacionesDialog dialog = new LiquidacionesDialog(parentFrame);
-        dialog.setVisible(true);
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, 
-            "Error al abrir la ventana de liquidaciones: " + e.getMessage(), 
-            "Error", JOptionPane.ERROR_MESSAGE);
-    }
+         
     }//GEN-LAST:event_jButton9ActionPerformed
 
 

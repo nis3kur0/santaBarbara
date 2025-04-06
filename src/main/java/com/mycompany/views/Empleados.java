@@ -1223,32 +1223,26 @@ private void actualizarEmpleado(int selectedRow) {
     }
     
     try {
-        // Obtener el ID del empleado
         int idEmpleado = (int) jTable1.getValueAt(filaSeleccionada, 0);
         
-        // Obtener datos BLOB directamente de la base de datos
         byte[] qrImage = obtenerQRDesdeBD(idEmpleado);
         
-        // Obtener otros datos de la tabla
         String nombre = jTable1.getValueAt(filaSeleccionada, 1).toString();
         String tipoCedula = jTable1.getValueAt(filaSeleccionada, 2).toString();
         String cedula = jTable1.getValueAt(filaSeleccionada, 3).toString();
         String cargo = jTable1.getValueAt(filaSeleccionada, 10).toString();
         
-        // Crear y mostrar el diálogo del carnet
         JDialog dialog = new JDialog();
     CarnetEmpleado carnet = new CarnetEmpleado();
     carnet.cargarDatosEmpleado(nombre, tipoCedula, cedula, cargo, qrImage);
     
-    // Botón de impresión pequeño
     JButton btnImprimir = new JButton("Imprimir");
-    btnImprimir.setPreferredSize(new Dimension(80, 25)); // Tamaño pequeño
+    btnImprimir.setPreferredSize(new Dimension(80, 25)); 
     btnImprimir.addActionListener(e -> carnet.imprimirCarnet());
     
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(carnet, BorderLayout.CENTER);
     
-    // Panel para el botón para centrarlo
     JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER));
     panelBoton.add(btnImprimir);
     panel.add(panelBoton, BorderLayout.SOUTH);
@@ -1257,12 +1251,10 @@ private void actualizarEmpleado(int selectedRow) {
     dialog.setModal(true);
     dialog.setResizable(false);
     
-    // Ajustar el diálogo al tamaño preferido del carnet
     dialog.pack();
     
-    // Obtener el tamaño preferido del carnet y ajustar el diálogo
     Dimension carnetSize = carnet.getPreferredSize();
-    dialog.setSize(new Dimension(carnetSize.width, carnetSize.height + 40)); // +40 para el botón
+    dialog.setSize(new Dimension(carnetSize.width, carnetSize.height + 40)); 
     
     dialog.setLocationRelativeTo(null);
     dialog.setVisible(true);
@@ -1277,7 +1269,6 @@ private void actualizarEmpleado(int selectedRow) {
     }
 }
 
-// Método para obtener el QR directamente desde la base de datos
 private byte[] obtenerQRDesdeBD(int idEmpleado) {
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -1298,7 +1289,6 @@ private byte[] obtenerQRDesdeBD(int idEmpleado) {
     } catch (SQLException e) {
         System.err.println("Error al obtener QR de BD: " + e.getMessage());
     } finally {
-        // Cerrar recursos
         try { if (rs != null) rs.close(); } catch (SQLException e) {}
         try { if (stmt != null) stmt.close(); } catch (SQLException e) {}
         try { if (conn != null) conn.close(); } catch (SQLException e) {}
