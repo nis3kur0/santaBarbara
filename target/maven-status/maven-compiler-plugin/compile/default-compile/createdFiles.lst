@@ -46,7 +46,6 @@ com\mycompany\GenerarCarnet.class
 com\mycompany\confirmarAccionConPassword.class
 com\mycompany\reportes\reporteEmpleados$1.class
 com\mycompany\views\Configuracion$11.class
-com\mycompany\BonificacionesDialog$2.class
 com\mycompany\views\Empleados$14.class
 com\mycompany\recibodePago.class
 com\mycompany\santabarbara\Dashborad.class
