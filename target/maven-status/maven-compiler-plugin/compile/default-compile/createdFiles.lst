@@ -28,7 +28,6 @@ com\mycompany\RoundedPanel.class
 com\mycompany\views\Configuracion$HourSpinnerModel.class
 com\mycompany\views\Nomina$14.class
 com\mycompany\views\Configuracion$9.class
-com\mycompany\reporteEmpleados.class
 com\mycompany\views\Configuracion$2.class
 com\mycompany\views\Nomina$1.class
 com\mycompany\views\Ficha$1.class
@@ -45,6 +44,7 @@ com\mycompany\views\Empleados$LettersDocumentFilter.class
 com\mycompany\historialNomina.class
 com\mycompany\GenerarCarnet.class
 com\mycompany\confirmarAccionConPassword.class
+com\mycompany\reportes\reporteEmpleados$1.class
 com\mycompany\views\Configuracion$11.class
 com\mycompany\BonificacionesDialog$2.class
 com\mycompany\views\Empleados$14.class
@@ -110,6 +110,7 @@ com\mycompany\views\Nomina.class
 com\mycompany\views\Nomina$10.class
 com\mycompany\views\Asistencia$4.class
 com\mycompany\views\Empleados$4.class
+com\mycompany\aareporteEmpleados.class
 com\mycompany\views\Empleados$19.class
 com\mycompany\views\Configuracion$5.class
 com\mycompany\views\Nomina$9.class

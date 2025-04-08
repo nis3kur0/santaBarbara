@@ -4,18 +4,106 @@
  */
 package com.mycompany.reportes;
 
-/**
- *
- * @author Nattitor
- */
-public class reporteEmpleados extends javax.swing.JPanel {
+import com.mycompany.ConexionBD;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
-    /**
-     * Creates new form reporteEmpleados
-     */
+public class reporteEmpleados extends javax.swing.JPanel implements Printable {
+
+    DefaultTableModel model = new DefaultTableModel() {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
+
     public reporteEmpleados() {
         initComponents();
+        cargarDatosEnTabla();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        fechaLabel.setText(sdf.format(new Date()));
     }
+
+    private void cargarDatosEnTabla() {
+        String sql = """
+                     SELECT NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO,
+                            TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO,
+                            INICIO_CONTRATO, FIN_CONTRATO
+                     FROM empleados
+                     """;
+
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            String[] columnNames = {
+                "Nombre Completo", "Cédula", "Fecha Nacimiento", "Teléfono",
+                "Teléfono Habitación", "Email", "Dirección", "Cargo", "Salario",
+                "Inicio de Contrato", "Fin de Contrato"
+            };
+
+            model.setRowCount(0);
+            model.setColumnIdentifiers(columnNames);
+
+            while (rs.next()) {
+                Object[] rowData = new Object[columnNames.length];
+                for (int i = 1; i <= columnNames.length; i++) {
+                    rowData[i - 1] = rs.getObject(i);
+                }
+                model.addRow(rowData);
+            }
+
+            jTable1.setModel(model);
+
+            int[] columnWidths = {140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
+            for (int i = 0; i < columnWidths.length; i++) {
+                TableColumn column = jTable1.getColumnModel().getColumn(i);
+                column.setPreferredWidth(columnWidths[i]);
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar los datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Implementación para hacer el panel imprimible
+    @Override
+public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
+    if (pageIndex > 0) {
+        return NO_SUCH_PAGE;
+    }
+
+    Graphics2D g2d = (Graphics2D) g;
+    g2d.translate(pf.getImageableX(), pf.getImageableY());
+
+    // Escalar el panel para que quepa en la hoja
+    double panelWidth = this.getWidth();
+    double panelHeight = this.getHeight();
+    double printableWidth = pf.getImageableWidth();
+    double printableHeight = pf.getImageableHeight();
+
+    double scaleX = printableWidth / panelWidth;
+    double scaleY = printableHeight / panelHeight;
+    double scale = Math.min(scaleX, scaleY); // Mantener proporción
+
+    g2d.scale(scale, scale);
+    this.printAll(g2d);
+
+    return PAGE_EXISTS;
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -29,14 +117,12 @@ public class reporteEmpleados extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        fechaLabel = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        rows = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
@@ -47,14 +133,11 @@ public class reporteEmpleados extends javax.swing.JPanel {
         jLabel2.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         jLabel2.setText("REPORTE DE EMPLEADOS TOTALES");
 
-        jLabel3.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-        jLabel3.setText("REPORTE DE EMPLEADOS");
-
         jLabel4.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel4.setText("Fecha");
 
-        jLabel5.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel5.setText("XX-XX-XXXX");
+        fechaLabel.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        fechaLabel.setText("XX-XX-XXXX");
 
         jLabel6.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel6.setText("Santa Barbara C.A.");
@@ -67,9 +150,6 @@ public class reporteEmpleados extends javax.swing.JPanel {
 
         jLabel9.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel9.setText("XXXXXXXX");
-
-        rows.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        rows.setText("rows");
 
         jTable1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -93,26 +173,22 @@ public class reporteEmpleados extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1)
-                        .addGap(342, 342, 342)
-                        .addComponent(jLabel3))
+                        .addComponent(jLabel1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(25, 25, 25)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
-                            .addComponent(jLabel4)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel8))
+                                .addComponent(jLabel4)
+                                .addGap(18, 18, 18)
+                                .addComponent(fechaLabel))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel7)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel9)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(rows))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1012, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(19, Short.MAX_VALUE))
+                                .addComponent(jLabel9))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1012, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel2)
@@ -122,24 +198,21 @@ public class reporteEmpleados extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel1))
+                .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel8))
+                    .addComponent(jLabel4)
+                    .addComponent(fechaLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel8)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(jLabel9)
-                    .addComponent(rows))
+                    .addComponent(jLabel9))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(197, Short.MAX_VALUE))
@@ -159,11 +232,10 @@ public class reporteEmpleados extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel fechaLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -171,6 +243,5 @@ public class reporteEmpleados extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
-    private javax.swing.JLabel rows;
     // End of variables declaration//GEN-END:variables
 }

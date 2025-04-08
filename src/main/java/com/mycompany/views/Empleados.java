@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import com.mycompany.ConexionBD;
-import com.mycompany.reporteEmpleados;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
@@ -34,9 +33,12 @@ import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
 import com.mycompany.reportes.ConstanciaTrabajo;
+import com.mycompany.reportes.reporteEmpleados;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
 import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -1190,10 +1192,38 @@ private void actualizarEmpleado(int selectedRow) {
     }//GEN-LAST:event_FichaActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       reporteEmpleados.generarReporte();
+  reporteEmpleados reporte = new reporteEmpleados(); // Usa una referencia real si ya lo tienes cargado
 
-    //
-   // TODO add your handling code here:
+    javax.swing.JFrame previewFrame = new javax.swing.JFrame("Vista previa de impresión");
+    previewFrame.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+    previewFrame.setSize(1000, 700);
+    previewFrame.setLocationRelativeTo(null);
+
+    javax.swing.JPanel topPanel = new javax.swing.JPanel();
+    javax.swing.JButton imprimirBtn = new javax.swing.JButton("Imprimir / Guardar PDF");
+
+    imprimirBtn.addActionListener(e -> {
+        java.awt.print.PrinterJob job = java.awt.print.PrinterJob.getPrinterJob();
+        job.setJobName("Reporte de Empleados");
+
+        PageFormat pf = job.defaultPage();
+        pf.setOrientation(PageFormat.LANDSCAPE); // 🌟 Aquí forzamos landscape
+
+        job.setPrintable(reporte, pf);
+
+        if (job.printDialog()) {
+            try {
+                job.print();
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(previewFrame, "Error al imprimir: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    });
+
+    topPanel.add(imprimirBtn);
+    previewFrame.getContentPane().add(topPanel, java.awt.BorderLayout.NORTH);
+    previewFrame.getContentPane().add(new javax.swing.JScrollPane(reporte), java.awt.BorderLayout.CENTER);
+    previewFrame.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
@@ -1208,26 +1238,21 @@ private void actualizarEmpleado(int selectedRow) {
     }
     
     try {
-        // Obtener datos de la tabla
         String nombre = jTable1.getValueAt(filaSeleccionada, 1).toString();
         String cedula = jTable1.getValueAt(filaSeleccionada, 2).toString();
         String cargo = jTable1.getValueAt(filaSeleccionada, 8).toString();
         String fechaInicio = jTable1.getValueAt(filaSeleccionada, 11).toString();
         String salario = jTable1.getValueAt(filaSeleccionada, 9).toString();
         
-        // Formatear salario
         NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance();
         String salarioFormateado = formatoMoneda.format(Double.parseDouble(salario));
         
-        // Crear diálogo
         JDialog dialog = new JDialog();
         dialog.setTitle("Constancia de Trabajo - " + nombre);
         
-        // Crear constancia
         ConstanciaTrabajo constancia = new ConstanciaTrabajo();
         constancia.cargarDatosEmpleado(nombre, cedula, cargo, fechaInicio, salarioFormateado);
         
-        // Crear botón de imprimir (parte superior)
         JButton btnImprimir = new JButton("Imprimir Constancia");
         btnImprimir.setPreferredSize(new Dimension(180, 30));
         btnImprimir.addActionListener(e -> {
@@ -1241,35 +1266,29 @@ private void actualizarEmpleado(int selectedRow) {
             }
         });
         
-        // Botón para cerrar (parte inferior)
         JButton btnCerrar = new JButton("Cerrar");
         btnCerrar.setPreferredSize(new Dimension(100, 30));
         btnCerrar.addActionListener(e -> dialog.dispose());
         
-        // Panel para el botón de imprimir (arriba)
         JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
         panelSuperior.add(btnImprimir);
         
-        // Panel para el botón de cerrar (abajo)
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
         panelInferior.add(btnCerrar);
         
-        // Panel principal
         JPanel panelPrincipal = new JPanel(new BorderLayout());
         panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
         panelPrincipal.add(constancia, BorderLayout.CENTER);
         panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Configurar diálogo
         dialog.add(panelPrincipal);
         dialog.setModal(true);
         dialog.setResizable(false);
         dialog.pack();
         
-        // Centrar y mostrar
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
         

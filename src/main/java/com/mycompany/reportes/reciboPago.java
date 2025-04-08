@@ -4,19 +4,77 @@
  */
 package com.mycompany.reportes;
 
-/**
- *
- * @author Nattitor
- */
-public class reciboPago extends javax.swing.JPanel {
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import static java.awt.print.Printable.NO_SUCH_PAGE;
+import static java.awt.print.Printable.PAGE_EXISTS;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+
+public class reciboPago extends javax.swing.JPanel implements Printable {
 
     /**
      * Creates new form reciboPago
      */
     public reciboPago() {
         initComponents();
+        
+    }
+     
+    public void cargarDatosEmpleado(DefaultTableModel model, int selectedRow) {
+        // Obtenemos los datos del registro seleccionado en la tabla
+        String nombre = model.getValueAt(selectedRow, 1).toString(); // Suponiendo que la columna 1 tiene el nombre
+        String cedula = model.getValueAt(selectedRow, 0).toString(); // Suponiendo que la columna 0 tiene la cédula
+        String cargo = model.getValueAt(selectedRow, 2).toString(); // Suponiendo que la columna 2 tiene el cargo
+        String fechaInicio = model.getValueAt(selectedRow, 3).toString(); // Fecha de inicio
+        String salario = model.getValueAt(selectedRow, 4).toString(); // Sueldo base
+
+        // Ahora, cargamos esos datos en los componentes (labels) correspondientes
+        nombreLabel.setText(nombre);
+        cedulaLabel.setText(cedula);
+        cargoLabel.setText(cargo);
+        fechaInicioLabel.setText(fechaInicio);
+        salarioLabel.setText(salario);
     }
 
+    // Método de impresión
+    @Override
+    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+        if (pageIndex > 0) return NO_SUCH_PAGE;
+        
+        Graphics2D g2d = (Graphics2D) graphics;
+        g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+        double scale = Math.min(
+            pageFormat.getImageableWidth() / this.getWidth(),
+            pageFormat.getImageableHeight() / this.getHeight()
+        );
+        g2d.scale(scale, scale);
+
+        this.printAll(g2d);
+        return PAGE_EXISTS;
+    }
+
+    // Función para imprimir el recibo de pago
+    public void imprimirRecibo() {
+        PrinterJob job = PrinterJob.getPrinterJob();
+        job.setPrintable(this);
+        
+        if (job.printDialog()) {
+            try {
+                job.print();
+            } catch (PrinterException e) {
+                JOptionPane.showMessageDialog(this,
+                    "Error al imprimir recibo: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -37,30 +95,31 @@ public class reciboPago extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        nombreLabel = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
+        cedulaLabel = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
+        fechaInicioLabel = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
+        cargoLabel = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
+        salarioLabel = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
+        salarioDiaLabel = new javax.swing.JLabel();
+        fechaFinLabel = new javax.swing.JLabel();
+        fechaInicioLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel24 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
-        jLabel27 = new javax.swing.JLabel();
+        totalAsignaciones = new javax.swing.JLabel();
         jLabel28 = new javax.swing.JLabel();
-        jLabel29 = new javax.swing.JLabel();
+        totalDescuentos = new javax.swing.JLabel();
         jLabel30 = new javax.swing.JLabel();
-        jLabel31 = new javax.swing.JLabel();
+        salarioneto = new javax.swing.JLabel();
         jLabel32 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel33 = new javax.swing.JLabel();
@@ -106,90 +165,83 @@ public class reciboPago extends javax.swing.JPanel {
         jLabel8.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel8.setText("Trabajador:");
 
-        jLabel9.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel9.setText("XXXXX XXXXXXX");
+        nombreLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        nombreLabel.setText("XXXXX XXXXXXX");
 
         jLabel10.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel10.setText("Cédula N°:");
 
-        jLabel11.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel11.setText("XXXXXXXX");
+        cedulaLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cedulaLabel.setText("XXXXXXXX");
 
         jLabel12.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel12.setText("Periodo Trabajado:");
 
-        jLabel13.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel13.setText("Desde XX-XX-XXXX hasta XX-XX-XXXXX");
+        fechaInicioLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        fechaInicioLabel.setText(" XX-XX-XXXX");
 
         jLabel14.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel14.setText("R.I.F.:");
 
         jLabel15.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel15.setText("XXXXXXXX");
+        jLabel15.setText("J-00000");
 
         jLabel16.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel16.setText("Ingreso:");
 
-        jLabel17.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel17.setText("XX-XX-XXXX");
-
         jLabel18.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel18.setText("Cargo:");
 
-        jLabel19.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel19.setText("XXXXXXX");
+        cargoLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cargoLabel.setText("XXXXXXX");
 
         jLabel20.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel20.setText("Salario Mensual:");
 
-        jLabel21.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel21.setText("XXXXXX");
+        salarioLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        salarioLabel.setText("XXXXXX");
 
         jLabel22.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel22.setText("Diario:");
 
-        jLabel23.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel23.setText("XXXXXX");
+        salarioDiaLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        salarioDiaLabel.setText("XXXXXX");
+
+        fechaFinLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        fechaFinLabel.setText(" XX-XX-XXXX");
+
+        fechaInicioLabel1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        fechaInicioLabel1.setText(" XX-XX-XXXX");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel7))
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel12)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel13))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel10)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel11))
+                                .addComponent(cedulaLabel))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel8)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel9)))
-                        .addGap(73, 73, 73)
+                                .addComponent(nombreLabel))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel12)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fechaInicioLabel)))
+                        .addGap(18, 18, 18)
+                        .addComponent(fechaFinLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel20)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel21)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel22)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel23))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel16)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel17))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel14)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -197,13 +249,26 @@ public class reciboPago extends javax.swing.JPanel {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel18)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel19))))
+                                .addComponent(cargoLabel))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel16)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(fechaInicioLabel1))
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel20)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(salarioLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel22)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(salarioDiaLabel))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(23, 23, 23)
                         .addComponent(jLabel5)))
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -221,23 +286,24 @@ public class reciboPago extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(jLabel9)
+                    .addComponent(nombreLabel)
                     .addComponent(jLabel16)
-                    .addComponent(jLabel17))
+                    .addComponent(fechaInicioLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jLabel11)
+                    .addComponent(cedulaLabel)
                     .addComponent(jLabel18)
-                    .addComponent(jLabel19))
+                    .addComponent(cargoLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12)
-                    .addComponent(jLabel13)
+                    .addComponent(fechaInicioLabel)
                     .addComponent(jLabel20)
-                    .addComponent(jLabel21)
+                    .addComponent(salarioLabel)
                     .addComponent(jLabel22)
-                    .addComponent(jLabel23))
+                    .addComponent(salarioDiaLabel)
+                    .addComponent(fechaFinLabel))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
@@ -261,20 +327,20 @@ public class reciboPago extends javax.swing.JPanel {
         jLabel26.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel26.setText("TA:");
 
-        jLabel27.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel27.setText("0");
+        totalAsignaciones.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        totalAsignaciones.setText("0");
 
         jLabel28.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel28.setText("TD:");
 
-        jLabel29.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel29.setText("XXXXXX");
+        totalDescuentos.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        totalDescuentos.setText("XXXXXX");
 
         jLabel30.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel30.setText("Neto a pagar:");
 
-        jLabel31.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel31.setText("XXXXXXX");
+        salarioneto.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        salarioneto.setText("XXXXXXX");
 
         jLabel32.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel32.setText("Certifico el pago por los conceptos mencionados anteriormente quedando conforme.");
@@ -424,17 +490,17 @@ public class reciboPago extends javax.swing.JPanel {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel30)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel31))
+                                .addComponent(salarioneto))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel24)
                                 .addGap(135, 135, 135)
                                 .addComponent(jLabel26)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel27)
+                                .addComponent(totalAsignaciones)
                                 .addGap(103, 103, 103)
                                 .addComponent(jLabel28)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel29))
+                                .addComponent(totalDescuentos))
                             .addComponent(jLabel32)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -461,13 +527,13 @@ public class reciboPago extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel24)
                     .addComponent(jLabel26)
-                    .addComponent(jLabel27)
+                    .addComponent(totalAsignaciones)
                     .addComponent(jLabel28)
-                    .addComponent(jLabel29))
+                    .addComponent(totalDescuentos))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel30)
-                    .addComponent(jLabel31))
+                    .addComponent(salarioneto))
                 .addGap(18, 18, 18)
                 .addComponent(jLabel32)
                 .addGap(32, 32, 32)
@@ -493,31 +559,27 @@ public class reciboPago extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel cargoLabel;
+    private javax.swing.JLabel cedulaLabel;
+    private javax.swing.JLabel fechaFinLabel;
+    private javax.swing.JLabel fechaInicioLabel;
+    private javax.swing.JLabel fechaInicioLabel1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
-    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
@@ -532,7 +594,6 @@ public class reciboPago extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -541,5 +602,11 @@ public class reciboPago extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel nombreLabel;
+    private javax.swing.JLabel salarioDiaLabel;
+    private javax.swing.JLabel salarioLabel;
+    private javax.swing.JLabel salarioneto;
+    private javax.swing.JLabel totalAsignaciones;
+    private javax.swing.JLabel totalDescuentos;
     // End of variables declaration//GEN-END:variables
 }
