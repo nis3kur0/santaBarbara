@@ -33,9 +33,12 @@ import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
+import com.mycompany.reportes.ConstanciaTrabajo;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.text.NumberFormat;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -1194,20 +1197,88 @@ private void actualizarEmpleado(int selectedRow) {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
-    int selectedRow = jTable1.getSelectedRow();
-    if (selectedRow != -1) {
-        try {
-           
-            int idEmpleado = (int) jTable1.getValueAt(selectedRow, 0);
-
-            constanciaTrabajo.generarConstancia(idEmpleado);
-
-            JOptionPane.showMessageDialog(this, "Constancia generada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al generar la constancia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    } else {
-        JOptionPane.showMessageDialog(this, "Selecciona un empleado de la tabla para generar la constancia.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+   int filaSeleccionada = jTable1.getSelectedRow();
+    
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this, 
+            "Seleccione un empleado de la tabla primero", 
+            "Advertencia", 
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    try {
+        // Obtener datos de la tabla
+        String nombre = jTable1.getValueAt(filaSeleccionada, 1).toString();
+        String cedula = jTable1.getValueAt(filaSeleccionada, 2).toString();
+        String cargo = jTable1.getValueAt(filaSeleccionada, 8).toString();
+        String fechaInicio = jTable1.getValueAt(filaSeleccionada, 11).toString();
+        String salario = jTable1.getValueAt(filaSeleccionada, 9).toString();
+        
+        // Formatear salario
+        NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance();
+        String salarioFormateado = formatoMoneda.format(Double.parseDouble(salario));
+        
+        // Crear diálogo
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Constancia de Trabajo - " + nombre);
+        
+        // Crear constancia
+        ConstanciaTrabajo constancia = new ConstanciaTrabajo();
+        constancia.cargarDatosEmpleado(nombre, cedula, cargo, fechaInicio, salarioFormateado);
+        
+        // Crear botón de imprimir (parte superior)
+        JButton btnImprimir = new JButton("Imprimir Constancia");
+        btnImprimir.setPreferredSize(new Dimension(180, 30));
+        btnImprimir.addActionListener(e -> {
+            try {
+                constancia.imprimirConstancia();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog,
+                    "Error al imprimir: " + ex.getMessage(),
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        // Botón para cerrar (parte inferior)
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setPreferredSize(new Dimension(100, 30));
+        btnCerrar.addActionListener(e -> dialog.dispose());
+        
+        // Panel para el botón de imprimir (arriba)
+        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelSuperior.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
+        panelSuperior.add(btnImprimir);
+        
+        // Panel para el botón de cerrar (abajo)
+        JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
+        panelInferior.add(btnCerrar);
+        
+        // Panel principal
+        JPanel panelPrincipal = new JPanel(new BorderLayout());
+        panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
+        panelPrincipal.add(constancia, BorderLayout.CENTER);
+        panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
+        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        // Configurar diálogo
+        dialog.add(panelPrincipal);
+        dialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.pack();
+        
+        // Centrar y mostrar
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+        
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al generar la constancia: " + e.getMessage(), 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
     }
     }//GEN-LAST:event_jToggleButton1ActionPerformed
 

@@ -6,6 +6,7 @@ package com.mycompany.views;
 
 import com.mycompany.BonificacionesDialog;
 import com.mycompany.ConexionBD;
+import com.mycompany.LiquidacionesDialog;
 import com.mycompany.recibodePago;
 import com.mycompany.detalleNomina;
 import com.mycompany.historialNomina;
@@ -24,9 +25,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.confirmarAccionConPassword;
@@ -1144,7 +1143,7 @@ btnVerDetalle.addActionListener(e -> {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 878, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1207,7 +1206,9 @@ limpiar();        // TODO add your handling code here:
     bonificacionesDialog.setVisible(true);    }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-         
+LiquidacionesDialog liquidacionesDialog = 
+        new LiquidacionesDialog ((JFrame) SwingUtilities.getWindowAncestor(this));
+    liquidacionesDialog.setVisible(true);          
     }//GEN-LAST:event_jButton9ActionPerformed
 
 

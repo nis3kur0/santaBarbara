@@ -4,19 +4,76 @@
  */
 package com.mycompany.reportes;
 
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Nattitor
  */
-public class constanciaTrabajo extends javax.swing.JPanel {
+public class ConstanciaTrabajo extends javax.swing.JPanel implements Printable {
 
     /**
      * Creates new form constanciaTrabajo
      */
-    public constanciaTrabajo() {
+    public ConstanciaTrabajo() {
+        
+       
         initComponents();
+         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+fechaLabel.setText(sdf.format(new Date()));
+    }
+   public void cargarDatosEmpleado(String nombre, String cedula, 
+                               String cargo, String fechaInicio, String salario) {
+    nombreLabel.setText(nombre);
+    fechaInicioLabel.setText(fechaInicio);
+    cedulaLabel.setText(cedula);
+    cargoLabel.setText(cargo);
+    salarioLabel.setText(salario);
+}
+   
+   public void imprimirConstancia() {
+    PrinterJob job = PrinterJob.getPrinterJob();
+    job.setPrintable(this);
+
+    if (job.printDialog()) {
+        try {
+            job.print();
+        } catch (PrinterException e) {
+            JOptionPane.showMessageDialog(this,
+                "Error al imprimir la constancia: " + e.getMessage(),
+                "Error de impresión",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
+
+@Override
+public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+    if (pageIndex > 0) {
+        return NO_SUCH_PAGE;
     }
 
+    Graphics2D g2d = (Graphics2D) graphics;
+    g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+    double scale = Math.min(
+        pageFormat.getImageableWidth() / this.getWidth(),
+        pageFormat.getImageableHeight() / this.getHeight()
+    );
+    g2d.scale(scale, scale);
+
+    this.printAll(g2d);
+
+    return PAGE_EXISTS;
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -45,7 +102,7 @@ public class constanciaTrabajo extends javax.swing.JPanel {
         cargoLabel = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
+        salarioLabel = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
@@ -108,8 +165,8 @@ public class constanciaTrabajo extends javax.swing.JPanel {
         jLabel18.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel18.setText("actual es de");
 
-        jLabel19.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel19.setText("XXXXXX");
+        salarioLabel.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        salarioLabel.setText("XXXXXX");
 
         jLabel20.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel20.setText("bolívares.");
@@ -177,7 +234,7 @@ public class constanciaTrabajo extends javax.swing.JPanel {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel18)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel19)
+                                .addComponent(salarioLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel20))
                             .addComponent(jLabel21)))
@@ -226,7 +283,7 @@ public class constanciaTrabajo extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
-                    .addComponent(jLabel19)
+                    .addComponent(salarioLabel)
                     .addComponent(jLabel20))
                 .addGap(18, 18, 18)
                 .addComponent(jLabel21)
@@ -266,7 +323,6 @@ public class constanciaTrabajo extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
@@ -281,5 +337,6 @@ public class constanciaTrabajo extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel nombreLabel;
+    private javax.swing.JLabel salarioLabel;
     // End of variables declaration//GEN-END:variables
 }
