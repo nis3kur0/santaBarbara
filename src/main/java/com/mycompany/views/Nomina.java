@@ -29,6 +29,9 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.confirmarAccionConPassword;
+import com.toedter.calendar.JDateChooser;
+import java.awt.Color;
+import java.text.DateFormatSymbols;
 
 /**
  * PENDIENTE A REFACTORIZACION
@@ -43,6 +46,28 @@ public class Nomina extends javax.swing.JPanel {
     public Nomina() {
         initComponents();
         styles();
+        DefaultTableModel model = new DefaultTableModel(
+        new Object[][]{},
+        new String[]{"ID", "Nombre", "Salario Base", "Días Trabajados", "Ausencias", "Horas Extras", "IVSS", "FAOV", "INCES", "Salario Neto"}
+    ) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
+    tablaNomina.setModel(model);
+
+    JTextField fechaInicioTextField = (JTextField) fechaInicioNom.getDateEditor().getUiComponent();
+    fechaInicioTextField.setEditable(false);  
+    fechaInicioTextField.setBackground(Color.WHITE); 
+    fechaInicioTextField.setForeground(Color.BLACK); 
+    fechaInicioTextField.setFocusable(false); 
+    
+    JTextField fechaFinTextField = (JTextField) fechaFinNom.getDateEditor().getUiComponent();
+    fechaFinTextField.setEditable(false);
+    fechaFinTextField.setBackground(Color.WHITE);
+    fechaFinTextField.setForeground(Color.BLACK);
+    fechaFinTextField.setFocusable(false);
     }
 
     //ESTILOS
@@ -51,6 +76,7 @@ public class Nomina extends javax.swing.JPanel {
         tableTitle.setFont(UIManager.getFont("h1.font"));
 
     }
+    
 
     //VARIABLES
     private double totalSueldoNeto = 0;
@@ -776,7 +802,7 @@ btnVerDetalle.addActionListener(e -> {
     public void calcularAportesEmpleador() {
         DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
         if (model.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.");
+            JOptionPane.showMessageDialog(null, "Primero debe calcular la nómina antes de calcular los aportes del empleador.", "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -842,6 +868,7 @@ btnVerDetalle.addActionListener(e -> {
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
     }
+    
 
     //FIN//
     /**

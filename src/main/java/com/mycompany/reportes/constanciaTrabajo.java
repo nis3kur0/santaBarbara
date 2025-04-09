@@ -18,12 +18,12 @@ import javax.swing.JOptionPane;
  *
  * @author Nattitor
  */
-public class ConstanciaTrabajo extends javax.swing.JPanel implements Printable {
+public class constanciaTrabajo extends javax.swing.JPanel implements Printable {
 
     /**
      * Creates new form constanciaTrabajo
      */
-    public ConstanciaTrabajo() {
+    public constanciaTrabajo() {
         
        
         initComponents();
