@@ -9,7 +9,7 @@ import com.mycompany.ConexionBD;
 import com.mycompany.LiquidacionesDialog;
 import com.mycompany.recibodePago;
 import com.mycompany.detalleNomina;
-import com.mycompany.historialNomina;
+import com.mycompany.reportes.historialNomina;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -29,6 +29,9 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.confirmarAccionConPassword;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 
 /**
  * PENDIENTE A REFACTORIZACION
@@ -667,9 +670,8 @@ public void calcularNomina() {
 
         JButton btnGuardar = new JButton("Guardar");
 
-        btnGuardar.addActionListener(e -> {
-            historialNomina.generarReporteNomina();
-        });
+   btnGuardar.addActionListener(e -> mostrarVistaPreviaHistorial());
+
 
         panelBotones.add(btnGuardar);
 
@@ -701,6 +703,44 @@ btnVerDetalle.addActionListener(e -> {
 
         cargarDatosEnTabla(tablaHistorialNomina);
     }
+    
+    public void mostrarVistaPreviaHistorial() {
+    historialNomina reporte = new historialNomina(); // Crea una nueva instancia del reporte
+    
+    JFrame previewFrame = new JFrame("Vista previa de impresión - Historial de Nómina");
+    previewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    previewFrame.setSize(1000, 700);
+    previewFrame.setLocationRelativeTo(null);
+
+    JPanel topPanel = new JPanel();
+    JButton imprimirBtn = new JButton("Imprimir / Guardar PDF");
+
+    imprimirBtn.addActionListener(e -> {
+        PrinterJob job = PrinterJob.getPrinterJob();
+        job.setJobName("Historial de Nómina");
+
+        PageFormat pf = job.defaultPage();
+        pf.setOrientation(PageFormat.LANDSCAPE);
+
+        job.setPrintable(reporte, pf);
+
+        if (job.printDialog()) {
+            try {
+                job.print();
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(previewFrame, 
+                    "Error al imprimir: " + ex.getMessage(), 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    });
+
+    topPanel.add(imprimirBtn);
+    previewFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
+    previewFrame.getContentPane().add(new JScrollPane(reporte), BorderLayout.CENTER);
+    previewFrame.setVisible(true);
+}
 
     private void cargarDatosEnTabla(JTable tablaHistorialNomina) {
         Connection con = null;
