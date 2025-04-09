@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manual de Usuario - SantaBarbara</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="manual">
+    <div class="header">
+      <img src="imagenes/santa.jpg" class="manual-image" alt="Imagen de cabecera" />
+      <h1>Manual de Usuario - Sistema SantaBarbara</h1>
+      <p class="welcome-message">
+        Bienvenido al manual de usuario del sistema <strong>SantaBarbara</strong>, una herramienta integral para la gestión de empleados, asistencia y nómina. Este documento interactivo te guiará por cada módulo de la aplicación, destacando sus funciones y cómo sacarles el máximo provecho.
+      </p>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>1. Descripción General</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <p>
+          El sistema <strong>SantaBarbara</strong> centraliza la administración de la información de los empleados, incluyendo datos personales, laborales y bancarios. Permite gestionar asistencias, calcular nómina, generar recibos y reportes, además de controlar ausencias, permisos y bonificaciones. Incluye opciones para configurar horarios predeterminados y aspectos de seguridad, todo en una interfaz intuitiva para una navegación fluida y eficaz.
+        </p>
+        <div class="tip-box">
+          <strong>💡 Consejo:</strong> Familiarízate con cada sección antes de operar datos reales.
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>2. Inicio de Sesión</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/login.png" alt="Inicio de sesión" class="manual-image" />
+
+        <p>
+          La pantalla de inicio solicita usuario y contraseña. Incluye un botón adicional para <strong>Registrar Asistencias</strong> mediante código QR, facilitando el control de entrada y salida del personal usando los carnets asignados.
+        </p>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>3. Registro de Asistencias</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/asistencia.png" class="manual-image" alt="" />
+        <p>
+          A través de la cámara del equipo, el sistema permite registrar asistencias usando códigos QR únicos generados para cada empleado, garantizando control y seguridad.
+        </p>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>4. Gestión de Empleados</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/empleados.png" class="manual-image" alt="" />
+        <p>
+          Administra datos personales, laborales y bancarios de cada empleado. Desde esta ventana puedes agregar, editar, eliminar y consultar información. Además, permite generar reportes, constancias y carnets.
+        </p>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>5. Asistencia</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/asistenciaVentana.png" class="manual-image" alt="" />
+        <p>
+          Muestra la asistencia diaria con tabla detallada por nombre, fecha, entrada, salida y estado (Presente, Tarde, Ausente). También permite gestionar vacaciones, permisos e incapacidades.
+        </p>
+        <div class="tip-box">
+          <strong>📅 Consejo:</strong> Genera reportes de asistencia regularmente para mantener el control actualizado.
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>6. Nómina</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/nomina.jpg" class="manual-image" alt="" />
+        <p>
+          Permite calcular salarios base y netos, registrar deducciones legales (FAOV, IVSS, INCES) y visualizar datos como días trabajados, horas extra, bonificaciones y descuentos. Además, se pueden generar recibos y consultar historiales de pagos.
+        </p>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <button class="section-toggle">
+        <h2>7. Configuración del Sistema</h2>
+        <span class="toggle-icon">▼</span>
+      </button>
+      <div class="expandable-content">
+        <img src="imagenes/configuracion.png" class="manual-image" alt="" />
+        <p>
+          Define horarios de entrada y salida predeterminados para los empleados. También se puede acceder a la pestaña de seguridad para gestionar contraseñas y permisos administrativos.
+        </p>
+      </div>
+    </div>
+
+    <footer class="footer">
+  
+      <div class="footer-text">
+        <p>Desarrollado por el equipo de SantaBarbara</p>
+        <p>Versión 1.0 - 2025</p>
+      <div class="team-credits">
+        <h3>Equipo de Desarrollo</h3>
+        <div class="team-member">Denny Betancourt </div>
+        <div class="team-member">Estefani Palencia</div>
+        <div class="team-member">Moises Bermudez </div>
+        <div class="team-member">Yosue Rincón </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.querySelectorAll('.section-toggle').forEach(button => {
+      button.addEventListener('click', () => {
+        const content = button.nextElementSibling;
+        const icon = button.querySelector('.toggle-icon');
+        content.classList.toggle('expanded');
+        icon.classList.toggle('expanded');
+      });
+    });
+
+    document.querySelectorAll('.image-placeholder, .header-image, .footer-logo').forEach(el => {
+      el.addEventListener('click', () => {
+        alert('Aquí se mostrará una imagen relevante para esta sección.');
+      });
+    });
+  </script>
+</body>
+</html>

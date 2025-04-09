@@ -32,7 +32,6 @@ public class CalculosLaboralesDialog extends JDialog {
     }
     
     private void initUI() {
-        // Panel superior con título
         JPanel topPanel = new JPanel();
         topPanel.setBackground(AZUL_VENEZOLANO);
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -161,10 +160,9 @@ public class CalculosLaboralesDialog extends JDialog {
             int diasTrabajados = obtenerDiasTrabajados(idEmpleado);
             int mesesTrabajados = obtenerMesesTrabajados(idEmpleado);
             
-            // Fórmulas según legislación venezolana (simplificadas)
-            double diasBaseVacaciones = 15; // Días base por año
-            double diasAdicionales = Math.floor(mesesTrabajados / 12.0); // 1 día adicional por cada año
-            double diasVacaciones = Math.min(diasBaseVacaciones + diasAdicionales, 30); // Máximo 30 días
+            double diasBaseVacaciones = 15; 
+            double diasAdicionales = Math.floor(mesesTrabajados / 12.0); 
+            double diasVacaciones = Math.min(diasBaseVacaciones + diasAdicionales, 30); 
             
             double bonoVacacional = (salario / 30) * diasVacaciones;
             double totalVacaciones = salario + bonoVacacional;
@@ -203,9 +201,8 @@ public class CalculosLaboralesDialog extends JDialog {
             double salario = obtenerSalario(idEmpleado);
             int mesesTrabajados = obtenerMesesTrabajados(idEmpleado);
             
-            // Fórmulas según legislación venezolana (simplificadas)
             double prestaciones = (salario * mesesTrabajados) / 12;
-            double antiguedad = (salario * (mesesTrabajados / 12.0)) * 0.5; // 5 días por mes trabajado
+            double antiguedad = (salario * (mesesTrabajados / 12.0)) * 0.5; 
             double totalLiquidacion = prestaciones + antiguedad;
             
             String mensaje = "<html><div style='text-align:center;'>" +
@@ -242,9 +239,9 @@ public class CalculosLaboralesDialog extends JDialog {
             double salario = obtenerSalario(idEmpleado);
             int mesesTrabajados = obtenerMesesTrabajados(idEmpleado);
             
-            // Fórmulas según legislación venezolana (simplificadas)
+          
             double prestaciones = (salario * mesesTrabajados) / 12;
-            double intereses = prestaciones * 0.1; // 10% de intereses
+            double intereses = prestaciones * 0.1; 
             double totalPrestaciones = prestaciones + intereses;
             
             String mensaje = "<html><div style='text-align:center;'>" +

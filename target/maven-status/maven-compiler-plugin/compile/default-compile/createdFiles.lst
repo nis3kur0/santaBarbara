@@ -26,7 +26,6 @@ com\mycompany\views\Empleados$7.class
 com\mycompany\views\Nomina$7.class
 com\mycompany\RoundedPanel.class
 com\mycompany\views\Configuracion$HourSpinnerModel.class
-com\mycompany\views\Nomina$14.class
 com\mycompany\views\Configuracion$9.class
 com\mycompany\views\Configuracion$2.class
 com\mycompany\views\Nomina$1.class
@@ -91,6 +90,7 @@ com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Nomina$6.class
 com\mycompany\views\fichaNomina$2.class
 com\mycompany\fichaEmpleado.class
+com\mycompany\ManualLauncher.class
 com\mycompany\santabarbara\Dashborad$1.class
 com\mycompany\VerAsistencias$1.class
 com\mycompany\views\constanciaTrabajo.class

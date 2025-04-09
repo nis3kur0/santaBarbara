@@ -2,6 +2,7 @@ package com.mycompany.views;
 
 import java.time.LocalDate;
 import com.mycompany.ConexionBD;
+import com.mycompany.ManualLauncher;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +10,6 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import com.mycompany.RoundedPanel;
 import com.mycompany.RoundedPanelShadow;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -427,7 +427,7 @@ private void setDate() {
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(79, 79, 79)
                 .addComponent(manualButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(117, Short.MAX_VALUE))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -445,7 +445,10 @@ private void setDate() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void manualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualButtonActionPerformed
-        // TODO add your handling code here:
+    System.out.println("Botón presionado"); // <-- prueba si esto aparece
+    ManualLauncher.abrirManual();      
+       
+// TODO add your handling code here:
     }//GEN-LAST:event_manualButtonActionPerformed
 
 

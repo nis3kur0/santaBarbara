@@ -954,7 +954,6 @@ btnVerDetalle.addActionListener(e -> {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
-        jButton11 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         Bonificaciones = new javax.swing.JButton();
 
@@ -1055,7 +1054,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 610, 170, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 610, 170, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -1161,7 +1160,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 610, -1, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 610, -1, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1191,15 +1190,6 @@ btnVerDetalle.addActionListener(e -> {
         });
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
-        jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/historial-de-transacciones.png"))); // NOI18N
-        jButton11.setText("Historial pagos");
-        jButton11.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton11ActionPerformed(evt);
-            }
-        });
-        jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 610, 170, 40));
-
         jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/despido.png"))); // NOI18N
         jButton9.setText("Otros");
         jButton9.addActionListener(new java.awt.event.ActionListener() {
@@ -1207,15 +1197,16 @@ btnVerDetalle.addActionListener(e -> {
                 jButton9ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 610, 170, 40));
+        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 610, 170, 40));
 
+        Bonificaciones.setIcon(new javax.swing.ImageIcon(getClass().getResource("/caja-de-regalo.png"))); // NOI18N
         Bonificaciones.setText("Bonificaciones");
         Bonificaciones.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BonificacionesActionPerformed(evt);
             }
         });
-        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 610, 160, 40));
+        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 610, 160, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1242,10 +1233,8 @@ btnVerDetalle.addActionListener(e -> {
             return;
         }
         
-        // Obtener el NOMBRE del empleado de la tabla (columna 0)
         String nombreEmpleado = tablaNomina.getValueAt(filaSeleccionada, 0).toString();
         
-        // Obtener el ID desde la base de datos usando el nombre
         int idEmpleado = obtenerIdPorNombre(nombreEmpleado);
         
         if (idEmpleado <= 0) {
@@ -1302,10 +1291,6 @@ btnVerDetalle.addActionListener(e -> {
         calcularAportesEmpleador();
     }//GEN-LAST:event_jButton8ActionPerformed
 
-    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        abrirVentanaPagos();        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton11ActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -1333,7 +1318,6 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JLabel incesLabel;
     private javax.swing.JLabel ivssLabel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;

@@ -221,10 +221,8 @@ public class tipoAsistenciaPanel extends javax.swing.JPanel {
     String nombreEmpleado = (String) comboEmpleados.getSelectedItem();
     
     try (Connection con = ConexionBD.obtenerConexion()) {
-        // Obtener ID del empleado
         int idEmpleado = obtenerIdEmpleado(con, nombreEmpleado);
         
-        // Consultar asistencias
         String sql = "SELECT a.FECHA, a.ESTADO, a.HORA_ENTRADA, a.HORA_SALIDA, a.OBSERVACIONES " +
                      "FROM asistencias a " +
                      "WHERE a.ID_EMPLEADO = ? AND a.FECHA BETWEEN DATE('now', ?) AND DATE('now') " +
@@ -236,7 +234,6 @@ public class tipoAsistenciaPanel extends javax.swing.JPanel {
         
         ResultSet rs = stmt.executeQuery();
         
-        // Mostrar resultados en una tabla
         mostrarResultadosEnTabla(rs, "Asistencias de " + nombreEmpleado + " - " + periodo);
         
     } catch (SQLException e) {
@@ -254,14 +251,11 @@ public class tipoAsistenciaPanel extends javax.swing.JPanel {
 }
 
 private void mostrarResultadosEnTabla(ResultSet rs, String titulo) throws SQLException {
-    // Crear JDialog en lugar de JFrame
     JDialog dialog = new JDialog((JFrame)null, titulo, true); // Modal
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     
-    // Crear modelo de tabla
     DefaultTableModel model = new DefaultTableModel();
     
-    // Agregar columnas
     ResultSetMetaData metaData = rs.getMetaData();
     for (int i = 1; i <= metaData.getColumnCount(); i++) {
         model.addColumn(metaData.getColumnName(i));
@@ -279,11 +273,9 @@ private void mostrarResultadosEnTabla(ResultSet rs, String titulo) throws SQLExc
     JTable tabla = new JTable(model);
     tabla.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
     
-    // Panel principal con border layout
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
     
-    // Botón de impresión
     JButton btnImprimir = new JButton("Imprimir");
     btnImprimir.addActionListener(e -> {
         try {
