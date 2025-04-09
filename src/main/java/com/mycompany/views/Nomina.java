@@ -6,8 +6,7 @@ package com.mycompany.views;
 
 import com.mycompany.BonificacionesDialog;
 import com.mycompany.ConexionBD;
-import com.mycompany.LiquidacionesDialog;
-import com.mycompany.recibodePago;
+import com.mycompany.CalculosLaboralesDialog;
 import com.mycompany.detalleNomina;
 import com.mycompany.reportes.historialNomina;
 import java.awt.BorderLayout;
@@ -29,6 +28,8 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.confirmarAccionConPassword;
+import com.mycompany.reportes.reciboPago;
+import java.awt.Component;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
@@ -860,6 +861,35 @@ btnVerDetalle.addActionListener(e -> {
     
     }
     
+    private int obtenerIdPorNombre(String nombreEmpleado) {
+    Connection con = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    
+    try {
+        con = ConexionBD.obtenerConexion();
+        String sql = "SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?";
+        pst = con.prepareStatement(sql);
+        pst.setString(1, nombreEmpleado.trim()); // Usamos trim() por si hay espacios adicionales
+        rs = pst.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getInt("ID");
+        }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, 
+            "Error al buscar ID del empleado: " + e.getMessage(),
+            "Error de base de datos", 
+            JOptionPane.ERROR_MESSAGE);
+    } finally {
+        // Cerrar recursos
+        try { if (rs != null) rs.close(); } catch (Exception e) {}
+        try { if (pst != null) pst.close(); } catch (Exception e) {}
+        try { if (con != null) con.close(); } catch (Exception e) {}
+    }
+    return -1;
+}
+    
     //INSERTAR LOS APORTES EN GENERAL DEL EMPLEADOR
     private void mostrarAportesDialog(double ivss, double faov, double inces, double total) {
         JDialog dialog = new JDialog();
@@ -1171,7 +1201,7 @@ btnVerDetalle.addActionListener(e -> {
         jPanel1.add(jButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 610, 170, 40));
 
         jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/despido.png"))); // NOI18N
-        jButton9.setText("Liquidación");
+        jButton9.setText("Otros");
         jButton9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton9ActionPerformed(evt);
@@ -1202,25 +1232,51 @@ btnVerDetalle.addActionListener(e -> {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-
+       try {
         int filaSeleccionada = tablaNomina.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un empleado de la tabla.");
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione un empleado de la tabla primero", 
+                "Advertencia", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        int idEmpleado = (int) tablaNomina.getValueAt(filaSeleccionada, 0);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String fechaInicio = sdf.format(fechaInicioNom.getDate());
-        String fechaFin = sdf.format(fechaFinNom.getDate());
-
-        if (fechaInicio == null || fechaFin == null) {
-            JOptionPane.showMessageDialog(this, "Seleccione un período válido.");
+        
+        // Obtener el NOMBRE del empleado de la tabla (columna 0)
+        String nombreEmpleado = tablaNomina.getValueAt(filaSeleccionada, 0).toString();
+        
+        // Obtener el ID desde la base de datos usando el nombre
+        int idEmpleado = obtenerIdPorNombre(nombreEmpleado);
+        
+        if (idEmpleado <= 0) {
+            JOptionPane.showMessageDialog(this, 
+                "No se pudo obtener el ID del empleado: " + nombreEmpleado, 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        recibodePago.generarRecibo(idEmpleado, fechaInicio, fechaFin);
-// TODO add your handling code here:
+        
+        DefaultTableModel model = (DefaultTableModel) tablaNomina.getModel();
+        
+        JDialog dialog = new JDialog();
+        reciboPago recibo = new reciboPago();
+        
+        recibo.cargarDatosEmpleado(idEmpleado, model, filaSeleccionada);
+        
+        dialog.add(recibo);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setTitle("Recibo de Pago - " + nombreEmpleado);
+        dialog.setModal(true);
+        dialog.setVisible(true);
+        
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al generar recibo: " + e.getMessage(),
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -1255,9 +1311,11 @@ limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-LiquidacionesDialog liquidacionesDialog = 
-        new LiquidacionesDialog ((JFrame) SwingUtilities.getWindowAncestor(this));
-    liquidacionesDialog.setVisible(true);          
+ JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component)evt.getSource());
+    
+    // Crear y mostrar el diálogo
+    CalculosLaboralesDialog dialogo = new CalculosLaboralesDialog(parentFrame);
+    dialogo.setVisible(true);               
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void BonificacionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BonificacionesActionPerformed

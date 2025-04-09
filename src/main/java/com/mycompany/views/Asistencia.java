@@ -17,6 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.UIManager;
 import com.mycompany.RoundedPanel;
 import com.mycompany.VerAsistencias;
+import com.mycompany.tipoAsistenciaPanel;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -484,10 +485,6 @@ public class Asistencia extends javax.swing.JPanel {
         
     }//GEN-LAST:event_vacacionesButtonActionPerformed
 
-    private void reporteAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporteAsistenciasActionPerformed
-     
-    }//GEN-LAST:event_reporteAsistenciasActionPerformed
-
     private void historialAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historialAsistenciasActionPerformed
 abrirVentanaAsistencia();
 
@@ -508,6 +505,18 @@ Incapacidad IncapacidadPanel = new Incapacidad();
         // TODO add your handling code here:
         cargarDatosAsistenciasEnTabla();
     }//GEN-LAST:event_incapacidadButtonActionPerformed
+
+    private void reporteAsistenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reporteAsistenciasActionPerformed
+  tipoAsistenciaPanel panelAsistencias = new tipoAsistenciaPanel();
+    JDialog dialog = new JDialog();
+        dialog.setTitle("Reporte asistencias");
+        dialog.setModal(true);
+        dialog.getContentPane().add(panelAsistencias);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    
+    }//GEN-LAST:event_reporteAsistenciasActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

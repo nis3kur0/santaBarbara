@@ -126,7 +126,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel30" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="salarioneto" min="-2" max="-2" attributes="0"/>
+                                  <Component id="salarionetoLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
@@ -180,7 +180,7 @@
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel30" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="salarioneto" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="salarionetoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="jLabel32" min="-2" max="-2" attributes="0"/>
@@ -245,10 +245,10 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="fechaInicioLabel" min="-2" max="-2" attributes="0"/>
+                                      <Component id="fechaInicioLabel2" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Component id="fechaFinLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -262,23 +262,19 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="cargoLabel" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="fechaInicioLabel1" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Component id="jLabel20" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="salarioLabel" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="jLabel22" min="-2" max="-2" attributes="0"/>
-                                          </Group>
+                                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Component id="jLabel20" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="salarioLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="32767" attributes="0"/>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="salarioDiaLabel" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="fechaInicioLabel1" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="32767" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -286,9 +282,9 @@
                               <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="217" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -324,12 +320,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="fechaInicioLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel20" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="salarioLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel22" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="salarioDiaLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="fechaFinLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="fechaInicioLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace pref="17" max="32767" attributes="0"/>
                   </Group>
@@ -409,14 +403,6 @@
                 <Property name="text" type="java.lang.String" value="Periodo Trabajado:"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="fechaInicioLabel">
-              <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Arial" size="14" style="0"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value=" XX-XX-XXXX"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JLabel" name="jLabel14">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -473,22 +459,6 @@
                 <Property name="text" type="java.lang.String" value="XXXXXX"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="jLabel22">
-              <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Arial" size="14" style="0"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Diario:"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="salarioDiaLabel">
-              <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Arial" size="14" style="0"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="XXXXXX"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JLabel" name="fechaFinLabel">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -498,6 +468,14 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="fechaInicioLabel1">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Arial" size="14" style="0"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value=" XX-XX-XXXX"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="fechaInicioLabel2">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Arial" size="14" style="0"/>
@@ -555,7 +533,7 @@
             <Property name="text" type="java.lang.String" value="Neto a pagar:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="salarioneto">
+        <Component class="javax.swing.JLabel" name="salarionetoLabel">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Arial" size="14" style="0"/>
@@ -1233,7 +1211,7 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel45" max="32767" attributes="0"/>
-                          <Component id="jLabel63" pref="118" max="32767" attributes="0"/>
+                          <Component id="diasLabel" pref="118" max="32767" attributes="0"/>
                           <Component id="jLabel64" pref="118" max="32767" attributes="0"/>
                           <Component id="jLabel65" pref="118" max="32767" attributes="0"/>
                           <Component id="jLabel66" pref="118" max="32767" attributes="0"/>
@@ -1244,7 +1222,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel45" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                              <Component id="jLabel63" min="-2" max="-2" attributes="0"/>
+                              <Component id="diasLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                               <Component id="jLabel64" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
@@ -1270,7 +1248,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel63">
+                    <Component class="javax.swing.JLabel" name="diasLabel">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Arial" size="14" style="0"/>
@@ -1387,7 +1365,6 @@
                           <Font name="Arial" size="14" style="0"/>
                         </Property>
                         <Property name="horizontalAlignment" type="int" value="2"/>
-                        <Property name="text" type="java.lang.String" value=" (salarioBase)"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
                             <MatteColorBorder bottom="1" left="0" right="0" top="0"/>
@@ -1456,9 +1433,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel47" max="32767" attributes="0"/>
                           <Component id="jLabel71" pref="123" max="32767" attributes="0"/>
-                          <Component id="jLabel72" pref="123" max="32767" attributes="0"/>
-                          <Component id="jLabel73" pref="123" max="32767" attributes="0"/>
-                          <Component id="jLabel74" pref="123" max="32767" attributes="0"/>
+                          <Component id="ivssLabel" pref="123" max="32767" attributes="0"/>
+                          <Component id="faovLabel" pref="123" max="32767" attributes="0"/>
+                          <Component id="incesLabel" pref="123" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -1468,11 +1445,11 @@
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                               <Component id="jLabel71" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                              <Component id="jLabel72" min="-2" max="-2" attributes="0"/>
+                              <Component id="ivssLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                              <Component id="jLabel73" min="-2" max="-2" attributes="0"/>
+                              <Component id="faovLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                              <Component id="jLabel74" min="-2" max="-2" attributes="0"/>
+                              <Component id="incesLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -1506,7 +1483,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel72">
+                    <Component class="javax.swing.JLabel" name="ivssLabel">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Arial" size="14" style="0"/>
@@ -1520,7 +1497,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel73">
+                    <Component class="javax.swing.JLabel" name="faovLabel">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Arial" size="14" style="0"/>
@@ -1534,7 +1511,7 @@
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JLabel" name="jLabel74">
+                    <Component class="javax.swing.JLabel" name="incesLabel">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Arial" size="14" style="0"/>

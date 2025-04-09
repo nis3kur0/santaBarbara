@@ -1,9 +1,6 @@
-
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package com.mycompany.reportes;
+
+
 
 import com.mycompany.ConexionBD;
 import java.awt.Font;
@@ -18,13 +15,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-
-
 
 public class historialNomina extends javax.swing.JPanel implements Printable {
 
@@ -35,15 +30,18 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
         }
     };
 
+    // Formateador para mostrar fechas
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     public historialNomina() {
         initComponents();
         cargarDatosEnTabla();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        fechaLabel.setText(sdf.format(new Date()));
+        fechaLabel.setText(DATE_FORMAT.format(new java.util.Date()));
     }
 
     private void cargarDatosEnTabla() {
-        String sql = "SELECT ID_NOMINA, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, TOTAL_EMPLEADOS, MONTO_TOTAL FROM nomina";
+        String sql = "SELECT ID_NOMINA, FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA, FECHA_PAGO_NOMINA, "
+                   + "TOTAL_EMPLEADOS, MONTO_TOTAL FROM nomina";
 
         try (Connection conn = ConexionBD.obtenerConexion();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -65,24 +63,20 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
                 Object[] rowData = new Object[columnNames.length];
                 rowData[0] = rs.getInt("ID_NOMINA");
                 
-                // Formatear fechas
-                rowData[1] = rs.getDate("FECHA_INICIO_NOMINA") != null ? 
-                    new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("FECHA_INICIO_NOMINA")) : "N/A";
-                rowData[2] = rs.getDate("FECHA_FIN_NOMINA") != null ? 
-                    new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("FECHA_FIN_NOMINA")) : "N/A";
-                rowData[3] = rs.getDate("FECHA_PAGO_NOMINA") != null ? 
-                    new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("FECHA_PAGO_NOMINA")) : "N/A";
+                rowData[1] = parseDateTime(rs, "FECHA_INICIO_NOMINA");
+                rowData[2] = parseDateTime(rs, "FECHA_FIN_NOMINA");
+                rowData[3] = parseDateTime(rs, "FECHA_PAGO_NOMINA");
                 
                 rowData[4] = rs.getInt("TOTAL_EMPLEADOS");
-                rowData[5] = String.format("%,.2f BS", rs.getDouble("MONTO_TOTAL"));
+                
+                rowData[5] = String.format("%.2f", rs.getDouble("MONTO_TOTAL"));
                 
                 model.addRow(rowData);
             }
 
             jTable1.setModel(model);
 
-            // Ajustar anchos de columnas
-            int[] columnWidths = {80, 90, 90, 90, 100, 100};
+            int[] columnWidths = {80, 120, 120, 120, 100, 100};
             for (int i = 0; i < columnWidths.length; i++) {
                 TableColumn column = jTable1.getColumnModel().getColumn(i);
                 column.setPreferredWidth(columnWidths[i]);
@@ -96,49 +90,93 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
         }
     }
 
-    @Override
-    public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
-        if (pageIndex > 0) {
-            return NO_SUCH_PAGE;
+    private String parseDateTime(ResultSet rs, String columnName) throws SQLException {
+        try {
+            java.sql.Date date = rs.getDate(columnName);
+            if (date != null) {
+                return DATE_FORMAT.format(date);
+            }
+            
+            Timestamp timestamp = rs.getTimestamp(columnName);
+            if (timestamp != null) {
+                return DATE_FORMAT.format(new java.util.Date(timestamp.getTime()));
+            }
+            
+            return "N/A";
+        } catch (SQLException e) {
+            return rs.getString(columnName);
         }
-
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.translate(pf.getImageableX(), pf.getImageableY());
-
-        // Configurar orientación horizontal para mejor visualización
-        pf.setOrientation(PageFormat.LANDSCAPE);
-
-        // Escalar el contenido para que quepa en la hoja
-        double panelWidth = this.getWidth();
-        double panelHeight = this.getHeight();
-        double printableWidth = pf.getImageableWidth();
-        double printableHeight = pf.getImageableHeight();
-
-        double scaleX = printableWidth / panelWidth;
-        double scaleY = printableHeight / panelHeight;
-        double scale = Math.min(scaleX, scaleY); // Mantener proporción
-
-        g2d.scale(scale, scale);
-
-        // Dibujar título
-        g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        String title = "Historial de Nómina - " + fechaLabel.getText();
-        int titleWidth = g2d.getFontMetrics().stringWidth(title);
-        g2d.drawString(title, (int)((panelWidth - titleWidth)/2), 20);
-
-        // Dibujar la tabla desplazada hacia abajo
-        g2d.translate(0, 30);
-        jTable1.print(g2d);
-
-        return PAGE_EXISTS;
     }
 
+   @Override
+public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
+    if (pageIndex > 0) {
+        return NO_SUCH_PAGE;
+    }
+
+    Graphics2D g2d = (Graphics2D) g;
+    g2d.translate(pf.getImageableX(), pf.getImageableY());
+
+    pf.setOrientation(PageFormat.LANDSCAPE);
+
+    double panelWidth = this.getWidth();
+    double panelHeight = this.getHeight();
+    double printableWidth = pf.getImageableWidth();
+    double printableHeight = pf.getImageableHeight();
+
+    double scaleX = printableWidth / panelWidth;
+    double scaleY = printableHeight / panelHeight;
+    double scale = Math.min(scaleX, scaleY) * 0.95; 
+
+    g2d.scale(scale, scale);
+
+    g2d.setColor(getBackground());
+    g2d.fillRect(0, 0, (int)panelWidth, (int)panelHeight);
+
+    java.awt.geom.AffineTransform originalTransform = g2d.getTransform();
+
+    if (logoLabel != null) { 
+        int logoX = 20;
+        int logoY = 20;
+        g2d.translate(logoX, logoY);
+        logoLabel.printAll(g2d);
+        g2d.setTransform(originalTransform);
+    }
+
+    g2d.setFont(new Font("Arial", Font.BOLD, 18));
+    String title = "HISTORIAL DE NÓMINA";
+    int titleWidth = g2d.getFontMetrics().stringWidth(title);
+    int titleX = (int)((panelWidth - titleWidth) / 2);
+    int titleY = 50; 
+    g2d.drawString(title, titleX, titleY);
+
+    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+    String fecha = "Fecha del reporte: " + fechaLabel.getText();
+    int fechaWidth = g2d.getFontMetrics().stringWidth(fecha);
+    int fechaX = (int)(panelWidth - fechaWidth - 20); 
+    g2d.drawString(fecha, fechaX, titleY);
+
+    int tableY = titleY + 40; // Espacio después del título
+    g2d.translate(0, tableY);
+    jTable1.print(g2d);
+    g2d.setTransform(originalTransform);
+
+    // 5. Imprimir pie de página (opcional)
+    g2d.setFont(new Font("Arial", Font.ITALIC, 10));
+    String footer = "© " + java.time.Year.now().getValue() + " - SANTA BARBARA";
+    int footerWidth = g2d.getFontMetrics().stringWidth(footer);
+    int footerX = (int)((panelWidth - footerWidth) / 2);
+    int footerY = (int)(panelHeight - 20);
+    g2d.drawString(footer, footerX, footerY);
+
+    return PAGE_EXISTS;
+}
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        logoLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
@@ -147,7 +185,7 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logo.jpg"))); // NOI18N
+        logoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logo.jpg"))); // NOI18N
 
         jLabel2.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         jLabel2.setText("HISTORIAL DE NÓMINAS");
@@ -166,6 +204,7 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
         ));
         jScrollPane1.setViewportView(jTable1);
 
+        fechaLabel.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         fechaLabel.setText("jLabel3");
 
         jLabel4.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
@@ -179,42 +218,43 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1)
-                        .addGap(183, 183, 183)
+                        .addComponent(logoLabel)
+                        .addGap(415, 415, 415)
                         .addComponent(jLabel2))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 808, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1236, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(fechaLabel)))))
-                .addContainerGap(50, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addComponent(fechaLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(logoLabel))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(63, 63, 63)
+                        .addComponent(jLabel2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(fechaLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(235, Short.MAX_VALUE))
+                    .addComponent(fechaLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 660, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(54, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 13, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -225,11 +265,11 @@ public class historialNomina extends javax.swing.JPanel implements Printable {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel fechaLabel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel logoLabel;
     // End of variables declaration//GEN-END:variables
 }

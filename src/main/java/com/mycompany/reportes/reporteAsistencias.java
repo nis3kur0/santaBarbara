@@ -62,7 +62,7 @@ public class reporteAsistencias extends javax.swing.JPanel {
         jLabel8.setText("Empresa:");
 
         jLabel9.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel9.setText("XXXXXXXX");
+        jLabel9.setText("J-000000");
 
         jTable1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
