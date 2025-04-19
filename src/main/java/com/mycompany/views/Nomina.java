@@ -954,7 +954,6 @@ btnVerDetalle.addActionListener(e -> {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
-        jButton9 = new javax.swing.JButton();
         Bonificaciones = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -1054,7 +1053,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 610, 170, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 610, 170, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -1160,7 +1159,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 610, -1, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 610, -1, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1190,15 +1189,6 @@ btnVerDetalle.addActionListener(e -> {
         });
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 230, 270, 30));
 
-        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/despido.png"))); // NOI18N
-        jButton9.setText("Otros");
-        jButton9.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton9ActionPerformed(evt);
-            }
-        });
-        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 610, 170, 40));
-
         Bonificaciones.setIcon(new javax.swing.ImageIcon(getClass().getResource("/caja-de-regalo.png"))); // NOI18N
         Bonificaciones.setText("Bonificaciones");
         Bonificaciones.addActionListener(new java.awt.event.ActionListener() {
@@ -1206,7 +1196,7 @@ btnVerDetalle.addActionListener(e -> {
                 BonificacionesActionPerformed(evt);
             }
         });
-        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 610, 160, 40));
+        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 610, 160, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1214,7 +1204,7 @@ btnVerDetalle.addActionListener(e -> {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(192, Short.MAX_VALUE))
+                .addContainerGap(195, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1295,14 +1285,6 @@ btnVerDetalle.addActionListener(e -> {
 limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
- JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor((Component)evt.getSource());
-    
-    // Crear y mostrar el diálogo
-    CalculosLaboralesDialog dialogo = new CalculosLaboralesDialog(parentFrame);
-    dialogo.setVisible(true);               
-    }//GEN-LAST:event_jButton9ActionPerformed
-
     private void BonificacionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BonificacionesActionPerformed
      BonificacionesDialog dialog = new BonificacionesDialog((JFrame) SwingUtilities.getWindowAncestor(this));
     dialog.setVisible(true);
@@ -1323,7 +1305,6 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

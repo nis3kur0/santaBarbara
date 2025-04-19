@@ -32,7 +32,16 @@ public class Asistencia extends javax.swing.JPanel {
      */
     public Asistencia() {
         initComponents();
-        model = (DefaultTableModel) this.jTable1.getModel();
+        model = new DefaultTableModel() {
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        // Todas las celdas no editables
+        return false;
+    }
+};
+
+// Asigna el modelo a la tabla
+jTable1.setModel(model);
         cargarDatosAsistenciasEnTabla();
         styles();
         
@@ -48,6 +57,7 @@ public class Asistencia extends javax.swing.JPanel {
 
     }
     DefaultTableModel model;
+    
     
     
      private void  styles () {
