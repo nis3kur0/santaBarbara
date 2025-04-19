@@ -3,9 +3,9 @@ com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
 com\mycompany\LiquidacionesDialog.class
 com\mycompany\views\Nomina$8.class
+com\mycompany\reportes\constanciaTrabajo.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\EscanearQR.class
-com\mycompany\reportes\ConstanciaTrabajo.class
 com\mycompany\RoundedPanelShadow.class
 com\mycompany\views\Vacaciones$1.class
 com\mycompany\views\VistaPreviaHTML.class
@@ -29,6 +29,7 @@ com\mycompany\views\Configuracion$HourSpinnerModel.class
 com\mycompany\views\Configuracion$9.class
 com\mycompany\views\Configuracion$2.class
 com\mycompany\views\Nomina$1.class
+com\mycompany\views\Nomina$15.class
 com\mycompany\views\Ficha$1.class
 com\mycompany\views\Empleados$9.class
 com\mycompany\santabarbara\Dashborad$4.class

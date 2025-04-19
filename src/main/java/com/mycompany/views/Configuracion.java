@@ -112,7 +112,7 @@ public class Configuracion extends javax.swing.JPanel {
     
     button.setForeground(activeColor);
     button.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 3, 0, activeColor));
-    // Cambiar ícono según el botón activo
+    
     if (button == horarioButton) {
         button.setIcon(new javax.swing.ImageIcon(getClass().getResource("/relojr.png")));
     } else if (button == seguridadButton) {
@@ -124,14 +124,14 @@ public class Configuracion extends javax.swing.JPanel {
     private void configurePasswordField(JPasswordField field, String placeholder) {
     field.setText(placeholder);
     field.setForeground(new Color(102, 102, 102));
-    field.setEchoChar((char) 0); // Mostrar placeholder como texto plano
+    field.setEchoChar((char) 0);
 
     field.addFocusListener(new java.awt.event.FocusAdapter() {
         public void focusGained(java.awt.event.FocusEvent evt) {
             if (String.valueOf(field.getPassword()).equals(placeholder)) {
                 field.setText("");
                 field.setForeground(Color.BLACK);
-                field.setEchoChar('•'); // Carácter de contraseña
+                field.setEchoChar('•'); 
             }
         }
 
@@ -144,7 +144,6 @@ public class Configuracion extends javax.swing.JPanel {
         }
     });
 
-    // Listener para cambiar color al modificar texto
     field.getDocument().addDocumentListener(new DocumentListener() {
         public void insertUpdate(DocumentEvent e) { updateColor(); }
         public void removeUpdate(DocumentEvent e) { updateColor(); }
@@ -227,7 +226,7 @@ private boolean validarCampos(String actual, String nueva, String confirmacion) 
         return false;
     }
     
-    // Validar contraseña actual
+    
     Login login = new Login();
     if (!login.hashPassword(actual).equals(Login.contraseñaValida)) {
         mostrarError("La contraseña actual es incorrecta");
@@ -302,6 +301,14 @@ public class HourSpinnerModel extends SpinnerDateModel {
 private void guardarHorarios() {
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
     
+    Date entrada = (Date) jSpinner1.getValue();
+    Date salida = (Date) jSpinner2.getValue();
+    
+    if (!validarHorarios(entrada, salida)) {
+        return;
+    }
+    
+    
     try {
         String horaEntradaStr = sdf.format(jSpinner1.getValue());
         String horaSalidaStr = sdf.format(jSpinner2.getValue());
@@ -327,9 +334,9 @@ private void guardarHorarios() {
 }
 
 private boolean validarHorarios(Date entrada, Date salida) {
-    if (salida.before(entrada)) {
+    if (salida.compareTo(entrada) <= 0) {
         JOptionPane.showMessageDialog(this, 
-            "La hora de salida debe ser posterior a la de entrada", 
+            "La hora de inicio debe ser antes de la hora de salida", 
             "Error", JOptionPane.ERROR_MESSAGE);
         return false;
     }
@@ -343,21 +350,18 @@ private void cargarHorariosPorDefecto() {
         
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
-            // Leer como String en lugar de Time
+            
             String horaEntradaStr = rs.getString("hora_entrada");
             String horaSalidaStr = rs.getString("hora_salida");
             
-            // Formateador para convertir String a Date
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            
-            // Establecer valores en los spinners
+           
             jSpinner1.setValue(sdf.parse(horaEntradaStr));
             jSpinner2.setValue(sdf.parse(horaSalidaStr));
             
         } else {
-            // Insertar valores por defecto si no existen
             insertarHorariosPorDefecto();
-            cargarHorariosPorDefecto(); // Recargar después de insertar
+            cargarHorariosPorDefecto();
         }
     } catch (SQLException | ParseException e) {
         JOptionPane.showMessageDialog(this, "Error cargando horarios: " + e.getMessage(), 
@@ -830,7 +834,7 @@ private void insertarHorariosPorDefecto() {
                 "Éxito", 
                 JOptionPane.INFORMATION_MESSAGE
             );
-            cargarHorariosPorDefecto(); // Actualizar con los nuevos valores
+            cargarHorariosPorDefecto();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                 this, 

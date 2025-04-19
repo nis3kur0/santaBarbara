@@ -32,7 +32,7 @@ import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
-import com.mycompany.reportes.ConstanciaTrabajo;
+import com.mycompany.reportes.constanciaTrabajo;
 import com.mycompany.reportes.reporteEmpleados;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -82,6 +82,7 @@ public class Empleados extends javax.swing.JPanel {
         limpiarBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
         limpiarBtn.setHorizontalAlignment(SwingConstants.CENTER);
         limpiarBtn.setMargin(new Insets(0, 0, 0, 20)); 
+        textNumeroCuenta.setColumns(20);
         
 jTable1.getSelectionModel().addListSelectionListener(e -> {
     if (!e.getValueIsAdjusting()) {
@@ -265,6 +266,10 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         String banco = (String) bancoBox.getSelectedItem();
         String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
         String numeroCuenta = textNumeroCuenta.getText().trim();
+        if (numeroCuenta.length() != 20) {
+        JOptionPane.showMessageDialog(null, "El número de cuenta debe tener 20 dígitos.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
         String pagoMovil = (String) pagoMovilBox.getSelectedItem(); 
 
        if (numeroCuenta.length() != 20) {
@@ -309,6 +314,18 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         } else {
             finContrato = "9999-12-31";
         }
+        
+            java.util.Date inicio = dateInicio.getDate();
+            java.util.Date fin = dateFinal.getDate();
+    
+        if (inicio != null && fin != null && inicio.after(fin)) {
+            JOptionPane.showMessageDialog(null, 
+                "La fecha de inicio no puede ser posterior a la fecha final del contrato.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
 
      
         nombre = nombre.isEmpty() ? "Nombre por Defecto" : nombre;
@@ -418,6 +435,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         setNumericFilter(textTelefono, false);
         setNumericFilter(textTlfhab, false);
         setNumericFilter(textSalario, true);
+        setNumericFilter(textNumeroCuenta, false);
         setNumericFilter(textNumeroCuenta, false);
     }
     
@@ -951,6 +969,8 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tarjeta-de-identificacion.png"))); // NOI18N
         jButton2.setText("Carnet");
+        jButton2.setMaximumSize(new java.awt.Dimension(125, 39));
+        jButton2.setMinimumSize(new java.awt.Dimension(125, 39));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -979,8 +999,8 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                         .addComponent(jButton1)
                         .addGap(33, 33, 33)
                         .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(28, 28, 28)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -993,13 +1013,14 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jButton1)
                         .addComponent(Ficha)))
-                .addContainerGap())
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1063,6 +1084,21 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
 
 private void actualizarEmpleado(int selectedRow) {
     try {
+        java.util.Date inicio = dateInicio.getDate();
+        java.util.Date fin = dateFinal.getDate();
+        
+        if (inicio != null && fin != null && inicio.after(fin)) {
+            JOptionPane.showMessageDialog(this, 
+                "La fecha de inicio no puede ser posterior a la fecha final del contrato.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String numeroCuenta = textNumeroCuenta.getText().trim();
+        if (numeroCuenta.length() != 20) {
+            JOptionPane.showMessageDialog(null, "El número de cuenta debe tener 20 dígitos.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Connection conn = ConexionBD.obtenerConexion();
         String sql = "UPDATE empleados SET "
             + "NOMBRE_COMPLETO = ?, "
@@ -1250,7 +1286,7 @@ private void actualizarEmpleado(int selectedRow) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Constancia de Trabajo - " + nombre);
         
-        ConstanciaTrabajo constancia = new ConstanciaTrabajo();
+        constanciaTrabajo constancia = new constanciaTrabajo();
         constancia.cargarDatosEmpleado(nombre, cedula, cargo, fechaInicio, salarioFormateado);
         
         JButton btnImprimir = new JButton("Imprimir Constancia");
