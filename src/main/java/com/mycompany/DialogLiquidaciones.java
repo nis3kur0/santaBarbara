@@ -1,4 +1,5 @@
 package com.mycompany;
+
 import javax.swing.*;
 import com.toedter.calendar.JDateChooser;
 import java.awt.*;
@@ -21,8 +22,8 @@ public class DialogLiquidaciones extends JDialog {
     private JTextField txtVacaciones;
     private JTextField txtUtilidades;
     private JTextField txtTotal;
-    private JTextField txtDiasTrabajados; // Nuevo campo para mostrar días trabajados
-    private JTextField txtPeriodoTrabajado; // Nuevo campo para mostrar el periodo
+    private JTextField txtDiasTrabajados;
+    private JTextField txtPeriodoTrabajado;
     private JTextArea txtObservaciones;
 
     private static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -31,7 +32,7 @@ public class DialogLiquidaciones extends JDialog {
     public DialogLiquidaciones(JFrame parent) {
         super(parent, "Liquidación de Empleado", true);
         initComponents();
-        setSize(650, 600); // Aumentar el tamaño para los nuevos campos
+        setSize(650, 600);
         setLocationRelativeTo(parent);
     }
 
@@ -51,9 +52,8 @@ public class DialogLiquidaciones extends JDialog {
         // Combo Tipo Liquidación
         panelSeleccion.add(new JLabel("Tipo de Liquidación:"));
         comboTipoLiquidacion = new JComboBox<>(new String[]{
-                "Renuncia Voluntaria",
-                "Despido Injustificado",
-                "Despido Justificado",
+                "Renuncia",
+                "Despido",
                 "Jubilación"
         });
         panelSeleccion.add(comboTipoLiquidacion);
@@ -67,7 +67,7 @@ public class DialogLiquidaciones extends JDialog {
         panelPrincipal.add(panelSeleccion, BorderLayout.NORTH);
 
         // Panel de resultados
-        JPanel panelResultados = new JPanel(new GridLayout(7, 2, 10, 10)); // Aumentar filas
+        JPanel panelResultados = new JPanel(new GridLayout(7, 2, 10, 10));
         panelResultados.setBorder(BorderFactory.createTitledBorder("Resultados del Cálculo"));
 
         panelResultados.add(new JLabel("Periodo Trabajado:"));
@@ -114,8 +114,12 @@ public class DialogLiquidaciones extends JDialog {
         btnCalcular.addActionListener(e -> calcularLiquidacion());
         panelBotones.add(btnCalcular);
 
-        btnAplicar = new JButton("Aplicar");
-        btnAplicar.addActionListener(e -> aplicarLiquidacion());
+        btnAplicar = new JButton("Aplicar Liquidación");
+        btnAplicar.addActionListener(e -> {
+            if (confirmarAccionConPassword.confirmarAccion(this)) {
+                aplicarLiquidacion();
+            }
+        });
         btnAplicar.setEnabled(false);
         panelBotones.add(btnAplicar);
 
@@ -198,21 +202,16 @@ public class DialogLiquidaciones extends JDialog {
             double salarioDiario = salario / 30;
 
             // 5. Calcular conceptos de liquidación
-            // Prestaciones sociales (LOTTT Art. 142)
             double prestaciones = calcularPrestaciones((int) mesesTrabajados, salarioDiario);
-
-            // Vacaciones no disfrutadas (LOTTT Art. 192)
             double vacaciones = mesesTrabajados * 1.5 * salarioDiario;
-
-            // Utilidades proporcionales (LOTTT Art. 131)
             double utilidades = (diasTrabajadosReales / 360.0) * 15 * salarioDiario;
-
-            // Indemnización por despido injustificado
-            double indemnizacion = tipoLiquidacion.equals("Despido Injustificado") ?
+            double indemnizacion = tipoLiquidacion.equals("Despido") ? 
                     calcularIndemnizacion((int) mesesTrabajados, salario) : 0;
 
             // 6. Mostrar resultados
-            txtPeriodoTrabajado.setText(String.format("%s - %s", fechaIngreso.format(DISPLAY_DATE_FORMATTER), fechaLiquidacion.format(DISPLAY_DATE_FORMATTER)));
+            txtPeriodoTrabajado.setText(String.format("%s - %s", 
+                    fechaIngreso.format(DISPLAY_DATE_FORMATTER), 
+                    fechaLiquidacion.format(DISPLAY_DATE_FORMATTER)));
             txtDiasTrabajados.setText(String.valueOf(diasTrabajadosReales));
             txtPrestaciones.setText(String.format("Bs. %,.2f", prestaciones));
             txtVacaciones.setText(String.format("Bs. %,.2f", vacaciones));
@@ -226,7 +225,6 @@ public class DialogLiquidaciones extends JDialog {
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error al calcular liquidación: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
         }
     }
 
@@ -279,7 +277,7 @@ public class DialogLiquidaciones extends JDialog {
             LocalDate fechaLiquidacion = dcFechaLiquidacion.getDate().toInstant()
                     .atZone(ZoneId.systemDefault()).toLocalDate();
             String fechaLiquidacionStr = fechaLiquidacion.format(DB_DATE_FORMATTER);
-            LocalDate fechaIngreso = null; // Necesitamos obtener la fecha de ingreso nuevamente para guardarla
+            LocalDate fechaIngreso = null;
 
             try (PreparedStatement pstmtFechaIngreso = con.prepareStatement(
                     "SELECT INICIO_CONTRATO FROM empleados WHERE ID = ?")) {
@@ -292,7 +290,7 @@ public class DialogLiquidaciones extends JDialog {
             }
 
             if (fechaIngreso == null) {
-                throw new SQLException("No se pudo obtener la fecha de ingreso del empleado para guardar en liquidaciones");
+                throw new SQLException("No se pudo obtener la fecha de ingreso del empleado");
             }
 
             // 1. Insertar registro de liquidación
@@ -304,7 +302,7 @@ public class DialogLiquidaciones extends JDialog {
                 pstmt.setInt(1, empleado.getId());
                 pstmt.setString(2, fechaLiquidacionStr);
                 pstmt.setString(3, (String) comboTipoLiquidacion.getSelectedItem());
-                pstmt.setInt(4, calcularDiasTrabajadosReales(con, empleado.getId(), fechaIngreso, fechaLiquidacion));
+                pstmt.setInt(4, Integer.parseInt(txtDiasTrabajados.getText()));
                 pstmt.setDouble(5, Double.parseDouble(txtPrestaciones.getText().replace("Bs. ", "").replace(",", "")));
                 pstmt.setDouble(6, Double.parseDouble(txtVacaciones.getText().replace("Bs. ", "").replace(",", "")));
                 pstmt.setDouble(7, Double.parseDouble(txtUtilidades.getText().replace("Bs. ", "").replace(",", "")));
@@ -315,14 +313,11 @@ public class DialogLiquidaciones extends JDialog {
             }
 
             // 2. Actualizar estado del empleado
-          try (PreparedStatement pstmtEmpleado = con.prepareStatement(
-        "UPDATE empleados SET ESTADO = 'Inactivo' WHERE ID = ?")) {
-
-    pstmtEmpleado.setInt(1, empleado.getId());
-    int rowsAffected = pstmtEmpleado.executeUpdate();
-    System.out.println("Filas afectadas al actualizar el estado del empleado: " + rowsAffected);
-}
-            
+            try (PreparedStatement pstmtEmpleado = con.prepareStatement(
+                    "UPDATE empleados SET ESTADO = 'Inactivo' WHERE ID = ?")) {
+                pstmtEmpleado.setInt(1, empleado.getId());
+                pstmtEmpleado.executeUpdate();
+            }
 
             con.commit();
             JOptionPane.showMessageDialog(this, "Liquidación aplicada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
@@ -331,7 +326,6 @@ public class DialogLiquidaciones extends JDialog {
         } catch (SQLException | NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Error al aplicar liquidación: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
         }
     }
 

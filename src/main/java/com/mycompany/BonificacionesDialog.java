@@ -263,12 +263,13 @@ public class BonificacionesDialog extends JDialog {
                     periodo = rs.getString("inicio_bon");
                 }
                 
-                model.addRow(new Object[]{
-                    rs.getString("NOMBRE_COMPLETO"),
-                    rs.getString("tipos"),
-                    String.format("$%,.2f", rs.getDouble("total")),
-                    periodo
-                });
+               model.addRow(new Object[]{
+    rs.getString("NOMBRE_COMPLETO"),
+    rs.getString("tipos"),
+    String.format("Bs. %,.2f", rs.getDouble("total")),  // Cambiado de $ a Bs.
+    periodo
+});
+
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, 
@@ -318,12 +319,12 @@ public class BonificacionesDialog extends JDialog {
                     periodo = rs.getString("inicio_bon");
                 }
                 
-                model.addRow(new Object[]{
-                    rs.getString("NOMBRE_COMPLETO"),
-                    rs.getString("tipos"),
-                    String.format("$%,.2f", rs.getDouble("total")),
-                    periodo
-                });
+               model.addRow(new Object[]{
+    rs.getString("NOMBRE_COMPLETO"),
+    rs.getString("tipos"),
+    String.format("Bs. %,.2f", rs.getDouble("total")),  // Cambiado de $ a Bs.
+    periodo
+});
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, 
@@ -367,8 +368,8 @@ public class BonificacionesDialog extends JDialog {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     detalles.append("<b>Tipo:</b> ").append(rs.getString("tipo")).append("<br>");
-                    detalles.append("<b>Monto:</b> $").append(String.format("%,.2f", rs.getDouble("monto"))).append("<br>");
-                    detalles.append("<b>Descripción:</b> ").append(rs.getString("descripcion")).append("<br><br>");
+detalles.append("<b>Monto:</b> Bs.").append(String.format("%,.2f", rs.getDouble("monto"))).append("<br>"); 
+detalles.append("<b>Descripción:</b> ").append(rs.getString("descripcion")).append("<br><br>");
                 }
             }
         } catch (SQLException | ParseException e) {
@@ -535,65 +536,70 @@ public class BonificacionesDialog extends JDialog {
         return -1;
     }
     
-    private boolean insertarBonificacion(Integer idEmpleado, String tipo, double monto, 
-                                      String descripcion, Date inicio, Date fin) {
-        if (idEmpleado != null && idEmpleado != -1) {
-            if (existeBonificacionDuplicada(idEmpleado, tipo, inicio)) {
-                JOptionPane.showMessageDialog(this, 
-                    "Este empleado ya tiene una bonificación de este tipo para el período seleccionado",
-                    "Bonificación duplicada", JOptionPane.WARNING_MESSAGE);
-                return false;
-            }
-        }
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        
-        try {
-            if (inicio == null || fin == null) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar un mes válido", 
-                    "Error", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-
-            String inicioStr = sdf.format(inicio);
-            String finStr = sdf.format(fin);
-            
-            String sql = "INSERT INTO bonificaciones (id_empleado, tipo, monto, descripcion, " +
-                        "fecha_aplicacion, inicio_bon, fin_bon) VALUES (?, ?, ?, ?, date('now'), ?, ?)";
-
-            try (Connection con = ConexionBD.obtenerConexion();
-                 PreparedStatement pstmt = con.prepareStatement(sql)) {
-
-                if (idEmpleado == null || idEmpleado == -1) {
-                    pstmt.setNull(1, Types.INTEGER);
-                } else {
-                    pstmt.setInt(1, idEmpleado);
-                }
-
-                pstmt.setString(2, tipo);
-                pstmt.setDouble(3, monto);
-                pstmt.setString(4, descripcion);
-                pstmt.setString(5, inicioStr);
-                pstmt.setString(6, finStr);
-
-                int affectedRows = pstmt.executeUpdate();
-                
-                if (affectedRows > 0) {
-                    SwingUtilities.invokeLater(() -> {
-                        cargarBonificacionesDelMes();
-                        cargarHistorialBonificaciones();
-                        tabbedPane.setSelectedIndex(2);
-                    });
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al guardar en base de datos: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
+   private boolean insertarBonificacion(Integer idEmpleado, String tipo, double monto, 
+                                   String descripcion, Date inicio, Date fin) {
+    // Primero verificamos la contraseña antes de cualquier operación
+    if (!confirmarAccionConPassword.confirmarAccion(this)) {
         return false;
     }
+
+    if (idEmpleado != null && idEmpleado != -1) {
+        if (existeBonificacionDuplicada(idEmpleado, tipo, inicio)) {
+            JOptionPane.showMessageDialog(this, 
+                "Este empleado ya tiene una bonificación de este tipo para el período seleccionado",
+                "Bonificación duplicada", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+    }
+    
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    
+    try {
+        if (inicio == null || fin == null) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un mes válido", 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        String inicioStr = sdf.format(inicio);
+        String finStr = sdf.format(fin);
+        
+        String sql = "INSERT INTO bonificaciones (id_empleado, tipo, monto, descripcion, " +
+                    "fecha_aplicacion, inicio_bon, fin_bon) VALUES (?, ?, ?, ?, date('now'), ?, ?)";
+
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+
+            if (idEmpleado == null || idEmpleado == -1) {
+                pstmt.setNull(1, Types.INTEGER);
+            } else {
+                pstmt.setInt(1, idEmpleado);
+            }
+
+            pstmt.setString(2, tipo);
+            pstmt.setDouble(3, monto);
+            pstmt.setString(4, descripcion);
+            pstmt.setString(5, inicioStr);
+            pstmt.setString(6, finStr);
+
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                SwingUtilities.invokeLater(() -> {
+                    cargarBonificacionesDelMes();
+                    cargarHistorialBonificaciones();
+                    tabbedPane.setSelectedIndex(2);
+                });
+                return true;
+            }
+        }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al guardar en base de datos: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    return false;
+}
     
     private void configurarBotonAplicar() {
         btnAplicar.addActionListener(e -> {
@@ -642,75 +648,80 @@ public class BonificacionesDialog extends JDialog {
     }
 
     private boolean aplicarBonificacionGeneral() {
-        Connection con = null;
-        try {
-            con = ConexionBD.obtenerConexion();
-            con.setAutoCommit(false);
-            
-            List<Integer> idsEmpleados = new ArrayList<>();
-            String sqlEmpleados = "SELECT ID FROM empleados";
-            try (PreparedStatement pstmt = con.prepareStatement(sqlEmpleados);
-                 ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    idsEmpleados.add(rs.getInt("ID"));
-                }
-            }
-
-            if (idsEmpleados.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No hay empleados registrados", 
-                    "Advertencia", JOptionPane.WARNING_MESSAGE);
-                return false;
-            }
-
-            String sqlInsert = "INSERT INTO bonificaciones (id_empleado, tipo, monto, descripcion, " +
-                             "fecha_aplicacion, inicio_bon, fin_bon) VALUES (?, ?, ?, ?, date('now'), ?, ?)";
-            
-            try (PreparedStatement pstmt = con.prepareStatement(sqlInsert)) {
-                String tipo = getTipoBonificacion();
-                double monto = getMonto();
-                String descripcion = getDescripcion();
-                String inicioStr = new SimpleDateFormat("yyyy-MM-dd").format(getFechaInicio());
-                String finStr = new SimpleDateFormat("yyyy-MM-dd").format(getFechaFin());
-                
-                for (Integer idEmpleado : idsEmpleados) {
-                    pstmt.setInt(1, idEmpleado);
-                    pstmt.setString(2, tipo);
-                    pstmt.setDouble(3, monto);
-                    pstmt.setString(4, descripcion);
-                    pstmt.setString(5, inicioStr);
-                    pstmt.setString(6, finStr);
-                    pstmt.addBatch();
-                }
-                
-                pstmt.executeBatch();
-                con.commit();
-                
-                JOptionPane.showMessageDialog(this, 
-                    "Bonificación aplicada a " + idsEmpleados.size() + " empleados", 
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                return true;
-            }
-        } catch (SQLException ex) {
-            if (con != null) {
-                try {
-                    con.rollback();
-                } catch (SQLException ex1) {
-                    ex1.printStackTrace();
-                }
-            }
-            JOptionPane.showMessageDialog(this, 
-                "Error al aplicar bonificación general: " + ex.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            if (con != null) {
-                try {
-                    con.setAutoCommit(true);
-                    con.close();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
+    // Verificación de contraseña antes de continuar
+    if (!confirmarAccionConPassword.confirmarAccion(this)) {
         return false;
     }
+
+    Connection con = null;
+    try {
+        con = ConexionBD.obtenerConexion();
+        con.setAutoCommit(false);
+        
+        List<Integer> idsEmpleados = new ArrayList<>();
+        String sqlEmpleados = "SELECT ID FROM empleados";
+        try (PreparedStatement pstmt = con.prepareStatement(sqlEmpleados);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                idsEmpleados.add(rs.getInt("ID"));
+            }
+        }
+
+        if (idsEmpleados.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay empleados registrados", 
+                "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        String sqlInsert = "INSERT INTO bonificaciones (id_empleado, tipo, monto, descripcion, " +
+                         "fecha_aplicacion, inicio_bon, fin_bon) VALUES (?, ?, ?, ?, date('now'), ?, ?)";
+        
+        try (PreparedStatement pstmt = con.prepareStatement(sqlInsert)) {
+            String tipo = getTipoBonificacion();
+            double monto = getMonto();
+            String descripcion = getDescripcion();
+            String inicioStr = new SimpleDateFormat("yyyy-MM-dd").format(getFechaInicio());
+            String finStr = new SimpleDateFormat("yyyy-MM-dd").format(getFechaFin());
+            
+            for (Integer idEmpleado : idsEmpleados) {
+                pstmt.setInt(1, idEmpleado);
+                pstmt.setString(2, tipo);
+                pstmt.setDouble(3, monto);
+                pstmt.setString(4, descripcion);
+                pstmt.setString(5, inicioStr);
+                pstmt.setString(6, finStr);
+                pstmt.addBatch();
+            }
+            
+            pstmt.executeBatch();
+            con.commit();
+            
+            JOptionPane.showMessageDialog(this, 
+    "Bonificación de Bs. " + monto + " aplicada a " + idsEmpleados.size() + " empleados",  // Cambiado de $ a Bs.
+    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            return true;
+        }
+    } catch (SQLException ex) {
+        if (con != null) {
+            try {
+                con.rollback();
+            } catch (SQLException ex1) {
+                ex1.printStackTrace();
+            }
+        }
+        JOptionPane.showMessageDialog(this, 
+            "Error al aplicar bonificación general: " + ex.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+    } finally {
+        if (con != null) {
+            try {
+                con.setAutoCommit(true);
+                con.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    return false;
+}
 }

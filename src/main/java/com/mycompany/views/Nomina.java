@@ -7,6 +7,7 @@ package com.mycompany.views;
 import com.mycompany.BonificacionesDialog;
 import com.mycompany.ConexionBD;
 import com.mycompany.CalculosLaboralesDialog;
+import com.mycompany.DialogLiquidaciones;
 import com.mycompany.detalleNomina;
 import com.mycompany.reportes.historialNomina;
 import java.awt.BorderLayout;
@@ -163,6 +164,7 @@ public void calcularNomina() {
                 + "LEFT JOIN asistencias a ON e.ID = a.ID_EMPLEADO AND a.FECHA BETWEEN ? AND ? "
                 + "LEFT JOIN bonificaciones b ON (e.ID = b.id_empleado OR b.id_empleado IS NULL) "
                 + "AND (b.inicio_bon <= ? AND b.fin_bon >= ?) "
+                + "WHERE e.ESTADO = 'Activo' "
                 + "GROUP BY e.NOMBRE_COMPLETO, e.SALARIO";
 
         pst = con.prepareStatement(sql);
@@ -955,8 +957,7 @@ btnVerDetalle.addActionListener(e -> {
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
         Bonificaciones = new javax.swing.JButton();
-        Otros = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -1018,11 +1019,11 @@ btnVerDetalle.addActionListener(e -> {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(41, 41, 41)
                 .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jButton1)
-                .addGap(54, 54, 54))
+                .addGap(68, 68, 68))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1040,9 +1041,9 @@ btnVerDetalle.addActionListener(e -> {
                         .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(23, 23, 23)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton4)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1055,7 +1056,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 610, 170, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 630, 170, 40));
 
         tableTitle.setText("Tabla de nómina");
         jPanel1.add(tableTitle, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 260, -1, -1));
@@ -1161,7 +1162,7 @@ btnVerDetalle.addActionListener(e -> {
                 jButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 610, -1, 40));
+        jPanel1.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 630, -1, 40));
         jPanel1.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, -1, -1));
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -1198,13 +1199,16 @@ btnVerDetalle.addActionListener(e -> {
                 BonificacionesActionPerformed(evt);
             }
         });
-        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 610, 160, 40));
+        jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 630, 160, 40));
 
-        Otros.setText("Otros");
-        jPanel1.add(Otros, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 610, 130, 40));
-
-        jButton6.setText("Detalle de nomina");
-        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 610, 150, 40));
+        jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/multiply.png"))); // NOI18N
+        jToggleButton1.setText("Liquidación");
+        jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jToggleButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 630, 160, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1212,7 +1216,7 @@ btnVerDetalle.addActionListener(e -> {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1088, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(195, Short.MAX_VALUE))
+                .addContainerGap(192, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1298,10 +1302,14 @@ limpiar();        // TODO add your handling code here:
     dialog.setVisible(true);
     }//GEN-LAST:event_BonificacionesActionPerformed
 
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+   DialogLiquidaciones dialog = new DialogLiquidaciones((JFrame) SwingUtilities.getWindowAncestor(this));
+    dialog.setVisible(true);       
+    }//GEN-LAST:event_jToggleButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bonificaciones;
-    private javax.swing.JButton Otros;
     private javax.swing.JLabel deduccionesTotalesL;
     private javax.swing.JLabel faovLabel;
     private com.toedter.calendar.JDateChooser fechaFinNom;
@@ -1313,7 +1321,6 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton8;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1330,6 +1337,7 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JLabel montoBaseL;
     private javax.swing.JLabel montoNetoL;
     private javax.swing.JTable tablaNomina;

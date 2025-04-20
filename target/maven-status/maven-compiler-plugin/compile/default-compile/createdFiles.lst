@@ -1,7 +1,6 @@
 com\mycompany\views\Empleados$2.class
 com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
-com\mycompany\LiquidacionesDialog.class
 com\mycompany\views\zzzzzzz.class
 com\mycompany\views\Nomina$8.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
@@ -22,6 +21,7 @@ com\mycompany\views\Configuracion$8.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Permisos.class
 com\mycompany\views\Empleados$21.class
+com\mycompany\views\Nomina$13.class
 com\mycompany\views\Asistencia$1.class
 com\mycompany\views\Empleados$7.class
 com\mycompany\views\Nomina$7.class
@@ -78,7 +78,6 @@ com\mycompany\DialogLiquidaciones$EmpleadoComboItem.class
 com\mycompany\views\ReportePagosDialog.class
 com\mycompany\views\Nomina$5.class
 com\mycompany\reportes\ReporteAsistenciaPanel.class
-com\mycompany\LiquidacionesDialog$2.class
 com\mycompany\DialogLiquidaciones.class
 com\mycompany\views\Configuracion$1.class
 com\mycompany\detalleNomina.class
@@ -87,10 +86,8 @@ com\mycompany\views\Empleados$11.class
 com\mycompany\santabarbara\Dashborad$3.class
 com\mycompany\views\Incapacidad$1.class
 com\mycompany\views\Permisos$1.class
-com\mycompany\views\Empleados$22.class
 com\mycompany\reportes\historialNomina$1.class
 com\mycompany\views\Empleados$10.class
-com\mycompany\LiquidacionesDialog$1.class
 com\mycompany\views\Empleados$6.class
 com\mycompany\santabarbara\Dashborad$2.class
 com\mycompany\views\Nomina$6.class
