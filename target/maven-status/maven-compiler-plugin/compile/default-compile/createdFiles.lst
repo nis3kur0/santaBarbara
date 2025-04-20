@@ -3,9 +3,9 @@ com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
 com\mycompany\LiquidacionesDialog.class
 com\mycompany\views\Nomina$8.class
-com\mycompany\reportes\constanciaTrabajo.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\EscanearQR.class
+com\mycompany\reportes\ConstanciaTrabajo.class
 com\mycompany\RoundedPanelShadow.class
 com\mycompany\views\Vacaciones$1.class
 com\mycompany\views\VistaPreviaHTML.class
@@ -29,7 +29,6 @@ com\mycompany\views\Configuracion$HourSpinnerModel.class
 com\mycompany\views\Configuracion$9.class
 com\mycompany\views\Configuracion$2.class
 com\mycompany\views\Nomina$1.class
-com\mycompany\views\Nomina$15.class
 com\mycompany\views\Ficha$1.class
 com\mycompany\views\Empleados$9.class
 com\mycompany\santabarbara\Dashborad$4.class
@@ -44,10 +43,12 @@ com\mycompany\views\Empleados$15.class
 com\mycompany\CalculosLaboralesDialog.class
 com\mycompany\views\Empleados$LettersDocumentFilter.class
 com\mycompany\historialNomina.class
+com\mycompany\BonificacionesDialog$3.class
 com\mycompany\GenerarCarnet.class
 com\mycompany\confirmarAccionConPassword.class
 com\mycompany\reportes\reporteEmpleados$1.class
 com\mycompany\views\Configuracion$11.class
+com\mycompany\BonificacionesDialog$2.class
 com\mycompany\views\Empleados$14.class
 com\mycompany\recibodePago.class
 com\mycompany\santabarbara\Dashborad.class
@@ -72,10 +73,12 @@ com\mycompany\views\Asistencia$3.class
 com\mycompany\views\Asistencia.class
 com\mycompany\views\fichaNomina$1.class
 com\mycompany\views\Inicio$1.class
+com\mycompany\DialogLiquidaciones$EmpleadoComboItem.class
 com\mycompany\views\ReportePagosDialog.class
 com\mycompany\views\Nomina$5.class
 com\mycompany\reportes\ReporteAsistenciaPanel.class
 com\mycompany\LiquidacionesDialog$2.class
+com\mycompany\DialogLiquidaciones.class
 com\mycompany\views\Configuracion$1.class
 com\mycompany\detalleNomina.class
 com\mycompany\EscanearQR$1.class
@@ -83,6 +86,7 @@ com\mycompany\views\Empleados$11.class
 com\mycompany\santabarbara\Dashborad$3.class
 com\mycompany\views\Incapacidad$1.class
 com\mycompany\views\Permisos$1.class
+com\mycompany\views\Empleados$22.class
 com\mycompany\reportes\historialNomina$1.class
 com\mycompany\views\Empleados$10.class
 com\mycompany\LiquidacionesDialog$1.class

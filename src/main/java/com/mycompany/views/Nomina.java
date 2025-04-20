@@ -955,6 +955,8 @@ btnVerDetalle.addActionListener(e -> {
         tablaNomina = new javax.swing.JTable();
         jButton8 = new javax.swing.JButton();
         Bonificaciones = new javax.swing.JButton();
+        Otros = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(1280, 720));
         setPreferredSize(new java.awt.Dimension(1010, 400));
@@ -1198,6 +1200,12 @@ btnVerDetalle.addActionListener(e -> {
         });
         jPanel1.add(Bonificaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 610, 160, 40));
 
+        Otros.setText("Otros");
+        jPanel1.add(Otros, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 610, 130, 40));
+
+        jButton6.setText("Detalle de nomina");
+        jPanel1.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 610, 150, 40));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1293,6 +1301,7 @@ limpiar();        // TODO add your handling code here:
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bonificaciones;
+    private javax.swing.JButton Otros;
     private javax.swing.JLabel deduccionesTotalesL;
     private javax.swing.JLabel faovLabel;
     private com.toedter.calendar.JDateChooser fechaFinNom;
@@ -1304,6 +1313,7 @@ limpiar();        // TODO add your handling code here:
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton8;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

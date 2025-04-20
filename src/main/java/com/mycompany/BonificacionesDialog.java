@@ -1,12 +1,14 @@
 package com.mycompany;
 
-
 import com.mycompany.ConexionBD;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,27 +21,25 @@ public class BonificacionesDialog extends JDialog {
     private JTabbedPane tabbedPane;
     private JPanel panelIndividual;
     private JPanel panelGeneral;
-    private JPanel panelConsulta;
+    private JPanel panelBonificacionesActivas;
+    private JPanel panelHistorial;
     
-    // Componentes para pestaña individual
     private JComboBox<String> comboEmpleados;
     private JComboBox<String> comboTipoBonificacion;
     private JTextField txtMonto;
     private JTextArea txtDescripcion;
     private JDateChooser dateChooserMes;
     
-    // Componentes para pestaña general
     private JComboBox<String> comboTipoBonificacionGeneral;
     private JTextField txtMontoGeneral;
     private JTextArea txtDescripcionGeneral;
     private JDateChooser dateChooserMesGeneral;
     
-    // Componentes para pestaña consulta
-    private JTable tablaBonificaciones;
+    private JTable tablaBonificacionesActivas;
+    private JTable tablaHistorial;
     private JButton btnEliminar;
     private JButton btnActualizar;
     
-    // Botones generales
     private JButton btnAplicar;
     private JButton btnCancelar;
 
@@ -48,16 +48,16 @@ public class BonificacionesDialog extends JDialog {
         initComponents();
         setupLayout();
         configurarBotonAplicar();
-        cargarBonificacionesActivas();
+        cargarBonificacionesDelMes();
+        cargarHistorialBonificaciones();
         pack();
         setLocationRelativeTo(parent);
-        setSize(700, 500);
+        setSize(900, 600);
     }
 
     private void initComponents() {
         tabbedPane = new JTabbedPane();
         
-        // Pestaña individual
         panelIndividual = new JPanel();
         panelIndividual.setBorder(new TitledBorder("Bonificación Individual"));
         
@@ -72,7 +72,6 @@ public class BonificacionesDialog extends JDialog {
         dateChooserMes.setDateFormatString("MM/yyyy");
         dateChooserMes.getDateEditor().setEnabled(false);
         
-        // Pestaña general
         panelGeneral = new JPanel();
         panelGeneral.setBorder(new TitledBorder("Bonificación General"));
         
@@ -84,33 +83,54 @@ public class BonificacionesDialog extends JDialog {
         dateChooserMesGeneral.setDateFormatString("MM/yyyy");
         dateChooserMesGeneral.getDateEditor().setEnabled(false);
         
-        // Pestaña consulta
-        panelConsulta = new JPanel(new BorderLayout());
-        tablaBonificaciones = new JTable();
-        JScrollPane scrollPane = new JScrollPane(tablaBonificaciones);
+        panelBonificacionesActivas = new JPanel(new BorderLayout());
+        tablaBonificacionesActivas = new JTable();
+        JScrollPane scrollPaneActivas = new JScrollPane(tablaBonificacionesActivas);
+        
+        btnActualizar = new JButton("Actualizar");
+        btnActualizar.addActionListener(e -> cargarBonificacionesDelMes());
         
         btnEliminar = new JButton("Eliminar Seleccionada");
-        btnActualizar = new JButton("Actualizar Lista");
-        
-        btnActualizar.addActionListener(e -> cargarBonificacionesActivas());
         btnEliminar.addActionListener(e -> eliminarBonificacionSeleccionada());
         
-        JPanel panelBotonesConsulta = new JPanel();
-        panelBotonesConsulta.add(btnActualizar);
-        panelBotonesConsulta.add(btnEliminar);
+        JPanel panelBotonesActivas = new JPanel();
+        panelBotonesActivas.add(btnActualizar);
+        panelBotonesActivas.add(btnEliminar);
         
-        panelConsulta.add(scrollPane, BorderLayout.CENTER);
-        panelConsulta.add(panelBotonesConsulta, BorderLayout.SOUTH);
+        panelBonificacionesActivas.add(scrollPaneActivas, BorderLayout.CENTER);
+        panelBonificacionesActivas.add(panelBotonesActivas, BorderLayout.SOUTH);
         
-        // Botones generales
+        panelHistorial = new JPanel(new BorderLayout());
+        tablaHistorial = new JTable();
+        JScrollPane scrollPaneHistorial = new JScrollPane(tablaHistorial);
+        
+        JButton btnActualizarHistorial = new JButton("Actualizar");
+        btnActualizarHistorial.addActionListener(e -> cargarHistorialBonificaciones());
+        
+        JPanel panelBotonesHistorial = new JPanel();
+        panelBotonesHistorial.add(btnActualizarHistorial);
+        
+        panelHistorial.add(scrollPaneHistorial, BorderLayout.CENTER);
+        panelHistorial.add(panelBotonesHistorial, BorderLayout.SOUTH);
+        
         btnAplicar = new JButton("Aplicar");
         btnCancelar = new JButton("Cancelar");
-        
         btnCancelar.addActionListener(e -> dispose());
+        
+        // Configurar doble clic para ver detalles
+        tablaBonificacionesActivas.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int fila = tablaBonificacionesActivas.rowAtPoint(e.getPoint());
+                    if (fila >= 0) {
+                        mostrarDetalleBonificaciones(fila);
+                    }
+                }
+            }
+        });
     }
 
     private void setupLayout() {
-        // Configuración pestaña individual
         JPanel panelIndividualForm = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -144,7 +164,6 @@ public class BonificacionesDialog extends JDialog {
         
         panelIndividual.add(panelIndividualForm);
         
-        // Configuración pestaña general
         JPanel panelGeneralForm = new JPanel(new GridBagLayout());
         gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -173,17 +192,15 @@ public class BonificacionesDialog extends JDialog {
         
         panelGeneral.add(panelGeneralForm);
         
-        // Añadir las tres pestañas
         tabbedPane.addTab("Individual", panelIndividual);
         tabbedPane.addTab("General", panelGeneral);
-        tabbedPane.addTab("Consultar/Eliminar", panelConsulta);
+        tabbedPane.addTab("Bonificaciones del Mes", panelBonificacionesActivas);
+        tabbedPane.addTab("Historial Completo", panelHistorial);
         
-        // Panel de botones
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.add(btnCancelar);
         panelBotones.add(btnAplicar);
         
-        // Diseño principal
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
@@ -207,132 +224,234 @@ public class BonificacionesDialog extends JDialog {
         }
     }
     
-    private void cargarBonificacionesActivas() {
+    private void cargarBonificacionesDelMes() {
         DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                return switch (columnIndex) {
-                    case 0 -> Integer.class;
-                    case 3 -> Double.class;
-                    default -> String.class;
-                };
-            }
-            
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         
-        model.addColumn("ID");
         model.addColumn("Empleado");
-        model.addColumn("Tipo");
-        model.addColumn("Monto");
-        model.addColumn("Fecha Inicio");
-        model.addColumn("Fecha Fin");
-        model.addColumn("Descripción");
+        model.addColumn("Tipos de Bonificación");
+        model.addColumn("Total");
+        model.addColumn("Periodo");
         
         SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat displayFormat = new SimpleDateFormat("MMM yyyy");
         
-        String query = "SELECT b.id_bonificacion, e.NOMBRE_COMPLETO, b.tipo, b.monto, " +
-                      "b.inicio_bon, b.fin_bon, b.descripcion " +
-                      "FROM bonificaciones b LEFT JOIN empleados e ON b.id_empleado = e.ID " +
-                      "WHERE b.fin_bon >= date('now') ORDER BY b.fecha_aplicacion DESC";
+        String query = "SELECT e.NOMBRE_COMPLETO, " +
+                      "GROUP_CONCAT(b.tipo, ', ') AS tipos, " +
+                      "SUM(b.monto) AS total, " +
+                      "b.inicio_bon " +
+                      "FROM bonificaciones b " +
+                      "LEFT JOIN empleados e ON b.id_empleado = e.ID " +
+                      "WHERE strftime('%Y-%m', b.inicio_bon) = strftime('%Y-%m', 'now') " +
+                      "GROUP BY e.NOMBRE_COMPLETO, b.inicio_bon " +
+                      "ORDER BY e.NOMBRE_COMPLETO";
         
         try (Connection con = ConexionBD.obtenerConexion();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             
             while (rs.next()) {
+                String periodo = "";
                 try {
-                    String inicioStr = rs.getString("inicio_bon");
-                    String finStr = rs.getString("fin_bon");
-                    
-                    String inicioDisplay = "";
-                    String finDisplay = "";
-                    
-                    if (inicioStr != null && !inicioStr.isEmpty()) {
-                        Date fechaInicio = dbFormat.parse(inicioStr);
-                        inicioDisplay = displayFormat.format(fechaInicio);
-                    }
-                    
-                    if (finStr != null && !finStr.isEmpty()) {
-                        Date fechaFin = dbFormat.parse(finStr);
-                        finDisplay = displayFormat.format(fechaFin);
-                    }
-                    
-                    model.addRow(new Object[]{
-                        rs.getInt("id_bonificacion"),
-                        rs.getString("NOMBRE_COMPLETO"),
-                        rs.getString("tipo"),
-                        rs.getDouble("monto"),
-                        inicioDisplay,
-                        finDisplay,
-                        rs.getString("descripcion")
-                    });
-                    
-                } catch (ParseException pe) {
-                    System.err.println("Error parseando fecha: " + pe.getMessage());
-                    model.addRow(new Object[]{
-                        rs.getInt("id_bonificacion"),
-                        rs.getString("NOMBRE_COMPLETO"),
-                        rs.getString("tipo"),
-                        rs.getDouble("monto"),
-                        rs.getString("inicio_bon"),
-                        rs.getString("fin_bon"),
-                        rs.getString("descripcion")
-                    });
+                    Date inicio = dbFormat.parse(rs.getString("inicio_bon"));
+                    periodo = displayFormat.format(inicio);
+                } catch (ParseException e) {
+                    periodo = rs.getString("inicio_bon");
                 }
+                
+                model.addRow(new Object[]{
+                    rs.getString("NOMBRE_COMPLETO"),
+                    rs.getString("tipos"),
+                    String.format("$%,.2f", rs.getDouble("total")),
+                    periodo
+                });
             }
         } catch (SQLException e) {
-            System.err.println("Error al cargar bonificaciones: " + e.getMessage());
             JOptionPane.showMessageDialog(this, 
-                "Error al cargar bonificaciones: " + e.getMessage(), 
+                "Error al cargar bonificaciones del mes: " + e.getMessage(), 
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
         
-        tablaBonificaciones.setModel(model);
+        tablaBonificacionesActivas.setModel(model);
+        ajustarAnchoColumnas(tablaBonificacionesActivas);
+    }
+    
+    private void cargarHistorialBonificaciones() {
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         
-        // Ajustar tamaño de columnas
-        tablaBonificaciones.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tablaBonificaciones.getColumnModel().getColumn(0).setPreferredWidth(50);
-        tablaBonificaciones.getColumnModel().getColumn(1).setPreferredWidth(150);
-        tablaBonificaciones.getColumnModel().getColumn(2).setPreferredWidth(100);
-        tablaBonificaciones.getColumnModel().getColumn(3).setPreferredWidth(80);
-        tablaBonificaciones.getColumnModel().getColumn(4).setPreferredWidth(100);
-        tablaBonificaciones.getColumnModel().getColumn(5).setPreferredWidth(100);
-        tablaBonificaciones.getColumnModel().getColumn(6).setPreferredWidth(200);
+        model.addColumn("Empleado");
+        model.addColumn("Tipos de Bonificación");
+        model.addColumn("Total");
+        model.addColumn("Periodo");
+        
+        SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat displayFormat = new SimpleDateFormat("MMM yyyy");
+        
+        String query = "SELECT e.NOMBRE_COMPLETO, " +
+                      "GROUP_CONCAT(b.tipo, ', ') AS tipos, " +
+                      "SUM(b.monto) AS total, " +
+                      "b.inicio_bon " +
+                      "FROM bonificaciones b " +
+                      "LEFT JOIN empleados e ON b.id_empleado = e.ID " +
+                      "GROUP BY e.NOMBRE_COMPLETO, b.inicio_bon " +
+                      "ORDER BY b.inicio_bon DESC";
+        
+        try (Connection con = ConexionBD.obtenerConexion();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            while (rs.next()) {
+                String periodo = "";
+                try {
+                    Date inicio = dbFormat.parse(rs.getString("inicio_bon"));
+                    periodo = displayFormat.format(inicio);
+                } catch (ParseException e) {
+                    periodo = rs.getString("inicio_bon");
+                }
+                
+                model.addRow(new Object[]{
+                    rs.getString("NOMBRE_COMPLETO"),
+                    rs.getString("tipos"),
+                    String.format("$%,.2f", rs.getDouble("total")),
+                    periodo
+                });
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar historial: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        tablaHistorial.setModel(model);
+        ajustarAnchoColumnas(tablaHistorial);
+    }
+    
+    private void ajustarAnchoColumnas(JTable tabla) {
+        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumnModel columnModel = tabla.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(150); // Empleado
+        columnModel.getColumn(1).setPreferredWidth(250); // Tipos
+        columnModel.getColumn(2).setPreferredWidth(100); // Total
+        columnModel.getColumn(3).setPreferredWidth(100); // Periodo
+    }
+    
+    private void mostrarDetalleBonificaciones(int filaSeleccionada) {
+        String nombreEmpleado = (String) tablaBonificacionesActivas.getValueAt(filaSeleccionada, 0);
+        String periodo = (String) tablaBonificacionesActivas.getValueAt(filaSeleccionada, 3);
+        
+        String sql = "SELECT b.tipo, b.monto, b.descripcion " +
+                    "FROM bonificaciones b " +
+                    "JOIN empleados e ON b.id_empleado = e.ID " +
+                    "WHERE e.NOMBRE_COMPLETO = ? AND strftime('%Y-%m', b.inicio_bon) = ?";
+        
+        StringBuilder detalles = new StringBuilder();
+        detalles.append("<html><b>").append(nombreEmpleado).append("</b><br>");
+        detalles.append("Periodo: ").append(periodo).append("<br><br>");
+        
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+            
+            pstmt.setString(1, nombreEmpleado);
+            pstmt.setString(2, new SimpleDateFormat("yyyy-MM").format(
+                new SimpleDateFormat("MMM yyyy").parse(periodo)));
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    detalles.append("<b>Tipo:</b> ").append(rs.getString("tipo")).append("<br>");
+                    detalles.append("<b>Monto:</b> $").append(String.format("%,.2f", rs.getDouble("monto"))).append("<br>");
+                    detalles.append("<b>Descripción:</b> ").append(rs.getString("descripcion")).append("<br><br>");
+                }
+            }
+        } catch (SQLException | ParseException e) {
+            detalles.append("Error al cargar detalles: ").append(e.getMessage());
+        }
+        
+        JOptionPane.showMessageDialog(this, detalles.toString(), 
+            "Detalle de Bonificaciones", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private boolean existeBonificacionDuplicada(int idEmpleado, String tipo, Date inicio) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String inicioStr = sdf.format(inicio);
+        
+        String sql = "SELECT COUNT(*) FROM bonificaciones WHERE id_empleado = ? " +
+                    "AND tipo = ? AND inicio_bon = ?";
+        
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, idEmpleado);
+            pstmt.setString(2, tipo);
+            pstmt.setString(3, inicioStr);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al verificar duplicados: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
     }
     
     private void eliminarBonificacionSeleccionada() {
-        int filaSeleccionada = tablaBonificaciones.getSelectedRow();
+        int filaSeleccionada = tablaBonificacionesActivas.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this, "Seleccione una bonificación para eliminar", 
                 "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        int idBonificacion = (int) tablaBonificaciones.getValueAt(filaSeleccionada, 0);
+        String nombreEmpleado = (String) tablaBonificacionesActivas.getValueAt(filaSeleccionada, 0);
+        String periodo = (String) tablaBonificacionesActivas.getValueAt(filaSeleccionada, 3);
+        
         int confirmacion = JOptionPane.showConfirmDialog(this, 
-            "¿Está seguro de eliminar esta bonificación?", "Confirmar", 
-            JOptionPane.YES_NO_OPTION);
+            "¿Eliminar TODAS las bonificaciones de " + nombreEmpleado + " para " + periodo + "?", 
+            "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
         
         if (confirmacion == JOptionPane.YES_OPTION) {
-            String sql = "DELETE FROM bonificaciones WHERE id_bonificacion = ?";
+            String sql = "DELETE FROM bonificaciones WHERE id_empleado = " +
+                        "(SELECT ID FROM empleados WHERE NOMBRE_COMPLETO = ?) " +
+                        "AND strftime('%Y-%m', inicio_bon) = ?";
             
             try (Connection con = ConexionBD.obtenerConexion();
                  PreparedStatement pstmt = con.prepareStatement(sql)) {
                 
-                pstmt.setInt(1, idBonificacion);
-                pstmt.executeUpdate();
-                cargarBonificacionesActivas();
+                pstmt.setString(1, nombreEmpleado);
                 
-                JOptionPane.showMessageDialog(this, "Bonificación eliminada correctamente", 
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                // Convertir periodo a formato yyyy-MM
+                SimpleDateFormat displayFormat = new SimpleDateFormat("MMM yyyy");
+                SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM");
+                String periodoFormatoDB = dbFormat.format(displayFormat.parse(periodo));
                 
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error al eliminar bonificación: " + e.getMessage(), 
+                pstmt.setString(2, periodoFormatoDB);
+                
+                int affectedRows = pstmt.executeUpdate();
+                
+                if (affectedRows > 0) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Se eliminaron " + affectedRows + " bonificaciones", 
+                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    cargarBonificacionesDelMes();
+                    cargarHistorialBonificaciones();
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se encontraron bonificaciones a eliminar", 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            } catch (SQLException | ParseException e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar bonificaciones: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -418,6 +537,15 @@ public class BonificacionesDialog extends JDialog {
     
     private boolean insertarBonificacion(Integer idEmpleado, String tipo, double monto, 
                                       String descripcion, Date inicio, Date fin) {
+        if (idEmpleado != null && idEmpleado != -1) {
+            if (existeBonificacionDuplicada(idEmpleado, tipo, inicio)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Este empleado ya tiene una bonificación de este tipo para el período seleccionado",
+                    "Bonificación duplicada", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }
+        
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         
         try {
@@ -452,21 +580,17 @@ public class BonificacionesDialog extends JDialog {
                 
                 if (affectedRows > 0) {
                     SwingUtilities.invokeLater(() -> {
-                        cargarBonificacionesActivas();
+                        cargarBonificacionesDelMes();
+                        cargarHistorialBonificaciones();
                         tabbedPane.setSelectedIndex(2);
                     });
                     return true;
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error SQL al insertar bonificación:");
-            e.printStackTrace();
             JOptionPane.showMessageDialog(this, 
                 "Error al guardar en base de datos: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            System.err.println("Error inesperado:");
-            e.printStackTrace();
         }
         return false;
     }
@@ -495,34 +619,34 @@ public class BonificacionesDialog extends JDialog {
             }
             
             if (esBonificacionGeneral()) {
-                aplicarBonificacionGeneral();
+                if (aplicarBonificacionGeneral()) {
+                    txtMontoGeneral.setText("");
+                    txtDescripcionGeneral.setText("");
+                    dateChooserMesGeneral.setDate(new Date());
+                }
             } else {
                 int idEmpleado = obtenerIdEmpleadoPorNombre(getNombreEmpleado());
                 if (idEmpleado != -1) {
-                    insertarBonificacion(idEmpleado, getTipoBonificacion(), getMonto(), 
-                        getDescripcion(), getFechaInicio(), getFechaFin());
+                    int confirmacion = JOptionPane.showConfirmDialog(this,
+                        "¿Desea agregar esta bonificación además de las existentes?",
+                        "Confirmar bonificación adicional",
+                        JOptionPane.YES_NO_OPTION);
+                    
+                    if (confirmacion == JOptionPane.YES_OPTION) {
+                        insertarBonificacion(idEmpleado, getTipoBonificacion(), getMonto(), 
+                            getDescripcion(), getFechaInicio(), getFechaFin());
+                    }
                 }
-            }
-            
-            cargarBonificacionesActivas();
-            
-            if (esBonificacionGeneral()) {
-                txtMontoGeneral.setText("");
-                txtDescripcionGeneral.setText("");
-            } else {
-                txtMonto.setText("");
-                txtDescripcion.setText("");
             }
         });
     }
 
-    private void aplicarBonificacionGeneral() {
+    private boolean aplicarBonificacionGeneral() {
         Connection con = null;
         try {
             con = ConexionBD.obtenerConexion();
-            con.setAutoCommit(false); // Iniciar transacción
+            con.setAutoCommit(false);
             
-            // Obtener TODOS los empleados (sin filtrar por estado)
             List<Integer> idsEmpleados = new ArrayList<>();
             String sqlEmpleados = "SELECT ID FROM empleados";
             try (PreparedStatement pstmt = con.prepareStatement(sqlEmpleados);
@@ -531,14 +655,13 @@ public class BonificacionesDialog extends JDialog {
                     idsEmpleados.add(rs.getInt("ID"));
                 }
             }
-            
+
             if (idsEmpleados.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No hay empleados registrados", 
                     "Advertencia", JOptionPane.WARNING_MESSAGE);
-                return;
+                return false;
             }
-            
-            // Preparar la sentencia SQL para insertar bonificaciones
+
             String sqlInsert = "INSERT INTO bonificaciones (id_empleado, tipo, monto, descripcion, " +
                              "fecha_aplicacion, inicio_bon, fin_bon) VALUES (?, ?, ?, ?, date('now'), ?, ?)";
             
@@ -565,6 +688,7 @@ public class BonificacionesDialog extends JDialog {
                 JOptionPane.showMessageDialog(this, 
                     "Bonificación aplicada a " + idsEmpleados.size() + " empleados", 
                     "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                return true;
             }
         } catch (SQLException ex) {
             if (con != null) {
@@ -587,6 +711,6 @@ public class BonificacionesDialog extends JDialog {
                 }
             }
         }
+        return false;
     }
-
 }
