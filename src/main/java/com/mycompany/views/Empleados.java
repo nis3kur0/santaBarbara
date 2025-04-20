@@ -5,6 +5,7 @@
 package com.mycompany.views;
 
 import com.mycompany.CarnetEmpleado;
+import com.mycompany.reportes.ConstanciaTrabajo;
 import com.mycompany.DialogLiquidaciones;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,9 +34,7 @@ import com.mycompany.confirmarAccionConPassword;
 import java.sql.Statement;
 import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
-import com.mycompany.reportes.ConstanciaTrabajo;
 import com.mycompany.reportes.reporteEmpleados;
-import com.mycompany.views.Ficha;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -151,7 +150,7 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
     //FUNCIONES PARA ACTUALIZAR Y CARGAR DATOS
  
     private void cargarDatosEnTabla() {
-    String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados";
+    String sql = "SELECT ID, NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados WHERE ESTADO = 'Activo'";
 
     try (Connection conn = ConexionBD.obtenerConexion(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 
@@ -1222,7 +1221,7 @@ private void actualizarEmpleado(int selectedRow) {
         job.setJobName("Reporte de Empleados");
 
         PageFormat pf = job.defaultPage();
-        pf.setOrientation(PageFormat.LANDSCAPE); // 🌟 Aquí forzamos landscape
+        pf.setOrientation(PageFormat.LANDSCAPE);
 
         job.setPrintable(reporte, pf);
 

@@ -2,6 +2,7 @@ com\mycompany\views\Empleados$2.class
 com\mycompany\views\Asistencia$6.class
 com\mycompany\views\Reportes.class
 com\mycompany\LiquidacionesDialog.class
+com\mycompany\views\zzzzzzz.class
 com\mycompany\views\Nomina$8.class
 com\mycompany\loginandsignup\LoginAndSignUp.class
 com\mycompany\EscanearQR.class
@@ -98,7 +99,6 @@ com\mycompany\fichaEmpleado.class
 com\mycompany\ManualLauncher.class
 com\mycompany\santabarbara\Dashborad$1.class
 com\mycompany\VerAsistencias$1.class
-com\mycompany\views\constanciaTrabajo.class
 com\mycompany\views\Configuracion.class
 com\mycompany\reportes\historialNomina.class
 com\mycompany\views\Nomina$12.class
