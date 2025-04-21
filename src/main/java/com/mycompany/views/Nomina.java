@@ -1040,10 +1040,11 @@ btnVerDetalle.addActionListener(e -> {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(fechaFinNom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(23, 23, 23)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton4)))
                 .addContainerGap())
         );
 
@@ -1225,7 +1226,7 @@ btnVerDetalle.addActionListener(e -> {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-       try {
+    try {
         int filaSeleccionada = tablaNomina.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this, 
@@ -1234,6 +1235,10 @@ btnVerDetalle.addActionListener(e -> {
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String fechaInicioStr = sdf.format(fechaInicioNom.getDate());
+        String fechaFinStr = sdf.format(fechaFinNom.getDate());
         
         String nombreEmpleado = tablaNomina.getValueAt(filaSeleccionada, 0).toString();
         
@@ -1253,6 +1258,7 @@ btnVerDetalle.addActionListener(e -> {
         reciboPago recibo = new reciboPago();
         
         recibo.cargarDatosEmpleado(idEmpleado, model, filaSeleccionada);
+        recibo.setFechasPeriodo(fechaInicioStr, fechaFinStr); // Pasar las fechas aquí
         
         dialog.add(recibo);
         dialog.pack();

@@ -12,10 +12,9 @@ import java.sql.SQLException;
 
 public class ConexionBD {
     
-    private static String URL; // La URL será dinámica
+    private static String URL;
     
     static {
-        // Inicializa la base de datos al cargar la clase
         try {
             inicializarBD();
         } catch (IOException e) {
@@ -24,20 +23,17 @@ public class ConexionBD {
     }
     
     private static void inicializarBD() throws IOException {
-        // Directorio destino: "user.home/santabarbara-data"
         String userHome = System.getProperty("user.home");
         Path appDir = Paths.get(userHome, "santabarbara-data");
-        Files.createDirectories(appDir); // Crea el directorio si no existe
+        Files.createDirectories(appDir); 
         
         Path dbPath = appDir.resolve("santabarbara.db");
         
-        // Copia la DB desde recursos solo si no existe
         if (!Files.exists(dbPath)) {
             InputStream inputStream = ConexionBD.class.getResourceAsStream("/santabarbara.db");
             Files.copy(inputStream, dbPath, StandardCopyOption.REPLACE_EXISTING);
         }
         
-        // Asigna la URL de conexión
         URL = "jdbc:sqlite:" + dbPath.toString();
     }
     
