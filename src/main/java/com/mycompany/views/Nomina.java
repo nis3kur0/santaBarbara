@@ -6,15 +6,11 @@ package com.mycompany.views;
 
 import com.mycompany.BonificacionesDialog;
 import com.mycompany.ConexionBD;
-import com.mycompany.CalculosLaboralesDialog;
 import com.mycompany.DialogLiquidaciones;
-import com.mycompany.detalleNomina;
 import com.mycompany.reportes.historialNomina;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,11 +25,22 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import com.mycompany.confirmarAccionConPassword;
+import com.mycompany.reportes.detallesNomina;
 import com.mycompany.reportes.reciboPago;
-import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Destination;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
+import javax.print.attribute.standard.PrintQuality;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * PENDIENTE A REFACTORIZACION
@@ -50,6 +57,7 @@ public class Nomina extends javax.swing.JPanel {
         styles();
     }
 
+    
     //ESTILOS
     private void styles() {
 
@@ -59,6 +67,8 @@ public class Nomina extends javax.swing.JPanel {
 
     //VARIABLES
     private double totalSueldoNeto = 0;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+String fechaActual = LocalDate.now().format(formatter);
 
     //VALIDACIONES
     public boolean validarFechasSolapadas(LocalDate fechaInicio, LocalDate fechaFin) {
@@ -385,62 +395,12 @@ public void calcularNomina() {
 
 //VENTANA DE HISTORIAL DE NOMINAS DETALLE
     
-    private void detalleNomina(int idNomina) {
+private void detalleNomina(int idNomina) {
     Connection con = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
 
     try {
-        JDialog dialog = new JDialog();
-        dialog.setTitle("Detalle de Nómina");  
-        dialog.setSize(800, 600);
-        dialog.setLocationRelativeTo(null); 
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; 
-            }
-        };
-        
-        model.setColumnIdentifiers(new Object[] {
-            "Empleado", "Días Trabajados", "Ausencias", "Horas Extras",
-            "Sueldo Neto", "IVSS", "FAOV", "INCES", "Sueldo Final"
-        });
-
-        JTable table = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel buttonPanel = new JPanel();
-        JButton btnGuardar = new JButton("Guardar");
-        JButton btnImprimir = new JButton("Imprimir");
-
-        btnGuardar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int idNominaSeleccionada = idNomina;  
-                detalleNomina.generarDetalleNomina(idNominaSeleccionada);
-            }
-        });
-
-        btnImprimir.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        buttonPanel.add(btnGuardar);
-        buttonPanel.add(btnImprimir);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        dialog.add(panel);
-        dialog.setVisible(true);
-
         con = ConexionBD.obtenerConexion();
         String sqlFecha = "SELECT FECHA_INICIO_NOMINA, FECHA_FIN_NOMINA FROM nomina WHERE ID_NOMINA = ?";
         pst = con.prepareStatement(sqlFecha);
@@ -451,23 +411,138 @@ public void calcularNomina() {
             String fechaInicio = rs.getString("FECHA_INICIO_NOMINA");
             String fechaFin = rs.getString("FECHA_FIN_NOMINA");
 
-            calcularNominaDetalles(fechaInicio, fechaFin, model);
+            // Crear y cargar el panel de detalles
+            detallesNomina panelVistaPrevia = new detallesNomina();
+            panelVistaPrevia.cargarDatosNomina(idNomina, fechaInicio, fechaFin);
+
+            // Mostrar directamente la vista previa con botones de imprimir / guardar PDF
+            mostrarVistaPreviaImpresion(panelVistaPrevia, "Detalle Nómina " + idNomina);
         } else {
-            JOptionPane.showMessageDialog(null, "No se encontró la nómina seleccionada.");
+            JOptionPane.showMessageDialog(null, "No se encontró la nómina seleccionada.", 
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
     } catch (SQLException ex) {
         ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al obtener los datos de la nómina: " + ex.getMessage());
+        JOptionPane.showMessageDialog(null, 
+            "Error al obtener los datos de la nómina: " + ex.getMessage(), 
+            "Error de base de datos", JOptionPane.ERROR_MESSAGE);
     } finally {
         try {
             if (rs != null) rs.close();
             if (pst != null) pst.close();
             if (con != null) con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
 }
+
+
+private void mostrarVistaPreviaImpresion(detallesNomina panel, String titulo) {
+    JFrame previewFrame = new JFrame("Vista previa - " + titulo);
+    previewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    previewFrame.setSize(1100, 750);
+    previewFrame.setLocationRelativeTo(null);
+
+    JPanel topPanel = new JPanel();
+    
+    JButton btnPdf = new JButton("Guardar PDF");
+    btnPdf.addActionListener(e -> guardarOImprimirPDF(panel, previewFrame, false));
+    
+    JButton btnImprimir = new JButton("Imprimir Directamente");
+    btnImprimir.addActionListener(e -> guardarOImprimirPDF(panel, previewFrame, true));
+    
+    topPanel.add(btnPdf);
+    topPanel.add(btnImprimir);
+
+    previewFrame.getContentPane().setLayout(new BorderLayout());
+    previewFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
+    previewFrame.getContentPane().add(new JScrollPane(panel), BorderLayout.CENTER);
+    
+    previewFrame.setVisible(true);
+}
+
+private void guardarOImprimirPDF(detallesNomina panel, JFrame parentFrame, boolean imprimirDirecto) {
+    PrinterJob job = PrinterJob.getPrinterJob();
+    job.setJobName("Detalle de Nómina");
+
+    // Configurar formato de página (horizontal)
+    PageFormat pf = job.defaultPage();
+    pf.setOrientation(PageFormat.LANDSCAPE);
+    
+    // Atributos de impresión (alta calidad)
+    PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+    attr.add(MediaSizeName.ISO_A4);
+    attr.add(OrientationRequested.LANDSCAPE);
+    attr.add(PrintQuality.HIGH);
+
+    if (imprimirDirecto) {
+        // Modo impresión directa
+        if (job.printDialog(attr)) {
+            try {
+                job.print(attr);
+                JOptionPane.showMessageDialog(parentFrame,
+                    "Documento enviado a la impresora",
+                    "Impresión exitosa",
+                    JOptionPane.INFORMATION_MESSAGE);
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(parentFrame,
+                    "Error al imprimir: " + ex.getMessage(),
+                    "Error de impresión",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    } else {
+        // Modo guardar como PDF
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar Detalle de Nómina como PDF");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
+        
+        // Nombre de archivo sugerido
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String nombreDefault = "Nomina_" + sdf.format(new Date()) + ".pdf";
+        fileChooser.setSelectedFile(new File(nombreDefault));
+
+        if (fileChooser.showSaveDialog(parentFrame) == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            
+            if (!filePath.toLowerCase().endsWith(".pdf")) {
+                filePath += ".pdf";
+                fileToSave = new File(filePath);
+            }
+
+            try {
+                // Configurar destino del PDF
+                attr.add(new Destination(fileToSave.toURI()));
+                job.setPrintable(panel, pf);
+                job.print(attr);
+                
+                JOptionPane.showMessageDialog(parentFrame,
+                    "PDF guardado exitosamente en:\n" + filePath,
+                    "Operación exitosa",
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Abrir el PDF automáticamente si es posible
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    try {
+                        Desktop.getDesktop().open(fileToSave);
+                    } catch (IOException ex) {
+                        System.err.println("Error al abrir el PDF: " + ex.getMessage());
+                    }
+                }
+            } catch (PrinterException ex) {
+                JOptionPane.showMessageDialog(parentFrame,
+                    "Error al generar el PDF: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }
+}
+
+//PARA DETALLE DE NOMINA
 
     
     public void calcularNominaDetalles(String fechaInicioStr, String fechaFinStr, DefaultTableModel model) {
@@ -707,39 +782,67 @@ btnVerDetalle.addActionListener(e -> {
         cargarDatosEnTabla(tablaHistorialNomina);
     }
     
-    public void mostrarVistaPreviaHistorial() {
+   public void mostrarVistaPreviaHistorial() {
     historialNomina reporte = new historialNomina(); // Crea una nueva instancia del reporte
-    
+
     JFrame previewFrame = new JFrame("Vista previa de impresión - Historial de Nómina");
     previewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     previewFrame.setSize(1000, 700);
     previewFrame.setLocationRelativeTo(null);
 
     JPanel topPanel = new JPanel();
-    JButton imprimirBtn = new JButton("Imprimir / Guardar PDF");
+    JButton guardarPDFBtn = new JButton("Guardar como PDF");
 
-    imprimirBtn.addActionListener(e -> {
+    guardarPDFBtn.addActionListener(e -> {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Guardar Historial de Nómina como PDF");
+    fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
+fileChooser.setSelectedFile(new File("HistorialNomina_" + fechaActual + ".pdf"));
+
+    int userSelection = fileChooser.showSaveDialog(previewFrame);
+
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = fileChooser.getSelectedFile();
+        String filePath = fileToSave.getAbsolutePath();
+        if (!filePath.toLowerCase().endsWith(".pdf")) {
+            filePath += ".pdf";
+            fileToSave = new File(filePath);
+        }
+
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setJobName("Historial de Nómina");
-
         PageFormat pf = job.defaultPage();
         pf.setOrientation(PageFormat.LANDSCAPE);
-
         job.setPrintable(reporte, pf);
 
-        if (job.printDialog()) {
-            try {
-                job.print();
-            } catch (PrinterException ex) {
-                JOptionPane.showMessageDialog(previewFrame, 
-                    "Error al imprimir: " + ex.getMessage(), 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    });
+        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+        attr.add(new Destination(fileToSave.toURI())); 
+        attr.add(MediaSizeName.ISO_A4);
+        attr.add(OrientationRequested.LANDSCAPE);
 
-    topPanel.add(imprimirBtn);
+        try {
+            job.print(attr); // imprime sin mostrar el diálogo
+
+            // Intentar abrir el PDF después de guardarlo
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(fileToSave);
+            } else {
+                JOptionPane.showMessageDialog(previewFrame,
+                        "No se puede abrir el archivo automáticamente en este sistema.",
+                        "Advertencia",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+
+        } catch (PrinterException | IOException ex) {
+            JOptionPane.showMessageDialog(previewFrame,
+                    "Error al guardar o abrir el PDF: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+});
+
+    topPanel.add(guardarPDFBtn);
     previewFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
     previewFrame.getContentPane().add(new JScrollPane(reporte), BorderLayout.CENTER);
     previewFrame.setVisible(true);

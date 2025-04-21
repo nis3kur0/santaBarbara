@@ -31,15 +31,42 @@ public class reporteEmpleados extends javax.swing.JPanel implements Printable {
 
     public reporteEmpleados() {
         initComponents();
+        
+        actualizarEmpleadosPresentes(); 
+        
         cargarDatosEnTabla();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         fechaLabel.setText(sdf.format(new Date()));
+        
     }
+    
+     private void actualizarEmpleadosPresentes() {
+    String sql = "SELECT COUNT(DISTINCT ID) AS total_activos " +
+                 "FROM empleados";
+    
+    try (Connection conn = ConexionBD.obtenerConexion();
+         PreparedStatement pstmt = conn.prepareStatement(sql);
+         ResultSet rs = pstmt.executeQuery()) {
+        
+        if (rs.next()) {
+            int totalActivos = rs.getInt("total_activos");
+            emTotalesLabel.setText(String.valueOf(totalActivos));
+        } else {
+            emTotalesLabel.setText("0");
+        }
+        
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, 
+            "Error al obtener empleados activos: " + e.getMessage(), 
+            "Error", JOptionPane.ERROR_MESSAGE);
+        emTotalesLabel.setText("0");
+    }
+}
 
     private void cargarDatosEnTabla() {
         String sql = """
                      SELECT NOMBRE_COMPLETO, CEDULA, FECHA_NACIMIENTO, TELEFONO,
-                            TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO,
+                            TELEFONO_HABITACION, EMAIL, CARGO, SALARIO,
                             INICIO_CONTRATO, FIN_CONTRATO
                      FROM empleados
                      """;
@@ -50,7 +77,7 @@ public class reporteEmpleados extends javax.swing.JPanel implements Printable {
 
             String[] columnNames = {
                 "Nombre Completo", "Cédula", "Fecha Nacimiento", "Teléfono",
-                "Teléfono Habitación", "Email", "Dirección", "Cargo", "Salario",
+                "Teléfono Habitación", "Email", "Cargo", "Salario",
                 "Inicio de Contrato", "Fin de Contrato"
             };
 
@@ -67,7 +94,7 @@ public class reporteEmpleados extends javax.swing.JPanel implements Printable {
 
             jTable1.setModel(model);
 
-            int[] columnWidths = {140, 70, 85, 80, 80, 100, 100, 100, 65, 90, 90};
+            int[] columnWidths = {140, 100, 120, 100, 100, 180, 140, 80, 120, 120};
             for (int i = 0; i < columnWidths.length; i++) {
                 TableColumn column = jTable1.getColumnModel().getColumn(i);
                 column.setPreferredWidth(columnWidths[i]);
@@ -79,29 +106,21 @@ public class reporteEmpleados extends javax.swing.JPanel implements Printable {
     }
 
     // Implementación para hacer el panel imprimible
-    @Override
-public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
-    if (pageIndex > 0) {
-        return NO_SUCH_PAGE;
-    }
-
-    Graphics2D g2d = (Graphics2D) g;
-    g2d.translate(pf.getImageableX(), pf.getImageableY());
-
-    // Escalar el panel para que quepa en la hoja
-    double panelWidth = this.getWidth();
-    double panelHeight = this.getHeight();
-    double printableWidth = pf.getImageableWidth();
-    double printableHeight = pf.getImageableHeight();
-
-    double scaleX = printableWidth / panelWidth;
-    double scaleY = printableHeight / panelHeight;
-    double scale = Math.min(scaleX, scaleY); // Mantener proporción
-
-    g2d.scale(scale, scale);
-    this.printAll(g2d);
-
-    return PAGE_EXISTS;
+  @Override
+    public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
+        if (pageIndex > 0) return NO_SUCH_PAGE;
+        
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.translate(pf.getImageableX(), pf.getImageableY());
+        pf.setOrientation(PageFormat.LANDSCAPE);
+        
+        double scaleX = pf.getImageableWidth()/this.getWidth();
+        double scaleY = pf.getImageableHeight()/this.getHeight();
+        double scale = Math.min(scaleX, scaleY) * 0.95;
+        g2d.scale(scale, scale);
+        
+        this.printAll(g2d);
+        return PAGE_EXISTS;
 }
 
 
@@ -119,39 +138,38 @@ public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterExcepti
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         fechaLabel = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jLabel3 = new javax.swing.JLabel();
+        emTotalesLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(255, 255, 255));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logo.jpg"))); // NOI18N
 
-        jLabel2.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
         jLabel2.setText("REPORTE DE EMPLEADOS TOTALES");
 
-        jLabel4.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel4.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         jLabel4.setText("Fecha");
 
-        fechaLabel.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        fechaLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         fechaLabel.setText("XX-XX-XXXX");
 
-        jLabel6.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel6.setText("Santa Barbara C.A.");
-
-        jLabel7.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel7.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         jLabel7.setText("R.I.F.:");
 
-        jLabel8.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel8.setText("Empresa:");
-
-        jLabel9.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel9.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         jLabel9.setText("XXXXXXXX");
 
-        jTable1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jTable1.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -163,7 +181,26 @@ public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterExcepti
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable1.setGridColor(new java.awt.Color(204, 204, 204));
         jScrollPane1.setViewportView(jTable1);
+
+        jLabel3.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel3.setText("Empleados Totales");
+
+        emTotalesLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        emTotalesLabel.setText("jLabel5");
+
+        jLabel5.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel5.setText("Reporte perteneciente a la Comercializadora Santa Barbara®");
+
+        jLabel6.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel6.setText("Dirección: Sector Delicias Nuevas, Calle Principal de la Chile, parroquia Ambrosio");
+
+        jLabel8.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel8.setText("TLF: 0410-0000000");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -173,49 +210,70 @@ public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterExcepti
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1))
+                        .addComponent(jScrollPane1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(25, 25, 25)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel3))
                                 .addGap(18, 18, 18)
-                                .addComponent(fechaLabel))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel9)
+                                    .addComponent(fechaLabel)
+                                    .addComponent(emTotalesLabel)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel9))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1012, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(294, 294, 294)
+                                .addComponent(jLabel2)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addGap(358, 358, 358))
+                .addContainerGap(303, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 554, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(298, 298, 298))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addGap(240, 240, 240))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addGap(508, 508, 508))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel2)
-                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jLabel2)))
+                .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(fechaLabel))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(jLabel7))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(emTotalesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel9))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(197, Short.MAX_VALUE))
+                .addComponent(jLabel8)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -226,16 +284,22 @@ public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterExcepti
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel emTotalesLabel;
     private javax.swing.JLabel fechaLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;

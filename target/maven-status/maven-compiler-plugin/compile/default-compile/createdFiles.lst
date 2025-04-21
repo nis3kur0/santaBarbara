@@ -15,15 +15,16 @@ com\mycompany\reportes\reporteEmpleados.class
 com\mycompany\views\Ficha.class
 com\mycompany\views\Empleados$20.class
 com\mycompany\views\Vacaciones.class
+com\mycompany\FileOpener.class
 com\mycompany\VerAsistencias.class
 com\mycompany\loginandsignup\Login.class
 com\mycompany\views\Configuracion$8.class
 com\mycompany\views\Empleados.class
 com\mycompany\views\Permisos.class
 com\mycompany\views\Empleados$21.class
-com\mycompany\views\Nomina$13.class
 com\mycompany\views\Asistencia$1.class
 com\mycompany\views\Empleados$7.class
+com\mycompany\reportes\detallesNomina$1.class
 com\mycompany\views\Nomina$7.class
 com\mycompany\RoundedPanel.class
 com\mycompany\views\Configuracion$HourSpinnerModel.class
@@ -98,7 +99,6 @@ com\mycompany\santabarbara\Dashborad$1.class
 com\mycompany\VerAsistencias$1.class
 com\mycompany\views\Configuracion.class
 com\mycompany\reportes\historialNomina.class
-com\mycompany\views\Nomina$12.class
 com\mycompany\views\Incapacidad.class
 com\mycompany\views\reportePagos.class
 com\mycompany\views\Empleados$17.class
@@ -125,4 +125,3 @@ com\mycompany\views\Nomina$9.class
 com\mycompany\reportes\detallesNomina.class
 com\mycompany\views\Empleados$3.class
 com\mycompany\views\Inicio.class
-com\mycompany\views\Nomina$11.class

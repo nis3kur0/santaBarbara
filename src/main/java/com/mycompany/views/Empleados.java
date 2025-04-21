@@ -6,7 +6,6 @@ package com.mycompany.views;
 
 import com.mycompany.CarnetEmpleado;
 import com.mycompany.reportes.ConstanciaTrabajo;
-import com.mycompany.DialogLiquidaciones;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,16 +35,27 @@ import javax.swing.JTextField;
 import com.mycompany.GeneradorQR;
 import com.mycompany.reportes.reporteEmpleados;
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Destination;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *PENDIENTE A REFACTORIZACION
@@ -107,6 +117,12 @@ jTable1.getSelectionModel().addListSelectionListener(e -> {
         setupLettersFilters(); 
         setupEmailValidation(); 
     }
+    
+    //VARIABLE
+    
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+String fechaActual = LocalDate.now().format(formatter);
+
  private void Styles() {
       
 
@@ -1195,36 +1211,67 @@ private void actualizarEmpleado(int selectedRow) {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
   reporteEmpleados reporte = new reporteEmpleados(); // Usa una referencia real si ya lo tienes cargado
 
-    javax.swing.JFrame previewFrame = new javax.swing.JFrame("Vista previa de impresión");
-    previewFrame.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
-    previewFrame.setSize(1000, 700);
-    previewFrame.setLocationRelativeTo(null);
+javax.swing.JFrame previewFrame = new javax.swing.JFrame("Vista previa de impresión");
+previewFrame.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+previewFrame.setSize(1000, 700);
+previewFrame.setLocationRelativeTo(null);
 
-    javax.swing.JPanel topPanel = new javax.swing.JPanel();
-    javax.swing.JButton imprimirBtn = new javax.swing.JButton("Imprimir / Guardar PDF");
+javax.swing.JPanel topPanel = new javax.swing.JPanel();
+javax.swing.JButton imprimirBtn = new javax.swing.JButton("Imprimir / Guardar PDF");
 
-    imprimirBtn.addActionListener(e -> {
-        java.awt.print.PrinterJob job = java.awt.print.PrinterJob.getPrinterJob();
+imprimirBtn.addActionListener(e -> {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Guardar Reporte de Empleados como PDF");
+    fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf"));
+    fileChooser.setSelectedFile(new File("ReporteEmpleados_" + fechaActual + ".pdf"));
+
+    int userSelection = fileChooser.showSaveDialog(previewFrame);
+
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = fileChooser.getSelectedFile();
+        String filePath = fileToSave.getAbsolutePath();
+        if (!filePath.toLowerCase().endsWith(".pdf")) {
+            filePath += ".pdf";
+            fileToSave = new File(filePath);
+        }
+
+        PrinterJob job = PrinterJob.getPrinterJob();
         job.setJobName("Reporte de Empleados");
 
         PageFormat pf = job.defaultPage();
         pf.setOrientation(PageFormat.LANDSCAPE);
-
         job.setPrintable(reporte, pf);
 
-        if (job.printDialog()) {
-            try {
-                job.print();
-            } catch (PrinterException ex) {
-                JOptionPane.showMessageDialog(previewFrame, "Error al imprimir: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    });
+        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+        attr.add(new Destination(fileToSave.toURI()));
+        attr.add(MediaSizeName.ISO_A4);
+        attr.add(OrientationRequested.LANDSCAPE);
 
-    topPanel.add(imprimirBtn);
-    previewFrame.getContentPane().add(topPanel, java.awt.BorderLayout.NORTH);
-    previewFrame.getContentPane().add(new javax.swing.JScrollPane(reporte), java.awt.BorderLayout.CENTER);
-    previewFrame.setVisible(true);
+        try {
+            job.print(attr); // Imprime directo al archivo
+            // Intentar abrir automáticamente
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(fileToSave);
+            } else {
+                JOptionPane.showMessageDialog(previewFrame,
+                        "No se puede abrir el archivo automáticamente en este sistema.",
+                        "Advertencia",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (PrinterException | IOException ex) {
+            JOptionPane.showMessageDialog(previewFrame,
+                    "Error al imprimir o abrir el PDF: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+});
+
+topPanel.add(imprimirBtn);
+previewFrame.getContentPane().add(topPanel, java.awt.BorderLayout.NORTH);
+previewFrame.getContentPane().add(new javax.swing.JScrollPane(reporte), java.awt.BorderLayout.CENTER);
+previewFrame.setVisible(true);
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
