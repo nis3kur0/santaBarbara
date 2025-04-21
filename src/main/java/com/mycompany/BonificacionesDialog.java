@@ -42,6 +42,8 @@ public class BonificacionesDialog extends JDialog {
     
     private JButton btnAplicar;
     private JButton btnCancelar;
+    
+    public static String[] opcionesBonificacion = {"Bono por productividad", "Bono por fiestas", "Bono por maternidad", "Otros"};
 
     public BonificacionesDialog(Frame parent) {
         super(parent, "Gestión de Bonificaciones", true);
@@ -64,7 +66,7 @@ public class BonificacionesDialog extends JDialog {
         comboEmpleados = new JComboBox<>();
         cargarEmpleadosEnComboBox();
         
-        comboTipoBonificacion = new JComboBox<>(new String[]{"Bono por productividad", "Bono por fiestas", "Bono por maternidad", "Otros"});
+        comboTipoBonificacion = new JComboBox<>(opcionesBonificacion);
         txtMonto = new JTextField(10);
         txtDescripcion = new JTextArea(3, 20);
         txtDescripcion.setLineWrap(true);

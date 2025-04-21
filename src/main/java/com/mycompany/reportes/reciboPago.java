@@ -18,8 +18,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import com.mycompany.BonificacionesDialog;
 
 
 public class reciboPago extends javax.swing.JPanel implements Printable {
@@ -30,63 +34,101 @@ public class reciboPago extends javax.swing.JPanel implements Printable {
     public reciboPago() {
         initComponents();
         
+        bonif1Label.setText(" " + BonificacionesDialog.opcionesBonificacion[0]);
+        bonif2Label.setText(" " + BonificacionesDialog.opcionesBonificacion[1]);
+        bonif3Label.setText(" " + BonificacionesDialog.opcionesBonificacion[2]);
+        bonif4Label.setText(" " + BonificacionesDialog.opcionesBonificacion[3]);
+        
     }
      
-public void cargarDatosEmpleado(int idEmpleado, DefaultTableModel model, int selectedRow) {
-    Connection con = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-    
-    try {
-        con = ConexionBD.obtenerConexion();
-        
-        String sqlEmpleado = "SELECT NOMBRE_COMPLETO, CARGO, CEDULA, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados WHERE ID = ?";
-        pst = con.prepareStatement(sqlEmpleado);
-        pst.setInt(1, idEmpleado);
-        rs = pst.executeQuery();
-        
-        if (rs.next()) {
-            String nombre = rs.getString("NOMBRE_COMPLETO");
-            String cargo = rs.getString("CARGO");
-            String cedula = rs.getString("CEDULA");
-            String fechaInicio = rs.getString("INICIO_CONTRATO");
-            String fechaFin = rs.getString("FIN_CONTRATO");
-            String salario = rs.getString("SALARIO");
-            
-            double diasTrabajados = safeGetDouble(model, selectedRow, 4);
-            double ivss = safeGetDouble(model, selectedRow, 6);    
-            double faov = safeGetDouble(model, selectedRow, 7);    
-            double inces = safeGetDouble(model, selectedRow, 8);   
-            double sueldoFinal = safeGetDouble(model, selectedRow, 9); 
-           
-            
-            double totalDescuentosValor = ivss + faov + inces;
-            
-            DecimalFormat df = new DecimalFormat("#,##0.00");
-            
-            nombreLabel.setText(nombre);
-            cedulaLabel.setText(cedula);
-            cargoLabel.setText(cargo);
-            fechaInicioLabel1.setText(fechaInicio);
-            fechaFinLabel.setText(fechaFin);
-            salarioLabel.setText(df.format(safeParseDouble(salario)));
-            ivssLabel.setText(df.format(ivss));
-            faovLabel.setText(df.format(faov));
-            incesLabel.setText(df.format(inces));
-            salarionetoLabel.setText(df.format(sueldoFinal));
-            totalDescuentos.setText(df.format(totalDescuentosValor));
-            diasLabel.setText(df.format(diasTrabajados));
+public void cargarDatosEmpleado(int idEmpleado, DefaultTableModel model, int selectedRow) throws ParseException {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        try {
+            con = ConexionBD.obtenerConexion();
+
+            String sqlEmpleado = "SELECT NOMBRE_COMPLETO, CARGO, CEDULA, SALARIO, INICIO_CONTRATO, FIN_CONTRATO FROM empleados WHERE ID = ?";
+            pst = con.prepareStatement(sqlEmpleado);
+            pst.setInt(1, idEmpleado);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                String nombre = rs.getString("NOMBRE_COMPLETO");
+                String cargo  = rs.getString("CARGO");
+                String cedula = rs.getString("CEDULA");
+                String salarioStr = rs.getString("SALARIO");
+                String fechaInicioBD = rs.getString("INICIO_CONTRATO");
+                String fechaFinBD    = rs.getString("FIN_CONTRATO");
+
+                SimpleDateFormat formatoBD      = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat formatoDeseado = new SimpleDateFormat("dd/MM/yyyy");
+                String fechaInicioFormateada;
+                String fechaFinFormateada;
+                try {
+                    Date fi = formatoBD.parse(fechaInicioBD);
+                    fechaInicioFormateada = formatoDeseado.format(fi);
+                    fechaInicioLabel1.setText(fechaInicioFormateada);
+                    fechaInicioLabel2.setText(fechaInicioFormateada);
+
+                    Date ff = formatoBD.parse(fechaFinBD);
+                    fechaFinFormateada = formatoDeseado.format(ff);
+                    fechaFinLabel.setText(fechaFinFormateada);
+                } catch (ParseException e) {
+                    // Si hay error en formato, mostrar crudo
+                    fechaInicioFormateada = fechaInicioBD;
+                    fechaFinFormateada    = fechaFinBD;
+                    fechaInicioLabel1.setText(fechaInicioBD);
+                    fechaInicioLabel2.setText(fechaInicioBD);
+                    fechaFinLabel.setText(fechaFinBD);
+                    e.printStackTrace();
+                }
+
+                // Cargar bonificaciones usando rango de fechas
+                cargarBonificaciones(idEmpleado, fechaInicioFormateada, fechaFinFormateada);
+
+                double diasTrabajados = safeGetDouble(model, selectedRow, 4);
+                double ivss           = safeGetDouble(model, selectedRow, 6);
+                double faov           = safeGetDouble(model, selectedRow, 7);
+                double inces          = safeGetDouble(model, selectedRow, 8);
+                double totalDescuentosValor = ivss + faov + inces;
+                
+                                String totalAsigText = totalAsignaciones.getText();
+                double totalAsig = "No aplica".equals(totalAsigText)
+                    ? 0.0
+                    : Double.parseDouble(totalAsigText.replace(".","").replace(",","."));
+
+                // Salario base parseado
+                double salarioBase = safeParseDouble(salarioStr);
+
+                // Calcular salario neto: salario - asignaciones + descuentos? Asignaciones sumadas restan?
+                double neto = salarioBase - totalAsig - totalDescuentosValor;
+
+                DecimalFormat df = new DecimalFormat("#,##0.00");
+
+                nombreLabel.setText(nombre);
+                cedulaLabel.setText(cedula);
+                cargoLabel.setText(cargo);
+                salarioLabel.setText(df.format(salarioBase));
+                ivssLabel.setText(df.format(ivss));
+                faovLabel.setText(df.format(faov));
+                incesLabel.setText(df.format(inces));
+                totalDescuentos.setText(df.format(totalDescuentosValor));
+                diasLabel.setText(df.format(safeGetDouble(model, selectedRow, 4)));
+                salarionetoLabel.setText(df.format(neto));
+
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null,
+                "Error de base de datos: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try { if (rs  != null) rs.close();  } catch (Exception e) {}
+            try { if (pst != null) pst.close(); } catch (Exception e) {}
+            try { if (con != null) con.close(); } catch (Exception e) {}
         }
-        
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, 
-            "Error de base de datos: " + e.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
-    } finally {
-        try { if (rs != null) rs.close(); } catch (Exception e) {}
-        try { if (pst != null) pst.close(); } catch (Exception e) {}
-        try { if (con != null) con.close(); } catch (Exception e) {}
-    }
 }
 
 private String safeGetString(DefaultTableModel model, int row, int col) {
@@ -104,7 +146,8 @@ private double safeGetDouble(DefaultTableModel model, int row, int col) {
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
         }
-        return Double.parseDouble(value.toString().replace(",", "."));
+        String stringValue = value.toString().replaceAll("[^\\d.,]", "").replace(",", ".");
+        return Double.parseDouble(stringValue);
     } catch (Exception e) {
         return 0.0;
     }
@@ -147,6 +190,89 @@ private double safeParseDouble(String value) {
                     "Error al imprimir recibo: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+    
+    public void setFechasPeriodo(String fechaInicio, String fechaFin) {
+        fechaInicioLabel2.setText(fechaInicio);
+        fechaFinLabel.setText(fechaFin);
+    }
+    
+    public void cargarBonificaciones(int idEmpleado, String periodoInicio, String periodoFin) {
+        Connection con = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat sqlFormat   = new SimpleDateFormat("yyyy-MM-dd");
+        String iniBD = "";
+        String finBD = "";
+
+        try {
+            Date fi = inputFormat.parse(periodoInicio);
+            Date ff = inputFormat.parse(periodoFin);
+            iniBD = sqlFormat.format(fi);
+            finBD = sqlFormat.format(ff);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error en formato de fecha de período", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String sql = "SELECT " +
+                     " SUM(CASE WHEN tipo = ? THEN monto ELSE 0 END) AS bono1, " +
+                     " SUM(CASE WHEN tipo = ? THEN monto ELSE 0 END) AS bono2, " +
+                     " SUM(CASE WHEN tipo = ? THEN monto ELSE 0 END) AS bono3, " +
+                     " SUM(CASE WHEN tipo = ? THEN monto ELSE 0 END) AS bono4 " +
+                     "FROM bonificaciones " +
+                     "WHERE id_empleado = ? " +
+                     "  AND date(inicio_bon) BETWEEN ? AND ?";
+
+        try {
+            con = ConexionBD.obtenerConexion();
+            pst = con.prepareStatement(sql);
+
+            pst.setString(1, BonificacionesDialog.opcionesBonificacion[0]);
+            pst.setString(2, BonificacionesDialog.opcionesBonificacion[1]);
+            pst.setString(3, BonificacionesDialog.opcionesBonificacion[2]);
+            pst.setString(4, BonificacionesDialog.opcionesBonificacion[3]);
+            pst.setInt(5, idEmpleado);
+            pst.setString(6, iniBD);
+            pst.setString(7, finBD);
+
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                double bono1 = rs.getDouble("bono1");
+                double bono2 = rs.getDouble("bono2");
+                double bono3 = rs.getDouble("bono3");
+                double bono4 = rs.getDouble("bono4");
+
+                cantBonif1.setText(bono1 > 0 ? String.format("%,.2f", bono1) : "No aplica");
+                cantBonif2.setText(bono2 > 0 ? String.format("%,.2f", bono2) : "No aplica");
+                cantBonif3.setText(bono3 > 0 ? String.format("%,.2f", bono3) : "No aplica");
+                cantBonif4.setText(bono4 > 0 ? String.format("%,.2f", bono4) : "No aplica");
+                
+                double totalBonos = 0;
+                if (bono1 > 0) totalBonos += bono1;
+                if (bono2 > 0) totalBonos += bono2;
+                if (bono3 > 0) totalBonos += bono3;
+                if (bono4 > 0) totalBonos += bono4;
+
+                totalAsignaciones.setText(totalBonos > 0
+                    ? String.format("%,.2f", totalBonos)
+                    : "No aplica");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                "Error al cargar bonificaciones: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try { if (rs  != null) rs.close();  } catch (Exception e) {}
+            try { if (pst != null) pst.close(); } catch (Exception e) {}
+            try { if (con  != null) con.close(); } catch (Exception e) {}
         }
     }
     /**
@@ -234,18 +360,32 @@ private double safeParseDouble(String value) {
         jLabel64 = new javax.swing.JLabel();
         jLabel65 = new javax.swing.JLabel();
         jLabel66 = new javax.swing.JLabel();
-        jPanel12 = new javax.swing.JPanel();
-        jLabel46 = new javax.swing.JLabel();
-        jLabel67 = new javax.swing.JLabel();
-        jLabel68 = new javax.swing.JLabel();
-        jLabel69 = new javax.swing.JLabel();
-        jLabel70 = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
         jLabel47 = new javax.swing.JLabel();
         jLabel71 = new javax.swing.JLabel();
         ivssLabel = new javax.swing.JLabel();
         faovLabel = new javax.swing.JLabel();
         incesLabel = new javax.swing.JLabel();
+        jLabel27 = new javax.swing.JLabel();
+        jPanel21 = new javax.swing.JPanel();
+        jPanel18 = new javax.swing.JPanel();
+        jLabel50 = new javax.swing.JLabel();
+        jLabel51 = new javax.swing.JLabel();
+        jLabel63 = new javax.swing.JLabel();
+        jLabel72 = new javax.swing.JLabel();
+        jLabel73 = new javax.swing.JLabel();
+        jPanel19 = new javax.swing.JPanel();
+        jLabel74 = new javax.swing.JLabel();
+        bonif1Label = new javax.swing.JLabel();
+        bonif2Label = new javax.swing.JLabel();
+        bonif3Label = new javax.swing.JLabel();
+        bonif4Label = new javax.swing.JLabel();
+        jPanel20 = new javax.swing.JPanel();
+        jLabel79 = new javax.swing.JLabel();
+        cantBonif1 = new javax.swing.JLabel();
+        cantBonif2 = new javax.swing.JLabel();
+        cantBonif3 = new javax.swing.JLabel();
+        cantBonif4 = new javax.swing.JLabel();
 
         jLabel4.setText("jLabel4");
 
@@ -384,7 +524,7 @@ private double safeParseDouble(String value) {
                                 .addComponent(fechaInicioLabel2)))
                         .addGap(18, 18, 18)
                         .addComponent(fechaFinLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(49, 49, 49)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel14)
@@ -394,22 +534,19 @@ private double safeParseDouble(String value) {
                                 .addComponent(jLabel18)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(cargoLabel))
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jLabel20)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(salarioLabel)
-                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jLabel16)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(fechaInicioLabel1)
-                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel20)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(salarioLabel))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel16)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(fechaInicioLabel1))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addGap(23, 23, 23)
-                        .addComponent(jLabel5)
-                        .addContainerGap())))
+                        .addComponent(jLabel5)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -450,7 +587,7 @@ private double safeParseDouble(String value) {
         jLabel24.setText("Totales:");
 
         jLabel26.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel26.setText("TA:");
+        jLabel26.setText("TB:");
 
         totalAsignaciones.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         totalAsignaciones.setText("0");
@@ -622,7 +759,7 @@ private double safeParseDouble(String value) {
 
         jLabel58.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel58.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel58.setText(" 003");
+        jLabel58.setText(" 004");
         jLabel58.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -805,57 +942,6 @@ private double safeParseDouble(String value) {
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        jPanel12.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel12.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, new java.awt.Color(0, 0, 0)));
-
-        jLabel46.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jLabel46.setText(" Asignaciones");
-        jLabel46.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-
-        jLabel67.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel67.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel67.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-
-        jLabel68.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel68.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel68.setText(" ");
-        jLabel68.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-
-        jLabel69.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel69.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel69.setText(" ");
-        jLabel69.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-
-        jLabel70.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel70.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel70.setText(" ");
-        jLabel70.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
-
-        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
-        jPanel12.setLayout(jPanel12Layout);
-        jPanel12Layout.setHorizontalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel46, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
-            .addComponent(jLabel67, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jLabel68, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jLabel69, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jLabel70, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel12Layout.setVerticalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel12Layout.createSequentialGroup()
-                .addComponent(jLabel46)
-                .addGap(1, 1, 1)
-                .addComponent(jLabel67)
-                .addGap(1, 1, 1)
-                .addComponent(jLabel68)
-                .addGap(1, 1, 1)
-                .addComponent(jLabel69)
-                .addGap(1, 1, 1)
-                .addComponent(jLabel70)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
         jPanel13.setBackground(new java.awt.Color(255, 255, 255));
         jPanel13.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 0, new java.awt.Color(0, 0, 0)));
 
@@ -921,8 +1007,6 @@ private double safeParseDouble(String value) {
                 .addGap(0, 0, 0)
                 .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
                 .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
@@ -932,7 +1016,6 @@ private double safeParseDouble(String value) {
             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
@@ -950,6 +1033,187 @@ private double safeParseDouble(String value) {
             .addGroup(jPanel17Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jLabel27.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel27.setText("Bonificaciones:");
+
+        jPanel18.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel18.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 1, 0, 1, new java.awt.Color(0, 0, 0)));
+
+        jLabel50.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel50.setText(" Cod. ");
+        jLabel50.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        jLabel51.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel51.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel51.setText(" 001");
+        jLabel51.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        jLabel63.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel63.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel63.setText(" 002");
+        jLabel63.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        jLabel72.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel72.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel72.setText(" 003");
+        jLabel72.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        jLabel73.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel73.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel73.setText(" 004");
+        jLabel73.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
+        jPanel18.setLayout(jPanel18Layout);
+        jPanel18Layout.setHorizontalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel50, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel51, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel63, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel72, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel73, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
+        );
+        jPanel18Layout.setVerticalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel18Layout.createSequentialGroup()
+                .addComponent(jLabel50)
+                .addGap(1, 1, 1)
+                .addComponent(jLabel51)
+                .addGap(1, 1, 1)
+                .addComponent(jLabel63)
+                .addGap(1, 1, 1)
+                .addComponent(jLabel72)
+                .addGap(1, 1, 1)
+                .addComponent(jLabel73))
+        );
+
+        jPanel19.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel19.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, new java.awt.Color(0, 0, 0)));
+
+        jLabel74.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel74.setText(" Tipo de bonificación   ");
+        jLabel74.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        bonif1Label.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        bonif1Label.setText(" xxxx xxx xxxxxxxxxx");
+        bonif1Label.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        bonif2Label.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        bonif2Label.setText(" xxxx xxx xxxxxx");
+        bonif2Label.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        bonif3Label.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        bonif3Label.setText(" xxxx xxx xxxxxx");
+        bonif3Label.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        bonif4Label.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        bonif4Label.setText(" xxxx");
+        bonif4Label.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
+        jPanel19.setLayout(jPanel19Layout);
+        jPanel19Layout.setHorizontalGroup(
+            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel74, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(bonif1Label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(bonif2Label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(bonif3Label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(bonif4Label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel19Layout.setVerticalGroup(
+            jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel19Layout.createSequentialGroup()
+                .addComponent(jLabel74)
+                .addGap(1, 1, 1)
+                .addComponent(bonif1Label)
+                .addGap(1, 1, 1)
+                .addComponent(bonif2Label)
+                .addGap(1, 1, 1)
+                .addComponent(bonif3Label)
+                .addGap(1, 1, 1)
+                .addComponent(bonif4Label)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        jPanel20.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel20.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, new java.awt.Color(0, 0, 0)));
+
+        jLabel79.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel79.setText(" Cant.       ");
+        jLabel79.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        cantBonif1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cantBonif1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        cantBonif1.setText(" xxxxxx ");
+        cantBonif1.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        cantBonif2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cantBonif2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        cantBonif2.setText(" xxxxxx");
+        cantBonif2.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        cantBonif3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cantBonif3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        cantBonif3.setText(" xxxxxx");
+        cantBonif3.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        cantBonif4.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        cantBonif4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        cantBonif4.setText(" xxxxxx");
+        cantBonif4.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanel20Layout = new javax.swing.GroupLayout(jPanel20);
+        jPanel20.setLayout(jPanel20Layout);
+        jPanel20Layout.setHorizontalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel79, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cantBonif1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cantBonif2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cantBonif3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cantBonif4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel20Layout.setVerticalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel20Layout.createSequentialGroup()
+                .addComponent(jLabel79)
+                .addGap(1, 1, 1)
+                .addComponent(cantBonif1)
+                .addGap(1, 1, 1)
+                .addComponent(cantBonif2)
+                .addGap(1, 1, 1)
+                .addComponent(cantBonif3)
+                .addGap(1, 1, 1)
+                .addComponent(cantBonif4)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel21Layout = new javax.swing.GroupLayout(jPanel21);
+        jPanel21.setLayout(jPanel21Layout);
+        jPanel21Layout.setHorizontalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel21Layout.setVerticalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -991,8 +1255,10 @@ private double safeParseDouble(String value) {
                                 .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jPanel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel27)
+                            .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1005,7 +1271,11 @@ private double safeParseDouble(String value) {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel27)
                 .addGap(18, 18, 18)
+                .addComponent(jPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(27, 27, 27)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel24)
                     .addComponent(jLabel26)
@@ -1024,7 +1294,7 @@ private double safeParseDouble(String value) {
                     .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(515, Short.MAX_VALUE))
+                .addContainerGap(352, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1041,6 +1311,14 @@ private double safeParseDouble(String value) {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel bonif1Label;
+    private javax.swing.JLabel bonif2Label;
+    private javax.swing.JLabel bonif3Label;
+    private javax.swing.JLabel bonif4Label;
+    private javax.swing.JLabel cantBonif1;
+    private javax.swing.JLabel cantBonif2;
+    private javax.swing.JLabel cantBonif3;
+    private javax.swing.JLabel cantBonif4;
     private javax.swing.JLabel cargoLabel;
     private javax.swing.JLabel cedulaLabel;
     private javax.swing.JLabel diasLabel;
@@ -1062,6 +1340,7 @@ private double safeParseDouble(String value) {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
@@ -1080,11 +1359,12 @@ private double safeParseDouble(String value) {
     private javax.swing.JLabel jLabel43;
     private javax.swing.JLabel jLabel44;
     private javax.swing.JLabel jLabel45;
-    private javax.swing.JLabel jLabel46;
     private javax.swing.JLabel jLabel47;
     private javax.swing.JLabel jLabel48;
     private javax.swing.JLabel jLabel49;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel50;
+    private javax.swing.JLabel jLabel51;
     private javax.swing.JLabel jLabel52;
     private javax.swing.JLabel jLabel53;
     private javax.swing.JLabel jLabel54;
@@ -1097,26 +1377,30 @@ private double safeParseDouble(String value) {
     private javax.swing.JLabel jLabel60;
     private javax.swing.JLabel jLabel61;
     private javax.swing.JLabel jLabel62;
+    private javax.swing.JLabel jLabel63;
     private javax.swing.JLabel jLabel64;
     private javax.swing.JLabel jLabel65;
     private javax.swing.JLabel jLabel66;
-    private javax.swing.JLabel jLabel67;
-    private javax.swing.JLabel jLabel68;
-    private javax.swing.JLabel jLabel69;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel70;
     private javax.swing.JLabel jLabel71;
+    private javax.swing.JLabel jLabel72;
+    private javax.swing.JLabel jLabel73;
+    private javax.swing.JLabel jLabel74;
+    private javax.swing.JLabel jLabel79;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
+    private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
+    private javax.swing.JPanel jPanel21;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
