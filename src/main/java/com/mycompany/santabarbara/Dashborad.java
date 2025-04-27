@@ -308,7 +308,9 @@ private void scaleIcons() {
     );
 
     if (respuesta == JOptionPane.YES_OPTION) {
-        System.exit(0);
+        this.dispose();
+        Login login = new Login();
+        login.setVisible(true);
     }      
     }//GEN-LAST:event_salirBtnActionPerformed
 

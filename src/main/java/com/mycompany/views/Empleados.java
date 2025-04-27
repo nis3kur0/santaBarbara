@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -259,9 +260,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         textNumeroCuenta.setText("");
     }
     
-    //FIN//
 
-    //FUNCIONES PARA REALIZAR ACCIONES
   public void agregarEmpleado() {
 
         String nombre = textNombre.getText().trim();
@@ -292,7 +291,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             "Error", 
             JOptionPane.ERROR_MESSAGE);
         return; 
-    }
+        }
 
         int cedula;
         double salario = 0.0;
@@ -315,19 +314,46 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         } else {
             fechaNacimiento = "2000-01-01"; 
         }
-        String inicioContrato;
-        if (dateInicio.getDate() != null) {
-            inicioContrato = sdf.format(dateInicio.getDate());
-        } else {
-            inicioContrato = "2025-01-01"; 
+        if (dateInicio.getDate() == null || dateFinal.getDate() == null) {
+            JOptionPane.showMessageDialog(null, 
+                "Debe seleccionar ambas fechas de contrato", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        String finContrato;
-        if (dateFinal.getDate() != null) {
-            finContrato = sdf.format(dateFinal.getDate());
-        } else {
-            finContrato = "9999-12-31";
+        LocalDate startDate = dateInicio.getDate().toInstant()
+                          .atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = dateFinal.getDate().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
+
+        if (startDate.isBefore(currentDate)) {
+            JOptionPane.showMessageDialog(null, 
+                "La fecha de inicio no puede ser anterior a la actual", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        if (endDate.isBefore(currentDate)) {
+            JOptionPane.showMessageDialog(null, 
+                "La fecha de fin no puede ser anterior a la actual", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!endDate.isAfter(startDate)) {
+            JOptionPane.showMessageDialog(null, 
+                "La fecha de fin debe ser posterior a la de inicio", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        String inicioContrato = sdf.format(dateInicio.getDate());
+        String finContrato = sdf.format(dateFinal.getDate());
 
      
         nombre = nombre.isEmpty() ? "Nombre por Defecto" : nombre;
@@ -347,8 +373,8 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
         pagoMovil = (pagoMovil == null || pagoMovil.isEmpty()) ? "No" : pagoMovil;
 
 
-        String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, TIPO_CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA, PAGO_MOVIL) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO empleados (NOMBRE_COMPLETO, CEDULA, TIPO_CEDULA, FECHA_NACIMIENTO, SEXO, TELEFONO, TELEFONO_HABITACION, EMAIL, DIRECCION, CARGO, SALARIO, INICIO_CONTRATO, FIN_CONTRATO, BANCO, TIPO_CUENTA, NUMERO_CUENTA, PAGO_MOVIL, ESTADO) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = ConexionBD.obtenerConexion(); PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setString(1, nombre);
@@ -368,6 +394,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             pstmt.setString(15, tipoCuenta);
             pstmt.setString(16, numeroCuenta);
             pstmt.setString(17, pagoMovil);
+            pstmt.setString(18, "Activo");
 
             int filasInsertadas = pstmt.executeUpdate();
             if (filasInsertadas > 0) {
@@ -378,7 +405,7 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
                     }
               }
                 JOptionPane.showMessageDialog(null, "Empleado registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-//GenerarCarnet.generarCarnetEmpleado(idEmpleado);
+
                 cargarDatosEnTabla();
                 limpiarCamposEmpleado();
             }
@@ -390,12 +417,6 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
             }
         }
     }
-  
-
-    
-    //FIN//
-    
-    //MAS VALIDACIONES
     
     private boolean isValidEmail(String email) {
         String emailRegex = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$";
@@ -1079,6 +1100,48 @@ private void cargarDatosCompletoEmpleado(int idEmpleado) {
 }                                         
 
 private void actualizarEmpleado(int selectedRow) {
+    
+        String email = textEmail.getText().trim();
+    if (!email.isEmpty() && !isValidEmail(email)) {
+        JOptionPane.showMessageDialog(this, 
+            "Formato de email inválido", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    String numeroCuenta = textNumeroCuenta.getText().trim();
+    if (numeroCuenta.length() != 20) {
+        JOptionPane.showMessageDialog(this, 
+            "El número de cuenta debe tener 20 caracteres", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    if (dateInicio.getDate() == null || dateFinal.getDate() == null) {
+        JOptionPane.showMessageDialog(this, 
+            "Seleccione ambas fechas de contrato", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    LocalDate startDate = dateInicio.getDate().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDate();
+    LocalDate endDate = dateFinal.getDate().toInstant()
+                      .atZone(ZoneId.systemDefault()).toLocalDate();
+    LocalDate currentDate = LocalDate.now();
+
+
+    if (!endDate.isAfter(startDate)) {
+        JOptionPane.showMessageDialog(this, 
+            "La fecha final debe ser posterior a la inicial", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
     try {
         Connection conn = ConexionBD.obtenerConexion();
         String sql = "UPDATE empleados SET "
@@ -1103,21 +1166,33 @@ private void actualizarEmpleado(int selectedRow) {
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         
-        pstmt.setString(1, textNombre.getText());
-        pstmt.setInt(2, Integer.parseInt(textCedula.getText()));
-        pstmt.setString(3, sdf.format(dateCumpleaños.getDate()));
-        pstmt.setString(4, sexoBox.getSelectedItem().toString());
-        pstmt.setString(5, textTelefono.getText());
-        pstmt.setString(6, textTlfhab.getText());
-        pstmt.setString(7, textEmail.getText());
-        pstmt.setString(8, textDireccion.getText());
-        pstmt.setString(9, textCargo.getText());
-        pstmt.setDouble(10, Double.parseDouble(textSalario.getText()));
+        String nombre = textNombre.getText().trim();
+        String sexo = (String) sexoBox.getSelectedItem();
+        String banco = (String) bancoBox.getSelectedItem();
+        String tipoCuenta = (String) tipoCuentaBox.getSelectedItem();
+        
+        sexo = (sexo == null || sexo.isEmpty()) ? "Masculino" : sexo;
+        banco = (banco == null || banco.isEmpty()) ? "Banesco" : banco;
+        tipoCuenta = (tipoCuenta == null || tipoCuenta.isEmpty()) ? "Ahorro" : tipoCuenta;
+        
+        String fechaNacimiento = dateCumpleaños.getDate() != null ? 
+                               sdf.format(dateCumpleaños.getDate()) : "2000-01-01";
+        
+        pstmt.setString(1, nombre.isEmpty() ? "Nombre por Defecto" : nombre);
+        pstmt.setInt(2, Integer.parseInt(textCedula.getText().trim()));
+        pstmt.setString(3, fechaNacimiento);
+        pstmt.setString(4, sexo);
+        pstmt.setString(5, textTelefono.getText().trim());
+        pstmt.setString(6, textTlfhab.getText().trim());
+        pstmt.setString(7, email.isEmpty() ? "no_disponible@dominio.com" : email);
+        pstmt.setString(8, textDireccion.getText().trim());
+        pstmt.setString(9, textCargo.getText().trim());
+        pstmt.setDouble(10, Double.parseDouble(textSalario.getText().trim()));
         pstmt.setString(11, sdf.format(dateInicio.getDate()));
         pstmt.setString(12, sdf.format(dateFinal.getDate()));
-        pstmt.setString(13, bancoBox.getSelectedItem().toString());
-        pstmt.setString(14, tipoCuentaBox.getSelectedItem().toString());
-        pstmt.setString(15, textNumeroCuenta.getText());
+        pstmt.setString(13, banco);
+        pstmt.setString(14, tipoCuenta);
+        pstmt.setString(15, numeroCuenta);
         
         int id = (int) jTable1.getValueAt(selectedRow, 0);
         pstmt.setInt(16, id);
@@ -1128,9 +1203,28 @@ private void actualizarEmpleado(int selectedRow) {
             cargarDatosEnTabla();
             limpiarCamposEmpleado();
         }
-    } catch (SQLException | NumberFormatException  e) {
-        JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    } 
+    } catch (SQLException | NumberFormatException e) {
+        handleUpdateException(e);
+    }
+}
+
+private void handleUpdateException(Exception e) {
+    String errorMessage = "Error durante la actualización: ";
+    
+    if (e instanceof SQLException) {
+        if (e.getMessage().contains("UNIQUE constraint failed")) {
+            errorMessage = "Ya existe un empleado con esta cédula";
+        } else {
+            errorMessage += e.getMessage();
+        }
+    } else if (e instanceof NumberFormatException) {
+        errorMessage = "Formato numérico inválido en cédula o salario";
+    }
+    
+    JOptionPane.showMessageDialog(this, 
+        errorMessage, 
+        "Error", 
+        JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_editarBtnActionPerformed
 
     private void eliminarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarBtnActionPerformed
