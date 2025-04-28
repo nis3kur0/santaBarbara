@@ -23,6 +23,7 @@ com\mycompany\views\Empleados.class
 com\mycompany\views\Permisos.class
 com\mycompany\views\Empleados$21.class
 com\mycompany\views\Asistencia$1.class
+com\mycompany\reportes\reciboLiquidacion.class
 com\mycompany\views\Empleados$7.class
 com\mycompany\reportes\detallesNomina$1.class
 com\mycompany\views\Nomina$7.class
